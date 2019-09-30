@@ -3,7 +3,6 @@
 # License MIT
 
 import abc
-import re
 import time
 from .resposta import analisar_retorno
 from requests import Session
