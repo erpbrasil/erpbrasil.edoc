@@ -4,6 +4,7 @@
 
 import abc
 import time
+from datetime import datetime
 from .resposta import analisar_retorno
 from requests import Session
 
@@ -28,6 +29,9 @@ class DocumentoEletronico(ABC):
 
     consulta_servico_ao_enviar = True
 
+    def __init__(self, transmissao):
+        self._transmissao = transmissao
+
     def _generateds_to_string_etree(self, ds):
 
         if type(ds) == _Element:
@@ -46,8 +50,8 @@ class DocumentoEletronico(ABC):
 
     def _post(self, raiz, url, operacao, classe):
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
-        with self.transmissao.cliente(url):
-            retorno = self.transmissao.enviar(
+        with self._transmissao.cliente(url):
+            retorno = self._transmissao.enviar(
                 operacao, xml_etree
             )
             return analisar_retorno(
@@ -55,6 +59,31 @@ class DocumentoEletronico(ABC):
             )
 
     def processar_documento(self, edoc):
+        """ Processar documento executa o envio do documento fiscal de forma
+        completa ao serviço do sefaz relacionado, esta é um método padrão que
+        segue o seguinte workflow:
+
+        1. Consulta o serviço;
+        2. Verifica se o documento não foi emitido anteriormente;
+        3. Envia o documento
+        4. Caso o envio seja assincrono busca o resultado do processamento
+            - Caso o processamento ainda não tenha sido efetuado,
+            aguarda o tempo médio + 50% e tenta o máximo setado no atributo
+            'maximo_tentativas_consulta_recibo'
+        5. Retorna o resultado.
+
+        Caro você queira armazenar todas as consultas em seu ERP segue o
+        exemplo:
+                for edoc in self.serialize():
+                    nfe = NFe()
+                    processo = None
+                    for p in nfe.processar_documento(edoc):
+                        # seu código aqui
+
+        :param edoc:
+        :return: Esta função retorna um yield, portanto ela retorna um iterator
+
+        """
         if self._consulta_servico_ao_enviar:
             proc_servico = self.status_servico()
             yield proc_servico
@@ -153,3 +182,13 @@ class DocumentoEletronico(ABC):
     @abc.abstractmethod
     def consulta_recibo(self):
         pass
+
+    def _gera_numero_lote(self):
+        return datetime.now().strftime('%Y%m%d%H%M%S')
+
+    def _hora_agora(self):
+        FORMAT = '%Y-%m-%dT%H:%M:%S'
+        # return datetime.today().strftime(FORMAT) + '-00:00'
+        return time.strftime(FORMAT, time.localtime()) + '-00:00'
+
+
