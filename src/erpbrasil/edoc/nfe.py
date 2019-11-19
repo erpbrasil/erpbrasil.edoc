@@ -22,7 +22,6 @@ from nfelib.v4_00 import leiauteEventoCancNFe
 from nfelib.v4_00 import leiauteCCe
 from nfelib.v4_00 import retEnvEvento
 from erpbrasil.edoc.edoc import DocumentoEletronico
-from erpbrasil.assinatura.assinatura import Assinatura
 
 try:
     from StringIO import StringIO
@@ -48,7 +47,11 @@ class NFe(DocumentoEletronico):
     _edoc_situacao_servico_em_operacao = '107'
     _consulta_servico_ao_enviar = True
     _maximo_tentativas_consulta_recibo = 5
-    _edoc_situacao_ja_enviado = ('100', '110', '150', '301', '302')
+
+    def _edoc_situacao_ja_enviado(self, proc_consulta):
+        if proc_consulta.resposta.cStat in ('100', '110', '150', '301', '302'):
+            return True
+        return False
 
     def get_documento_id(self, edoc):
         return edoc.infNFe.Id[:3], edoc.infNFe.Id[3:]
@@ -205,10 +208,3 @@ class NFe(DocumentoEletronico):
         )
         raiz.original_tagname_ = 'infEvento'
         return raiz
-
-    def assina_raiz(self, raiz, id):
-        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
-        xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
-            xml_etree, id
-        )
-        return xml_assinado

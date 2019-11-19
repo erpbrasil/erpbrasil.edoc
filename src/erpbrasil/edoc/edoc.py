@@ -10,8 +10,7 @@ from requests import Session
 
 from lxml import etree
 from lxml.etree import _Element
-from erpbrasil.assinatura.certificado import Certificado
-from erpbrasil.transmissao import TransmissaoSOAP
+from erpbrasil.assinatura.assinatura import Assinatura
 
 try:
     from StringIO import StringIO
@@ -190,3 +189,10 @@ class DocumentoEletronico(ABC):
         FORMAT = '%Y-%m-%dT%H:%M:%S'
         # return datetime.today().strftime(FORMAT) + '-00:00'
         return time.strftime(FORMAT, time.localtime()) + '-00:00'
+
+    def assina_raiz(self, raiz, id):
+        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
+            xml_etree, id
+        )
+        return xml_assinado
