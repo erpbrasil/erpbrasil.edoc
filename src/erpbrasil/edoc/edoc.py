@@ -190,5 +190,3 @@ class DocumentoEletronico(ABC):
         FORMAT = '%Y-%m-%dT%H:%M:%S'
         # return datetime.today().strftime(FORMAT) + '-00:00'
         return time.strftime(FORMAT, time.localtime()) + '-00:00'
-
-
