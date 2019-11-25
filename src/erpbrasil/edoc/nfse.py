@@ -5,6 +5,8 @@ from __future__ import division, print_function, unicode_literals
 
 from erpbrasil.edoc.edoc import DocumentoEletronico
 from nfselib.v3_01 import servico_enviar_lote_rps_resposta_v03
+from nfselib.v3_01.cabecalho_v03 import cabecalho
+
 
 try:
     from StringIO import StringIO
@@ -19,10 +21,14 @@ class NFSe(DocumentoEletronico):
     _edoc_situacao_servico_em_operacao = "TODO"
     _consulta_servico_ao_enviar = False
     _maximo_tentativas_consulta_recibo = 5
+    _header = cabecalho(versao="3", versaoDados="3")
 
     def _edoc_situacao_ja_enviado(self, proc_consulta):
         _edoc_situacao_ja_enviado = "TODO"
         return False
+
+    def _verifica_servico_em_operacao(self, proc_servico):
+        return True
 
     def get_documento_id(self, edoc):
         # edoc.LoteRps.ListaRps.Rps[0].InfRps.Id
@@ -38,6 +44,10 @@ class NFSe(DocumentoEletronico):
         edoc.LoteRps.NumeroLote = numero_lote
 
         xml_assinado = self.assina_raiz(edoc, edoc.LoteRps.Id)
+
+        header_string, header_etree = self._generateds_to_string_etree(
+            self._header
+        )
 
         return self._post(
             xml_assinado,

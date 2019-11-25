@@ -25,8 +25,8 @@ class DocumentoEletronico(ABC):
     Classe abstrata responsavel por definir os metodos e logica das classes
     de transmissao com os webservices.
     """
-
-    consulta_servico_ao_enviar = True
+    _consulta_servico_ao_enviar = False
+    _consulta_documento_antes_de_enviar = False
 
     def __init__(self, transmissao):
         self._transmissao = transmissao
@@ -35,6 +35,8 @@ class DocumentoEletronico(ABC):
 
         if type(ds) == _Element:
             return etree.tostring(ds), ds
+        if isinstance(ds, str):
+            return ds, etree.fromstring(ds)
 
         output = StringIO()
         ds.export(
@@ -89,8 +91,7 @@ class DocumentoEletronico(ABC):
             #
             # Se o serviço não estiver em operação
             #
-            if not proc_servico.resposta.cStat == \
-                   self._edoc_situacao_servico_em_operacao:
+            if not self._verifica_servico_em_operacao(proc_servico):
                 #
                 # Interrompe todo o processo
                 #
@@ -98,24 +99,25 @@ class DocumentoEletronico(ABC):
         #
         # Verificar se os documentos já não foram emitados antes
         #
-        documento, chave = self.get_documento_id(edoc)
-        if not chave:
-            #
-            # Interrompe todo o processo se o documento nao tem chave
-            #
-            return
+        if self._consulta_documento_antes_de_enviar:
+            documento, chave = self.get_documento_id(edoc)
+            if not chave:
+                #
+                # Interrompe todo o processo se o documento nao tem chave
+                #
+                return
 
-        proc_consulta = self.consulta_documento(chave)
-        yield proc_consulta
+            proc_consulta = self.consulta_documento(chave)
+            yield proc_consulta
 
-        #
-        # Se o documento já constar na SEFAZ (autorizada ou denegada)
-        #
-        if proc_consulta.resposta.cStat in self._edoc_situacao_ja_enviado:
             #
-            # Interrompe todo o processo
+            # Se o documento já constar na SEFAZ (autorizada ou denegada)
             #
-            return
+            if self._verifica_documento_ja_enviado(proc_consulta):
+                #
+                # Interrompe todo o processo
+                #
+                return
         #
         # Documento nao foi enviado, entao vamos envia-lo
         #
@@ -196,3 +198,9 @@ class DocumentoEletronico(ABC):
             xml_etree, id
         )
         return xml_assinado
+
+    def _verifica_servico_em_operacao(self, proc_servico):
+        return True
+
+    def _verifica_documento_ja_enviado(self, proc_consulta):
+        return False
