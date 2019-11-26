@@ -16,7 +16,7 @@ class RetornoSoap(object):
         self.retorno = retorno
 
 
-def analisar_retorno(operacao, raiz, xml, retorno, classe):
+def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
     retorno.raise_for_status()
     match = re.search('<soap:Body>(.*?)</soap:Body>', retorno.text)
     if match:
@@ -25,3 +25,11 @@ def analisar_retorno(operacao, raiz, xml, retorno, classe):
         classe.Validate_simpletypes_ = False
         resposta = classe.parseString(resultado.encode('utf-8'), silence=True)
         return RetornoSoap(operacao, raiz, xml, retorno, resposta)
+
+
+def analisar_retorno(operacao, raiz, xml, retorno, classe):
+    resposta = False
+    if retorno:
+        classe.Validate_simpletypes_ = False
+        resposta = classe.parseString(retorno.encode('utf-8'), silence=True)
+    return RetornoSoap(operacao, raiz, xml, retorno, resposta)

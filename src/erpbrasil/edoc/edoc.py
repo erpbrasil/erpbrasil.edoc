@@ -5,7 +5,7 @@
 import abc
 import time
 from datetime import datetime
-from .resposta import analisar_retorno
+from .resposta import analisar_retorno_raw
 from requests import Session
 
 from lxml import etree
@@ -37,6 +37,8 @@ class DocumentoEletronico(ABC):
             return etree.tostring(ds), ds
         if isinstance(ds, str):
             return ds, etree.fromstring(ds)
+        if isinstance(ds, unicode):
+            return ds, etree.fromstring(ds)
 
         output = StringIO()
         ds.export(
@@ -55,7 +57,7 @@ class DocumentoEletronico(ABC):
             retorno = self._transmissao.enviar(
                 operacao, xml_etree
             )
-            return analisar_retorno(
+            return analisar_retorno_raw(
                 operacao, raiz, xml_string, retorno, classe
             )
 
