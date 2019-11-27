@@ -5,6 +5,7 @@ from __future__ import division, print_function, unicode_literals
 
 import re
 from datetime import datetime
+import time
 from lxml import etree
 
 from nfelib.v4_00 import leiauteNFe
@@ -43,7 +44,6 @@ ou de saida."""
 class NFe(DocumentoEletronico):
     _namespace = 'http://www.portalfiscal.inf.br/nfe'
     _edoc_situacao_arquivo_recebido_com_sucesso = '103'
-    _edoc_situacao_em_processamento = '105'
     _edoc_situacao_servico_em_operacao = '107'
     _consulta_servico_ao_enviar = True
     _consulta_documento_antes_de_enviar = True
@@ -122,7 +122,13 @@ class NFe(DocumentoEletronico):
             retEnviNFe
         )
 
-    def consulta_recibo(self, numero):
+    def consulta_recibo(self, numero=False, proc_envio=False):
+        if proc_envio:
+            numero = proc_envio.resposta.infRec.nRec
+
+        if not numero:
+            return
+
         raiz = consReciNFe.TConsReciNFe(
             versao='4.00',
             tpAmb='2',
@@ -218,5 +224,19 @@ class NFe(DocumentoEletronico):
 
     def _verifica_documento_ja_enviado(self, proc_consulta):
         if proc_consulta.resposta.cStat in ('100', '110', '150', '301', '302'):
+            return True
+        return False
+
+    def _verifica_resposta_envio_sucesso(self, proc_envio):
+        if proc_envio.resposta.cStat == \
+                self._edoc_situacao_arquivo_recebido_com_sucesso:
+            return True
+        return False
+
+    def _aguarda_tempo_medio(self, proc_envio):
+        time.sleep(float(proc_envio.resposta.infRec.tMed) * 1.3)
+
+    def _edoc_situacao_em_processamento(self, proc_recibo):
+        if proc_recibo.resposta.cStat == '105':
             return True
         return False

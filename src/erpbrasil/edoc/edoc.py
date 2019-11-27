@@ -63,7 +63,7 @@ class DocumentoEletronico(ABC):
 
     def processar_documento(self, edoc):
         """ Processar documento executa o envio do documento fiscal de forma
-        completa ao serviço do sefaz relacionado, esta é um método padrão que
+        completa ao serviço relacionado, esta é um método padrão que
         segue o seguinte workflow:
 
         1. Consulta o serviço;
@@ -130,8 +130,10 @@ class DocumentoEletronico(ABC):
         #
         # Deu errado?
         #
-        if proc_envio.resposta.cStat != \
-            self._edoc_situacao_arquivo_recebido_com_sucesso:
+        if not proc_envio.resposta:
+            return
+
+        if not self._verifica_resposta_envio_sucesso(proc_envio):
             #
             # Interrompe o processo
             #
@@ -140,31 +142,29 @@ class DocumentoEletronico(ABC):
         #
         # Aguarda o tempo do processamento antes da consulta
         #
-        time.sleep(float(proc_envio.resposta.infRec.tMed) * 1.3)
-
+        self._aguarda_tempo_medio(proc_envio)
         #
         # Consulta o recibo do lote, para ver o que aconteceu
         #
-        proc_recibo = self.consulta_recibo(proc_envio.resposta.infRec.nRec)
+        proc_recibo = self.consulta_recibo(proc_envio=proc_envio)
+
+        if not proc_recibo.resposta:
+            return
 
         #
         # Tenta receber o resultado do processamento do lote, caso ainda
         # esteja em processamento
         #
         tentativa = 0
-        while (proc_recibo.resposta.cStat ==
-               self._edoc_situacao_em_processamento and
-               tentativa < self.maximo_tentativas_consulta_recibo):
-            time.sleep(proc_envio.resposta.infRec.tMed * 1.5)
+        while (self._edoc_situacao_em_processamento(proc_recibo) and
+               tentativa < self._maximo_tentativas_consulta_recibo):
+            self._aguarda_tempo_medio(proc_envio)
             tentativa += 1
             #
             # Consulta o recibo do lote, para ver o que aconteceu
             #
-            proc_recibo = self.consulta_recibo(
-                proc_envio.resposta.infRec.nRec
-            )
+            proc_recibo = self.consulta_recibo(proc_envio=proc_envio)
         yield proc_recibo
-
 
     @abc.abstractmethod
     def status_servico(self):
@@ -199,7 +199,7 @@ class DocumentoEletronico(ABC):
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
             xml_etree, id
         )
-        return xml_assinado
+        return xml_assinado.replace('\n', '').replace('\r', '')
 
     def _verifica_servico_em_operacao(self, proc_servico):
         return True
