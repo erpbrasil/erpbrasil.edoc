@@ -49,6 +49,12 @@ class NFe(DocumentoEletronico):
     _consulta_documento_antes_de_enviar = True
     _maximo_tentativas_consulta_recibo = 5
 
+    def __init__(self, transmissao, uf, versao='4.00', ambiente='2'):
+        super(NFe, self).__init__(transmissao)
+        self.versao = str(versao)
+        self.ambiente = str(ambiente)
+        self.uf = int(uf)
+
     def _edoc_situacao_ja_enviado(self, proc_consulta):
         if proc_consulta.resposta.cStat in ('100', '110', '150', '301', '302'):
             return True
@@ -59,9 +65,9 @@ class NFe(DocumentoEletronico):
 
     def status_servico(self):
         raiz = consStatServ.TConsStatServ(
-            versao='4.00',
-            tpAmb='2',
-            cUF=35,
+            versao=self.versao,
+            tpAmb=self.ambiente,
+            cUF=self.uf,
             xServ='STATUS',
         )
         raiz.original_tagname_ = 'consStatServ'
@@ -75,8 +81,8 @@ class NFe(DocumentoEletronico):
 
     def consulta_documento(self, chave):
         raiz = consSitNFe.TConsSitNFe(
-            versao='4.00',
-            tpAmb='2',
+            versao=self.versao,
+            tpAmb=self.ambiente,
             xServ='CONSULTAR',
             chNFe=chave,
         )
@@ -102,7 +108,7 @@ class NFe(DocumentoEletronico):
         xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
 
         raiz = enviNFe.TEnviNFe(
-            versao='4.00',
+            versao=self.versao,
             idLote=datetime.now().strftime('%Y%m%d%H%M%S'),
             indSinc='0'
         )
@@ -130,8 +136,8 @@ class NFe(DocumentoEletronico):
             return
 
         raiz = consReciNFe.TConsReciNFe(
-            versao='4.00',
-            tpAmb='2',
+            versao=self.versao,
+            tpAmb=self.ambiente,
             nRec=numero,
         )
         raiz.original_tagname_ = 'consReciNFe'
@@ -147,7 +153,7 @@ class NFe(DocumentoEletronico):
         if not numero_lote:
             numero_lote = self._gera_numero_lote()
 
-        raiz = leiauteEvento.TEnvEvento(versao="1.00",idLote=numero_lote)
+        raiz = leiauteEvento.TEnvEvento(versao="1.00", idLote=numero_lote)
         raiz.original_tagname_ = 'envEvento'
         xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
             raiz
@@ -174,8 +180,8 @@ class NFe(DocumentoEletronico):
         sequencia = '1'
         raiz = leiauteEventoCancNFe.infEventoType(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
-            cOrgao=35,
-            tpAmb='2',
+            cOrgao=self.uf,
+            tpAmb=self.ambiente,
             CNPJ=chave[6:20],
             chNFe=chave,
             dhEvento=data_hora_evento or self._hora_agora(),
@@ -197,8 +203,8 @@ class NFe(DocumentoEletronico):
         tipo_evento = '110110'
         raiz = leiauteCCe.infEventoType(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
-            cOrgao=35,
-            tpAmb='2',
+            cOrgao=self.uf,
+            tpAmb=self.ambiente,
             CNPJ=chave[6:20],
             # CPF=None,
             chNFe=chave,
