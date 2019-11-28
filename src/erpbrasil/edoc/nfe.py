@@ -49,6 +49,12 @@ class NFe(DocumentoEletronico):
     _consulta_documento_antes_de_enviar = True
     _maximo_tentativas_consulta_recibo = 5
 
+    def __init__(self, transmissao, uf, versao='4.00', ambiente='2'):
+        super(NFe, self).__init__(transmissao)
+        self.versao = str(versao)
+        self.ambiente = str(ambiente)
+        self.uf = int(uf)
+
     def _edoc_situacao_ja_enviado(self, proc_consulta):
         if proc_consulta.resposta.cStat in ('100', '110', '150', '301', '302'):
             return True
