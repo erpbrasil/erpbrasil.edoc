@@ -41,11 +41,15 @@ class DocumentoEletronico(ABC):
             return ds, etree.fromstring(ds)
 
         output = StringIO()
+        namespace=False
+        if self._namespace:
+            namespace = 'xmlns="' + self._namespace + '"'
+
         ds.export(
             output,
             0,
             pretty_print=False,
-            namespacedef_='xmlns="' + self._namespace + '"'
+            namespacedef_=namespace
         )
         contents = output.getvalue()
         output.close()
