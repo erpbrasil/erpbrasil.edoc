@@ -748,7 +748,8 @@ class NFe(DocumentoEletronico):
         return self._post(
             raiz,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeStatusServico4/NFeStatusServico4.asmx?wsdl',
-            'https://homologacao.nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx?wsdl',
+            localizar_url(WS_NFE_SITUACAO, str(self.uf), '55',
+                          int(self.ambiente)),
             'nfeStatusServicoNF',
             retConsStatServ
         )
@@ -764,7 +765,8 @@ class NFe(DocumentoEletronico):
         return self._post(
             raiz,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl',
-            'https://homologacao.nfe.fazenda.sp.gov.br/ws/nfeconsultaprotocolo4.asmx?wsdl',
+            localizar_url(WS_NFE_CONSULTA, str(self.uf), '55',
+                          int(self.ambiente)),
             'nfeConsultaNF',
             retConsSitNFe
         )
@@ -797,7 +799,8 @@ class NFe(DocumentoEletronico):
         return self._post(
             xml_envio_etree,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeAutorizacao4/NFeAutorizacao4.asmx?wsdl',
-            'https://homologacao.nfe.fazenda.sp.gov.br/ws/nfeautorizacao4.asmx?wsdl',
+            localizar_url(WS_NFE_AUTORIZACAO, str(self.uf), '55',
+                          int(self.ambiente)),
             'nfeAutorizacaoLote',
             retEnviNFe
         )
@@ -817,7 +820,8 @@ class NFe(DocumentoEletronico):
         raiz.original_tagname_ = 'consReciNFe'
         return self._post(
             raiz,
-            'https://homologacao.nfe.fazenda.sp.gov.br/ws/nferetautorizacao4.asmx?wsdl',
+            localizar_url(WS_NFE_RET_AUTORIZACAO, str(self.uf), '55',
+                          int(self.ambiente)),
             # 'ws/nferetautorizacao4.asmx'
             'nfeRetAutorizacaoLote',
             retConsReciNFe,
@@ -843,7 +847,8 @@ class NFe(DocumentoEletronico):
 
         return self._post(
             xml_envio_etree,
-            'https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?WSDL',
+            localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), '55',
+                          int(self.ambiente)),
             'nfeRecepcaoEvento',
             retEnvEvento
         )
