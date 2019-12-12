@@ -723,11 +723,13 @@ class NFe(DocumentoEletronico):
     _consulta_documento_antes_de_enviar = True
     _maximo_tentativas_consulta_recibo = 5
 
-    def __init__(self, transmissao, uf, versao='4.00', ambiente='2'):
+    def __init__(self, transmissao, uf, versao='4.00', ambiente='2',
+                 mod='55'):
         super(NFe, self).__init__(transmissao)
         self.versao = str(versao)
         self.ambiente = str(ambiente)
         self.uf = int(uf)
+        self.mod = str(mod)
 
     def _edoc_situacao_ja_enviado(self, proc_consulta):
         if proc_consulta.resposta.cStat in ('100', '110', '150', '301', '302'):
@@ -748,7 +750,7 @@ class NFe(DocumentoEletronico):
         return self._post(
             raiz,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeStatusServico4/NFeStatusServico4.asmx?wsdl',
-            localizar_url(WS_NFE_SITUACAO, str(self.uf), '55',
+            localizar_url(WS_NFE_SITUACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeStatusServicoNF',
             retConsStatServ
@@ -765,7 +767,7 @@ class NFe(DocumentoEletronico):
         return self._post(
             raiz,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl',
-            localizar_url(WS_NFE_CONSULTA, str(self.uf), '55',
+            localizar_url(WS_NFE_CONSULTA, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeConsultaNF',
             retConsSitNFe
@@ -799,7 +801,7 @@ class NFe(DocumentoEletronico):
         return self._post(
             xml_envio_etree,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeAutorizacao4/NFeAutorizacao4.asmx?wsdl',
-            localizar_url(WS_NFE_AUTORIZACAO, str(self.uf), '55',
+            localizar_url(WS_NFE_AUTORIZACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeAutorizacaoLote',
             retEnviNFe
@@ -820,7 +822,7 @@ class NFe(DocumentoEletronico):
         raiz.original_tagname_ = 'consReciNFe'
         return self._post(
             raiz,
-            localizar_url(WS_NFE_RET_AUTORIZACAO, str(self.uf), '55',
+            localizar_url(WS_NFE_RET_AUTORIZACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             # 'ws/nferetautorizacao4.asmx'
             'nfeRetAutorizacaoLote',
@@ -847,7 +849,7 @@ class NFe(DocumentoEletronico):
 
         return self._post(
             xml_envio_etree,
-            localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), '55',
+            localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeRecepcaoEvento',
             retEnvEvento
