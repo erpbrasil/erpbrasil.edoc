@@ -7,6 +7,7 @@ import re
 from datetime import datetime
 import time
 from lxml import etree
+import collections
 
 from nfelib.v4_00 import leiauteNFe
 from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
@@ -700,6 +701,18 @@ def localizar_url(servico, estado, mod='55', ambiente=2):
 
     return "https://%s/%s" % (dominio, complemento)
 
+Metodo = collections.namedtuple('Metodo', ['webservice', 'metodo'])
+
+METODO_WS = {
+    WS_NFE_INUTILIZACAO: Metodo('NFeInutilizacao4', 'nfeInutilizacaoNF'),
+    WS_NFE_CONSULTA: Metodo('NFeConsultaProtocolo4', 'nfeConsultaNF'),
+    WS_NFE_SITUACAO: Metodo('NFeStatusServico4', 'nfeStatusServicoNF'),
+    WS_NFE_CADASTRO: Metodo('CadConsultaCadastro4', 'consultaCadastro2'),
+    WS_NFE_RECEPCAO_EVENTO: Metodo('NFeRecepcaoEvento4', 'nfeRecepcaoEvento'),
+    WS_NFE_AUTORIZACAO: Metodo('NFeAutorizacao4', 'NfeAutorizacao'),
+    WS_NFE_RET_AUTORIZACAO: Metodo('NFeRetAutorizacao4', 'NfeRetAutorizacao'),
+    WS_DFE_DISTRIBUICAO: Metodo('NFeDistribuicaoDFe', 'nfeDistDFeInteresse')
+}
 
 
 class NFe(DocumentoEletronico):
