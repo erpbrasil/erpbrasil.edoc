@@ -3,7 +3,7 @@
 
 from __future__ import division, print_function, unicode_literals
 
-from nfse import NFSe, ServicoNFSe
+from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 
 from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_envio_v03 as consulta_situacao_lote
 from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_envio_v03 as servico_consultar_lote_rps_envio

@@ -3,9 +3,8 @@
 
 from __future__ import division, print_function, unicode_literals
 
-from nfse import NFSe
+from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 from erpbrasil.edoc.chave import ChaveNFSeDSF
-from nfse import NFSe, ServicoNFSe
 
 from nfselib.dsf import RetornoEnvioLoteRPS
 from nfselib.dsf import RetornoConsultaLote

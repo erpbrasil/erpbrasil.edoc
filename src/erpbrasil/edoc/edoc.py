@@ -12,6 +12,12 @@ from lxml import etree
 from lxml.etree import _Element
 from erpbrasil.assinatura.assinatura import Assinatura
 
+# Fix Python 2.x.
+try:
+    UNICODE_EXISTS = bool(type(unicode))
+except NameError:
+    unicode = str
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -203,7 +209,7 @@ class DocumentoEletronico(ABC):
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
             xml_etree, id
         )
-        return xml_assinado.replace('\n', '').replace('\r', '')
+        return xml_assinado.decode('utf-8').replace('\n', '').replace('\r', '')
 
     def _verifica_servico_em_operacao(self, proc_servico):
         return True
