@@ -43,8 +43,8 @@ class DocumentoEletronico(ABC):
             return etree.tostring(ds), ds
         if isinstance(ds, str):
             return ds, etree.fromstring(ds)
-        if isinstance(ds, unicode):
-            return ds, etree.fromstring(ds)
+        # if isinstance(ds, unicode):
+        #     return ds, etree.fromstring(ds)
 
         output = StringIO()
         namespace=False
