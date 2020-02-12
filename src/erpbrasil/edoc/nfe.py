@@ -13,6 +13,7 @@ from nfelib.v4_00 import leiauteNFe
 from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
 from nfelib.v4_00 import consStatServ
 from nfelib.v4_00 import retConsStatServ
+from nfelib.v4_00 import retDistDFeInt
 from nfelib.v4_00 import consSitNFe
 from nfelib.v4_00 import retConsSitNFe
 from nfelib.v4_00 import enviNFe
@@ -25,6 +26,8 @@ from nfelib.v4_00 import leiauteCCe
 from nfelib.v4_00 import retEnvEvento
 from nfelib.v4_00 import leiauteInutNFe
 from erpbrasil.edoc.edoc import DocumentoEletronico
+
+from nfelib.v4_00 import distDFeInt
 
 try:
     from StringIO import StringIO
@@ -42,19 +45,19 @@ a correcao de dados cadastrais que implique mudanca do \
 remetente ou do destinatario; III - a data de emissao \
 ou de saida."""
 
-WS_NFE_INUTILIZACAO = 'NfeInutilizacao'
-WS_NFE_CONSULTA = 'NfeConsultaProtocolo'
-WS_NFE_SITUACAO = 'NfeStatusServico'
-WS_NFE_RECEPCAO_EVENTO = 'RecepcaoEvento'
-WS_NFE_AUTORIZACAO = 'NfeAutorizacao'
-WS_NFE_RET_AUTORIZACAO = 'NfeRetAutorizacao'
-
-WS_NFE_CADASTRO = 'NfeConsultaCadastro'
-
-WS_NFCE_QR_CODE = 'NfeQRCode'
-WS_NFCE_CONSULTA_DESTINADAS = 'NfeConsultaDest'
 WS_DFE_DISTRIBUICAO = 'NFeDistribuicaoDFe'
 WS_DOWNLOAD_NFE = 'nfeDistDFeInteresse'
+WS_NFCE_CONSULTA_DESTINADAS = 'NfeConsultaDest'
+WS_NFCE_QR_CODE = 'NfeQRCode'
+WS_NFE_AUTORIZACAO = 'NfeAutorizacao'
+WS_NFE_CADASTRO = 'NfeConsultaCadastro'
+
+WS_NFE_CONSULTA = 'NfeConsultaProtocolo'
+WS_NFE_INUTILIZACAO = 'NfeInutilizacao'
+WS_NFE_RECEPCAO_EVENTO = 'RecepcaoEvento'
+WS_NFE_RET_AUTORIZACAO = 'NfeRetAutorizacao'
+
+WS_NFE_SITUACAO = 'NfeStatusServico'
 
 AMBIENTE_PRODUCAO = 1
 AMBIENTE_HOMOLOGACAO = 2
@@ -968,3 +971,44 @@ class NFe(DocumentoEletronico):
         if proc_recibo.resposta.cStat == '105':
             return True
         return False
+
+    def consultar_distribuicao(self, cnpj_cpf, ultimo_nsu=False,
+                               nsu_especifico=False, chave=False):
+        # TODO: if 1 dos 3
+        if not ultimo_nsu and not nsu_especifico and not chave:
+            return
+
+        distNSU = consNS = consChNFe = None
+        if ultimo_nsu:
+            distNSU = distDFeInt.distNSUType(
+                ultNSU=ultimo_nsu
+            )
+        if nsu_especifico:
+            consNS = distDFeInt.consNSUType(
+                NSU=ultimo_nsu
+            )
+        if chave:
+            consChNFe = distDFeInt.consChNFeType(
+                chNFe=chave
+            )
+
+        # TODO: melhorar
+        if distNSU and consNS or distNSU and consChNFe or consNS and consChNFe:
+            return
+        raiz = distDFeInt.distDFeInt(
+            versao=self.versao,
+            tpAmb=self.ambiente,
+            cUFAutor=self.uf,
+            CNPJ=cnpj_cpf if len(cnpj_cpf) > 11 else None,
+            CPF=cnpj_cpf if len(cnpj_cpf) <= 11 else None,
+            distNSU=distNSU,
+            consNS=consNS,
+            consChNFe=consChNFe,
+        )
+
+        return self._post(
+            raiz,
+            'https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl',
+            'nfeDistDFeInteresse',
+            retConsStatServ
+        )
