@@ -974,8 +974,11 @@ class NFe(DocumentoEletronico):
 
     def consultar_distribuicao(self, cnpj_cpf, ultimo_nsu=False,
                                nsu_especifico=False, chave=False):
-        # TODO: if 1 dos 3
+        # TODO: Documentar
+
+        # TODO: melhorar verificação
         if not ultimo_nsu and not nsu_especifico and not chave:
+            # TODO: Raise?
             return
 
         distNSU = consNS = consChNFe = None
@@ -992,9 +995,11 @@ class NFe(DocumentoEletronico):
                 chNFe=chave
             )
 
-        # TODO: melhorar
+        # TODO: melhorar verificação
         if distNSU and consNS or distNSU and consChNFe or consNS and consChNFe:
+            # TODO: Raise?
             return
+
         raiz = distDFeInt.distDFeInt(
             versao=self.versao,
             tpAmb=self.ambiente,
@@ -1006,8 +1011,12 @@ class NFe(DocumentoEletronico):
             consChNFe=consChNFe,
         )
 
+        # TODO: Utilizar a URL da forma anterior
+        #  localizar_url(WS_DFE_DISTRIBUICAO, str(self.uf), self.mod,
+        #                           int(self.ambiente)),
         return self._post(
             raiz,
+            # TODO: Utilizar localizar_url
             'https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl',
             'nfeDistDFeInteresse',
             retConsStatServ
