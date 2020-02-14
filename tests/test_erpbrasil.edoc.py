@@ -65,21 +65,43 @@ class Tests(TestCase):
     def test_status_servico(self):
         ret = self.nfe.status_servico()
 
+        # TODO: assert
         print(ret)
 
-    def test_nsu(self):
-        print('teste')
+    def test_ultimo_nsu(self):
 
         ret = self.nfe.consultar_distribuicao(
             cnpj_cpf='27469611000130',
-            ultimo_nsu=1,
-            # chave='42200231865792000190550010000017641557307490'
+            ultimo_nsu='1'.zfill(15),
         )
 
+        # TODO: Assert
+        print(ret)
+
+    def test_nsu_especifico(self):
+
+        ret = self.nfe.consultar_distribuicao(
+            cnpj_cpf='27469611000130',
+            nsu_especifico='1'.zfill(15),
+        )
+
+        # TODO: Assert
+        print(ret)
+
+    def test_chave(self):
+
+        ret = self.nfe.consultar_distribuicao(
+            cnpj_cpf='27469611000130',
+            chave='42200231865792000190550010000017641557307490'
+        )
+
+        # TODO: Assert
         print(ret)
 
 
 t = Tests()
 t.setUp()
-t.test_nsu()
 # t.test_status_servico()
+t.test_ultimo_nsu()
+# t.test_nsu_especifico()
+# t.test_chave()
