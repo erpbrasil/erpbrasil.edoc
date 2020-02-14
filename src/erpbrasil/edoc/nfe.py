@@ -29,6 +29,9 @@ from erpbrasil.edoc.edoc import DocumentoEletronico
 
 from nfelib.v4_00 import distDFeInt
 
+# Manifestação do destinatário
+from nfelib.v4_00 import leiauteConfRecebtoManifestacao as confRecebto
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -1021,3 +1024,38 @@ class NFe(DocumentoEletronico):
             'nfeDistDFeInteresse',
             retConsStatServ
         )
+
+# ----------------------------- MANIFESTAÇÃO DO DESTINATÁRIO -----------------------------
+
+    def status_servico_manifestacao(self):
+        raiz = consStatServ.TConsStatServ(
+            versao=self.versao,
+            tpAmb=self.ambiente,
+            cUF=self.uf,
+            xServ='STATUS',
+        )
+        raiz.original_tagname_ = 'consStatServ'
+        return self._post(
+            raiz,
+            # TODO: Utilizar localizar_url
+            'https://hom.nfe.fazenda.gov.br/RecepcaoEvento/RecepcaoEvento.asmx?wsdl',
+            'nfeRecepcaoEvento',
+            retConsStatServ
+        )
+
+    def ciencia_da_operacao(self):
+
+        raiz = confRecebto.TEnvEvento(
+            versao=self.versao,
+            idLote='1',
+            evento=None,
+        )
+
+        return self._post(
+            raiz,
+            # TODO: Utilizar localizar_url
+            'https://hom.nfe.fazenda.gov.br/RecepcaoEvento/RecepcaoEvento.asmx?wsdl',
+            'nfeRecepcaoEvento',
+            retEnvEvento
+        )
+
