@@ -1043,7 +1043,7 @@ class NFe(DocumentoEletronico):
             retConsStatServ
         )
 
-    def ciencia_da_operacao(self):
+    def nfe_recepcao_envia_lote_evento(self, lista_eventos, numero_lote=False):
 
         raiz = confRecebto.TEnvEvento(
             versao=self.versao,
@@ -1059,3 +1059,32 @@ class NFe(DocumentoEletronico):
             retEnvEvento
         )
 
+
+    def confirmacao_da_operacao(self, cnpj_cpf):
+        return self.nfe_recepcao_evento(
+            cnpj_cpf,
+            confRecebto.tpEventoType._2_10200,
+            confRecebto.descEventoType.CONFIRMACAODA_OPERACAO,
+        )
+
+    def ciencia_da_operacao(self, cnpj_cpf):
+        return self.nfe_recepcao_evento(
+            cnpj_cpf,
+            confRecebto.tpEventoType._2_10210,
+            confRecebto.descEventoType.CIENCIADA_OPERACAO,
+        )
+
+    def desconhecimento_da_operacao(self, cnpj_cpf):
+        return self.nfe_recepcao_evento(
+            cnpj_cpf,
+            confRecebto.tpEventoType._2_10220,
+            confRecebto.descEventoType.DESCONHECIMENTODA_OPERACAO,
+        )
+
+    def operacao_nao_realizada(self, cnpj_cpf):
+        return self.nfe_recepcao_evento(
+            cnpj_cpf,
+            confRecebto.tpEventoType._2_10240,
+            confRecebto.descEventoType.OPERACAONAO_REALIZADA,
+            xJust=''.zfill(15)
+        )

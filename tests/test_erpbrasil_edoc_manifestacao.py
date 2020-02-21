@@ -33,17 +33,45 @@ class Tests(TestCase):
         transmissao = TransmissaoSOAP(self.certificado, session)
         self.nfe = NFe(
             transmissao, '35',
-            versao='1.01', ambiente='2'
+            versao='1.00', ambiente='2'
         )
 
     def test_status_servico_manifestacao(self):
-        ret = self.nfe.status_servico_manifestacao()
+        ret = self.nfe.status_servico_manifestacao(
+            cnpj_cpf=self.certificado.cnpj_cpf
+        )
+
+        # TODO: Assert
+        print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
+
+    def test_confirmacao_da_operacao(self):
+        ret = self.nfe.confirmacao_da_operacao(
+            cnpj_cpf=self.certificado.cnpj_cpf
+        )
 
         # TODO: Assert
         print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
 
     def test_ciencia_da_operacao(self):
-        ret = self.nfe.ciencia_da_operacao()
+        ret = self.nfe.ciencia_da_operacao(
+            cnpj_cpf=self.certificado.cnpj_cpf
+        )
+
+        # TODO: Assert
+        print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
+
+    def test_desconhecimento_da_operacao(self):
+        ret = self.nfe.desconhecimento_da_operacao(
+            cnpj_cpf=self.certificado.cnpj_cpf
+        )
+
+        # TODO: Assert
+        print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
+
+    def test_operacao_nao_realizada(self):
+        ret = self.nfe.operacao_nao_realizada(
+            cnpj_cpf=self.certificado.cnpj_cpf
+        )
 
         # TODO: Assert
         print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
@@ -51,4 +79,7 @@ class Tests(TestCase):
 t = Tests()
 t.setUp()
 # t.test_status_servico_manifestacao()
+# t.test_confirmacao_da_operacao()
 t.test_ciencia_da_operacao()
+# t.test_desconhecimento_da_operacao()
+# t.test_operacao_nao_realizada()
