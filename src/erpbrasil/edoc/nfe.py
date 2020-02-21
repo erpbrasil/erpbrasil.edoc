@@ -984,13 +984,13 @@ class NFe(DocumentoEletronico):
             # TODO: Raise?
             return
 
-        distNSU = consNS = consChNFe = None
+        distNSU = consNSU = consChNFe = None
         if ultimo_nsu:
             distNSU = distDFeInt.distNSUType(
                 ultNSU=ultimo_nsu
             )
         if nsu_especifico:
-            consNS = distDFeInt.consNSUType(
+            consNSU = distDFeInt.consNSUType(
                 NSU=ultimo_nsu
             )
         if chave:
@@ -999,7 +999,7 @@ class NFe(DocumentoEletronico):
             )
 
         # TODO: melhorar verificação
-        if distNSU and consNS or distNSU and consChNFe or consNS and consChNFe:
+        if distNSU and consNSU or distNSU and consChNFe or consNSU and consChNFe:
             # TODO: Raise?
             return
 
@@ -1010,7 +1010,7 @@ class NFe(DocumentoEletronico):
             CNPJ=cnpj_cpf if len(cnpj_cpf) > 11 else None,
             CPF=cnpj_cpf if len(cnpj_cpf) <= 11 else None,
             distNSU=distNSU,
-            consNS=consNS,
+            consNSU=consNSU,
             consChNFe=consChNFe,
         )
 
