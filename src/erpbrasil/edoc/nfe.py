@@ -31,6 +31,7 @@ from nfelib.v4_00 import distDFeInt
 
 # Manifestação do destinatário
 from nfelib.v4_00 import leiauteConfRecebtoManifestacao as confRecebto
+from nfelib.v4_00 import leiauteConfRecebto as confRecebto2
 
 try:
     from StringIO import StringIO
@@ -913,7 +914,7 @@ class NFe(DocumentoEletronico):
             cOrgao=self.uf,
             tpAmb=self.ambiente,
             CNPJ=chave[6:20],
-            # CPF=None,
+            CPF=None,
             chNFe=chave,
             dhEvento=data_hora_evento or self._hora_agora(),
             tpEvento=tipo_evento,
@@ -1044,21 +1045,126 @@ class NFe(DocumentoEletronico):
         )
 
     def nfe_recepcao_envia_lote_evento(self, lista_eventos, numero_lote=False):
+        """
+        Envia lote de eventos confRecebto.TEvento
+        :param lista_eventos: Lista com os eventos (infEvento)
+        :param numero_lote: Número do lote. Gerado caso None
+        :return: retorna a resposta do _post() de envio do lote
+        """
+        # TODO: Verificar possibilidade de utilizar código existente
+        #  em enviar_lote_evento(). A única diferença é a classe
+        #  utilizada pelo evento
 
-        raiz = confRecebto.TEnvEvento(
-            versao=self.versao,
-            idLote='1',
-            evento=None,
+        if not numero_lote:
+            numero_lote = self._gera_numero_lote()
+
+        eventos = []
+        raiz = leiauteEvento.TEnvEvento(versao="1.00", idLote=numero_lote, evento=eventos)
+        raiz.original_tagname_ = 'envEvento'
+
+        for raiz_evento in lista_eventos:
+            evento = confRecebto.TEvento(
+                versao="1.00", infEvento=raiz_evento,
+            )
+            evento.original_tagname_ = 'evento'
+            xml_assinado = self.assina_raiz(evento, evento.infEvento.Id)
+            eventos.append(confRecebto2.parseString(bytearray(xml_assinado, 'utf8')))
+
+        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
+            raiz
         )
 
         return self._post(
-            raiz,
-            # TODO: Utilizar localizar_url
-            'https://hom.nfe.fazenda.gov.br/RecepcaoEvento/RecepcaoEvento.asmx?wsdl',
+            xml_envio_etree,
+            #     # TODO: Utilizar localizar_url
+            # localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), self.mod,
+            #               int(self.ambiente)),
+            'https://hom.svc.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?wsdl',
             'nfeRecepcaoEvento',
             retEnvEvento
         )
 
+    def nfe_recepcao_monta_evento(self, chave, cnpj_cpf, tpEvento, descEvento,
+                                  dhEvento=None, xJust=None):
+        """
+        Método para montar o evento(infEvento) da manifestação
+        :param chave: chave do documento
+        :param cnpj_cpf: CPF ou CNPJ
+        :param tpEvento:   Código do Evento
+                                210200 – Confirmação da Operação
+                                210210 – Ciência da Operação
+                                210220 – Desconhecimento da Operação
+                                210240 – Operação não Realizada
+        :param descEvento: Informar a descrição do evento:
+                                Confirmacao da Operacao
+                                Ciencia da Operacao
+                                Desconhecimento da Operacao
+                                Operacao nao Realizada
+        :param dhEvento:   Data/Hora no formato AAAA-MM-DDThh:mm:ssTZD
+        :param xJust:      Este campo deve ser informado somente no
+                                evento de Operação não realizada
+        :return: Um objeto da classe confRecebto.infEventoType preenchido
+        """
+        nSeqEvento = '1'
+        raiz = confRecebto.infEventoType(
+            Id='ID{}{}{}'.format(tpEvento, chave, nSeqEvento.zfill(2)),
+            cOrgao='91', # TODO: utilizar tabela IBGE
+            tpAmb=self.ambiente,
+            CNPJ=cnpj_cpf if len(cnpj_cpf) > 11 else None,
+            CPF=cnpj_cpf if len(cnpj_cpf) <= 11 else None,
+            chNFe=chave,
+            # TODO: utilizar _hora_agora
+            # dhEvento=dhEvento or self._hora_agora(),
+            dhEvento=dhEvento or
+                     time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime()) +
+                     '-03:00',
+            tpEvento=tpEvento,
+            nSeqEvento=nSeqEvento,
+            verEvento=self.versao,
+            detEvento=confRecebto.detEventoType(
+                versao=self.versao,
+                descEvento=descEvento,
+                xJust=xJust
+            )
+        )
+
+        raiz.original_tagname_ = 'infEvento'
+
+        return raiz
+
+
+    def nfe_recepcao_evento(self, cnpj_cpf, tpEvento, descEvento, xJust=None):
+        """
+        Envia a manifestação do destinatário para o WS
+        :param cnpj_cpf:   CPF ou CNPJ
+        :param tpEvento:   Código do Evento
+                             210200 – Confirmação da Operação
+                             210210 – Ciência da Operação
+                             210220 – Desconhecimento da Operação
+                             210240 – Operação não Realizada
+        :param descEvento: Informar a descrição do evento:
+                             Confirmacao da Operacao
+                             Ciencia da Operacao
+                             Desconhecimento da Operacao
+                             Operacao nao Realizada
+        :param xJust:      Este campo deve ser informado somente no
+                             evento de Operação não realizada
+        :return:
+        """
+
+        # TODO: Chave por parâmetro
+        chave = '42200231865792000190550010000017641557307490'
+
+        evento = self.nfe_recepcao_monta_evento(
+            chave, cnpj_cpf, tpEvento, descEvento, xJust=xJust)
+
+        # TODO: Verificar possibilidade de utilizar código existente
+        #  em enviar_lote_evento()
+        # return self.enviar_lote_evento(lista_eventos=[evento])
+
+        return self.nfe_recepcao_envia_lote_evento(
+            lista_eventos=[evento], numero_lote='1'
+        )
 
     def confirmacao_da_operacao(self, cnpj_cpf):
         return self.nfe_recepcao_evento(
