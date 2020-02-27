@@ -37,9 +37,7 @@ class Tests(TestCase):
         )
 
     def test_status_servico_manifestacao(self):
-        ret = self.nfe.status_servico_manifestacao(
-            cnpj_cpf=self.certificado.cnpj_cpf
-        )
+        ret = self.nfe.status_servico_manifestacao()
 
         # TODO: Assert
         print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
