@@ -216,7 +216,10 @@ class DocumentoEletronico(ABC):
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
             xml_etree, id, getchildren
         )
-        return xml_assinado
+
+        if isinstance(xml_assinado, bytes):
+            xml_assinado = xml_assinado.decode('utf-8')
+
         return xml_assinado.replace('\n', '').replace('\r', '')
 
     def _verifica_servico_em_operacao(self, proc_servico):
