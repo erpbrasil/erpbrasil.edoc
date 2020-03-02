@@ -1133,7 +1133,7 @@ class NFe(DocumentoEletronico):
         return raiz
 
 
-    def nfe_recepcao_evento(self, cnpj_cpf, tpEvento, descEvento, xJust=None):
+    def nfe_recepcao_evento(self, chave, cnpj_cpf, tpEvento, descEvento, xJust=None):
         """
         Envia a manifestação do destinatário para o WS
         :param cnpj_cpf:   CPF ou CNPJ
@@ -1152,9 +1152,6 @@ class NFe(DocumentoEletronico):
         :return:
         """
 
-        # TODO: Chave por parâmetro
-        chave = '42200231865792000190550010000017641557307490'
-
         evento = self.nfe_recepcao_monta_evento(
             chave, cnpj_cpf, tpEvento, descEvento, xJust=xJust)
 
@@ -1166,29 +1163,33 @@ class NFe(DocumentoEletronico):
             lista_eventos=[evento], numero_lote='1'
         )
 
-    def confirmacao_da_operacao(self, cnpj_cpf):
+    def confirmacao_da_operacao(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
+            chave,
             cnpj_cpf,
             confRecebto.tpEventoType._2_10200,
             confRecebto.descEventoType.CONFIRMACAODA_OPERACAO,
         )
 
-    def ciencia_da_operacao(self, cnpj_cpf):
+    def ciencia_da_operacao(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
+            chave,
             cnpj_cpf,
             confRecebto.tpEventoType._2_10210,
             confRecebto.descEventoType.CIENCIADA_OPERACAO,
         )
 
-    def desconhecimento_da_operacao(self, cnpj_cpf):
+    def desconhecimento_da_operacao(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
+            chave,
             cnpj_cpf,
             confRecebto.tpEventoType._2_10220,
             confRecebto.descEventoType.DESCONHECIMENTODA_OPERACAO,
         )
 
-    def operacao_nao_realizada(self, cnpj_cpf):
+    def operacao_nao_realizada(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
+            chave,
             cnpj_cpf,
             confRecebto.tpEventoType._2_10240,
             confRecebto.descEventoType.OPERACAONAO_REALIZADA,
