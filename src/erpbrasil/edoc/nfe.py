@@ -1023,7 +1023,7 @@ class NFe(DocumentoEletronico):
             # TODO: Utilizar localizar_url
             'https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl',
             'nfeDistDFeInteresse',
-            retConsStatServ
+            retDistDFeInt
         )
 
 # ----------------------------- MANIFESTAÇÃO DO DESTINATÁRIO -----------------------------
