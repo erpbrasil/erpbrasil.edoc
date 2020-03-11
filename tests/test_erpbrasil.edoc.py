@@ -53,6 +53,11 @@ class Tests(TestCase):
             certificado_nfe_caminho,
             certificado_nfe_senha
         )
+
+        self.chave = os.environ.get(
+            'chNFe', '26180812984794000154550010000016871192213339'
+        )
+
         session = Session()
         session.verify = False
 
@@ -71,7 +76,7 @@ class Tests(TestCase):
     def test_ultimo_nsu(self):
 
         ret = self.nfe.consultar_distribuicao(
-            cnpj_cpf='27469611000130',
+            cnpj_cpf=self.certificado.cnpj_cpf,
             ultimo_nsu='1'.zfill(15),
         )
 
@@ -81,7 +86,7 @@ class Tests(TestCase):
     def test_nsu_especifico(self):
 
         ret = self.nfe.consultar_distribuicao(
-            cnpj_cpf='27469611000130',
+            cnpj_cpf=self.certificado.cnpj_cpf,
             nsu_especifico='1'.zfill(15),
         )
 
@@ -91,8 +96,8 @@ class Tests(TestCase):
     def test_chave(self):
 
         ret = self.nfe.consultar_distribuicao(
-            cnpj_cpf='27469611000130',
-            chave='42200231865792000190550010000017641557307490'
+            cnpj_cpf=self.certificado.cnpj_cpf,
+            chave=self.chave
         )
 
         # TODO: Assert
@@ -101,7 +106,7 @@ class Tests(TestCase):
 
 t = Tests()
 t.setUp()
-# t.test_status_servico()
+t.test_status_servico()
 t.test_ultimo_nsu()
-# t.test_nsu_especifico()
-# t.test_chave()
+t.test_nsu_especifico()
+t.test_chave()
