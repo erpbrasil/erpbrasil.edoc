@@ -992,7 +992,7 @@ class NFe(DocumentoEletronico):
             )
         if nsu_especifico:
             consNSU = distDFeInt.consNSUType(
-                NSU=ultimo_nsu
+                NSU=nsu_especifico
             )
         if chave:
             consChNFe = distDFeInt.consChNFeType(
