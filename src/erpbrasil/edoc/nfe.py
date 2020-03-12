@@ -1108,19 +1108,16 @@ class NFe(DocumentoEletronico):
                                 evento de Operação não realizada
         :return: Um objeto da classe confRecebto.infEventoType preenchido
         """
+
         nSeqEvento = '1'
         raiz = confRecebto.infEventoType(
             Id='ID{}{}{}'.format(tpEvento, chave, nSeqEvento.zfill(2)),
-            cOrgao='91', # TODO: utilizar tabela IBGE
+            cOrgao=self.uf,
             tpAmb=self.ambiente,
             CNPJ=cnpj_cpf if len(cnpj_cpf) > 11 else None,
             CPF=cnpj_cpf if len(cnpj_cpf) <= 11 else None,
             chNFe=chave,
-            # TODO: utilizar _hora_agora
-            # dhEvento=dhEvento or self._hora_agora(),
-            dhEvento=dhEvento or
-                     time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime()) +
-                     '-03:00',
+            dhEvento=dhEvento or self._hora_agora(),
             tpEvento=tpEvento,
             nSeqEvento=nSeqEvento,
             verEvento=self.versao,
@@ -1134,7 +1131,6 @@ class NFe(DocumentoEletronico):
         raiz.original_tagname_ = 'infEvento'
 
         return raiz
-
 
     def nfe_recepcao_evento(self, chave, cnpj_cpf, tpEvento, descEvento, xJust=None):
         """
