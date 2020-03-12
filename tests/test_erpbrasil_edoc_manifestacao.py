@@ -40,12 +40,6 @@ class Tests(TestCase):
             'chNFe', '26180812984794000154550010000016871192213339'
         )
 
-    def test_status_servico_manifestacao(self):
-        ret = self.nfe.status_servico_manifestacao()
-
-        # TODO: Assert
-        print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
-
     def test_confirmacao_da_operacao(self):
         ret = self.nfe.confirmacao_da_operacao(
             chave=self.chave,
@@ -84,7 +78,6 @@ class Tests(TestCase):
 
 t = Tests()
 t.setUp()
-t.test_status_servico_manifestacao()
 t.test_confirmacao_da_operacao()
 t.test_ciencia_da_operacao()
 t.test_desconhecimento_da_operacao()
