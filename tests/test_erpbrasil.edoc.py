@@ -67,12 +67,6 @@ class Tests(TestCase):
             versao='1.01', ambiente='1'
         )
 
-    def test_status_servico(self):
-        ret = self.nfe.status_servico()
-
-        # TODO: assert
-        print(ret)
-
     def test_ultimo_nsu(self):
 
         ret = self.nfe.consultar_distribuicao(
@@ -103,7 +97,6 @@ class Tests(TestCase):
 
 t = Tests()
 t.setUp()
-t.test_status_servico()
 t.test_ultimo_nsu()
 t.test_nsu_especifico()
 t.test_chave()
