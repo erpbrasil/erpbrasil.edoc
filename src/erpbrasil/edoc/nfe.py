@@ -1023,13 +1023,10 @@ class NFe(DocumentoEletronico):
             consChNFe=consChNFe,
         )
 
-        # TODO: Utilizar a URL da forma anterior
-        #  localizar_url(WS_DFE_DISTRIBUICAO, str(self.uf), self.mod,
-        #                           int(self.ambiente)),
         return self._post(
             raiz,
-            # TODO: Utilizar localizar_url
-            'https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl',
+            localizar_url(WS_DFE_DISTRIBUICAO, str(self.uf), self.mod,
+                          int(self.ambiente)),
             'nfeDistDFeInteresse',
             retDistDFeInt
         )
@@ -1079,10 +1076,9 @@ class NFe(DocumentoEletronico):
 
         return self._post(
             xml_envio_etree,
-            #     # TODO: Utilizar localizar_url
-            # localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), self.mod,
-            #               int(self.ambiente)),
-            'https://hom.svc.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?wsdl',
+            # 'https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl',
+            localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), self.mod,
+                          int(self.ambiente)),
             'nfeRecepcaoEvento',
             retEnvEvento
         )
@@ -1154,9 +1150,9 @@ class NFe(DocumentoEletronico):
         evento = self.nfe_recepcao_monta_evento(
             chave, cnpj_cpf, tpEvento, descEvento, xJust=xJust)
 
-        # TODO: Verificar possibilidade de utilizar código existente
-        #  em enviar_lote_evento()
-        # return self.enviar_lote_evento(lista_eventos=[evento])
+        # TODO: Verificar possibilidade de adaptar e utilizar código existente
+        #  em self.enviar_lote_evento(lista_eventos=[evento]).
+        #  A única diferença é a classe utilizada pelo evento
 
         return self.nfe_recepcao_envia_lote_evento(
             lista_eventos=[evento], numero_lote='1'
