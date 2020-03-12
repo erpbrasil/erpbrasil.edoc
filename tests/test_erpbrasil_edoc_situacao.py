@@ -36,7 +36,7 @@ class Tests(TestCase):
 
     def test_status_servico(self):
         ret = self.nfe.status_servico()
-        self.assertTrue(ret.resposta.cStat == '107')
+        self.assertIn(ret.resposta.cStat, ['107', '108', '109'])
 
 
 t = Tests()

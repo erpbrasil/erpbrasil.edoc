@@ -80,8 +80,7 @@ class Tests(TestCase):
             ultimo_nsu='1'.zfill(15),
         )
 
-        # TODO: Assert
-        print(ret)
+        self.assertIn(ret.resposta.cStat, ['137', '138'])
 
     def test_nsu_especifico(self):
 
@@ -90,8 +89,7 @@ class Tests(TestCase):
             nsu_especifico='1'.zfill(15),
         )
 
-        # TODO: Assert
-        print(ret)
+        self.assertIn(ret.resposta.cStat, ['137', '138'])
 
     def test_chave(self):
 
@@ -100,8 +98,7 @@ class Tests(TestCase):
             chave=self.chave
         )
 
-        # TODO: Assert
-        print(ret)
+        self.assertIn(ret.resposta.cStat, ['137', '138'])
 
 
 t = Tests()
