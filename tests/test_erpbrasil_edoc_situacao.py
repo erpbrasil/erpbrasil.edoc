@@ -31,7 +31,7 @@ class Tests(TestCase):
         transmissao = TransmissaoSOAP(self.certificado, session)
         self.nfe = NFe(
             transmissao, '35',
-            versao='4.00', ambiente='2'
+            versao='4.00', ambiente='1'
         )
 
     def test_status_servico(self):
