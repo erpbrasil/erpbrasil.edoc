@@ -11,6 +11,8 @@ from requests import Session
 from erpbrasil.transmissao import TransmissaoSOAP
 from erpbrasil.edoc import NFe
 
+VALID_CSTAT_LIST = ['128']
+
 
 class Tests(TestCase):
     """ Rodar este teste muitas vezes pode bloquear o seu IP"""
@@ -46,8 +48,7 @@ class Tests(TestCase):
             cnpj_cpf=self.certificado.cnpj_cpf
         )
 
-        # TODO: Assert
-        print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
+        self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
     def test_ciencia_da_operacao(self):
         ret = self.nfe.ciencia_da_operacao(
@@ -55,8 +56,7 @@ class Tests(TestCase):
             cnpj_cpf=self.certificado.cnpj_cpf
         )
 
-        # TODO: Assert
-        print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
+        self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
     def test_desconhecimento_da_operacao(self):
         ret = self.nfe.desconhecimento_da_operacao(
@@ -64,8 +64,7 @@ class Tests(TestCase):
             cnpj_cpf=self.certificado.cnpj_cpf
         )
 
-        # TODO: Assert
-        print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
+        self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
     def test_operacao_nao_realizada(self):
         ret = self.nfe.operacao_nao_realizada(
@@ -73,8 +72,8 @@ class Tests(TestCase):
             cnpj_cpf=self.certificado.cnpj_cpf
         )
 
-        # TODO: Assert
-        print('XML Envio:\n{}\n\nXML Resposta:\n{}'.format(ret.envio_xml, ret.retorno.text))
+        self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
+
 
 t = Tests()
 t.setUp()

@@ -9,6 +9,8 @@ from requests import Session
 from erpbrasil.transmissao import TransmissaoSOAP
 from erpbrasil.edoc import NFe
 
+VALID_CSTAT_LIST = ['107', '108', '109']
+
 
 class Tests(TestCase):
     """ Rodar este teste muitas vezes pode bloquear o seu IP"""
@@ -36,7 +38,7 @@ class Tests(TestCase):
 
     def test_status_servico(self):
         ret = self.nfe.status_servico()
-        self.assertIn(ret.resposta.cStat, ['107', '108', '109'])
+        self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
 
 t = Tests()

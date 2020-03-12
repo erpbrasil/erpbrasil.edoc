@@ -36,6 +36,7 @@ logging.config.dictConfig({
     }
 })
 
+VALID_CSTAT_LIST = ['137', '138']
 
 
 class Tests(TestCase):
@@ -74,7 +75,7 @@ class Tests(TestCase):
             ultimo_nsu='1'.zfill(15),
         )
 
-        self.assertIn(ret.resposta.cStat, ['137', '138'])
+        self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
     def test_nsu_especifico(self):
 
@@ -83,7 +84,7 @@ class Tests(TestCase):
             nsu_especifico='1'.zfill(15),
         )
 
-        self.assertIn(ret.resposta.cStat, ['137', '138'])
+        self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
     def test_chave(self):
 
@@ -92,7 +93,7 @@ class Tests(TestCase):
             chave=self.chave
         )
 
-        self.assertIn(ret.resposta.cStat, ['137', '138'])
+        self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
 
 t = Tests()
