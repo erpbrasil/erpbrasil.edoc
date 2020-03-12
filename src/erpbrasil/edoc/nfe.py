@@ -1043,15 +1043,16 @@ class NFe(DocumentoEletronico):
         :param numero_lote: Número do lote. Gerado caso None
         :return: retorna a resposta do _post() de envio do lote
         """
-        # TODO: Verificar possibilidade de utilizar código existente
-        #  em enviar_lote_evento(). A única diferença é a classe
-        #  utilizada pelo evento
 
         if not numero_lote:
             numero_lote = self._gera_numero_lote()
 
         eventos = []
-        raiz = leiauteEvento.TEnvEvento(versao="1.00", idLote=numero_lote, evento=eventos)
+        raiz = leiauteEvento.TEnvEvento(
+            versao="1.00",
+            idLote=numero_lote,
+            evento=eventos
+        )
         raiz.original_tagname_ = 'envEvento'
 
         for raiz_evento in lista_eventos:
@@ -1059,8 +1060,18 @@ class NFe(DocumentoEletronico):
                 versao="1.00", infEvento=raiz_evento,
             )
             evento.original_tagname_ = 'evento'
+
+            # Recupera o evento do XML assinado
             xml_assinado = self.assina_raiz(evento, evento.infEvento.Id)
-            eventos.append(confRecebto2.parseString(bytearray(xml_assinado, 'utf8')))
+
+            # Converte o xml_assinado para um objeto pelo
+            # parser do esquema leiauteConfRecebto
+            xml_object = confRecebto2.parseString(
+                bytearray(xml_assinado, 'utf8'))
+
+            # Adiciona o xml_object na lista de eventos. Desse modo a lista
+            # de eventos terá um evento assinado corretamente
+            eventos.append(xml_object)
 
         xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
             raiz
