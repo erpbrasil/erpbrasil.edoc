@@ -33,7 +33,7 @@ class Tests(TestCase):
         transmissao = TransmissaoSOAP(self.certificado, session)
         self.nfe = NFe(
             transmissao, '35',
-            versao='1.00', ambiente='2'
+            versao='1.00', ambiente='1'
         )
 
         self.chave = os.environ.get(
