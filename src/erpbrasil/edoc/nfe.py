@@ -1034,23 +1034,7 @@ class NFe(DocumentoEletronico):
             retDistDFeInt
         )
 
-# ----------------------------- MANIFESTAÇÃO DO DESTINATÁRIO -----------------------------
-
-    def status_servico_manifestacao(self):
-        raiz = consStatServ.TConsStatServ(
-            versao=self.versao,
-            tpAmb=self.ambiente,
-            cUF=self.uf,
-            xServ='STATUS',
-        )
-        raiz.original_tagname_ = 'consStatServ'
-        return self._post(
-            raiz,
-            # TODO: Utilizar localizar_url
-            'https://hom.nfe.fazenda.gov.br/RecepcaoEvento/RecepcaoEvento.asmx?wsdl',
-            'nfeRecepcaoEvento',
-            retConsStatServ
-        )
+# ----------------------------- MANIFESTAÇÃO DO DESTINATÁRIO -----------------
 
     def nfe_recepcao_envia_lote_evento(self, lista_eventos, numero_lote=False):
         """
