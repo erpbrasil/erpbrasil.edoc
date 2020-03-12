@@ -978,11 +978,18 @@ class NFe(DocumentoEletronico):
 
     def consultar_distribuicao(self, cnpj_cpf, ultimo_nsu=False,
                                nsu_especifico=False, chave=False):
-        # TODO: Documentar
+        """
 
-        # TODO: melhorar verificação
+        :param cnpj_cpf: CPF ou CNPJ a ser consultado
+        :param ultimo_nsu: Último NSU para pesquisa. Formato: '999999999999999'
+        :param nsu_especifico: NSU Específico para pesquisa.
+                                Formato: '999999999999999'
+        :param chave: Chave de acesso do documento
+        :return: Retorna uma estrutura contendo as estruturas de envio
+        e retorno preenchidas
+        """
+
         if not ultimo_nsu and not nsu_especifico and not chave:
-            # TODO: Raise?
             return
 
         distNSU = consNSU = consChNFe = None
@@ -999,8 +1006,9 @@ class NFe(DocumentoEletronico):
                 chNFe=chave
             )
 
-        # TODO: melhorar verificação
-        if distNSU and consNSU or distNSU and consChNFe or consNSU and consChNFe:
+        if distNSU and consNSU or \
+            distNSU and consChNFe or \
+            consNSU and consChNFe:
             # TODO: Raise?
             return
 
