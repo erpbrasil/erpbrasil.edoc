@@ -68,11 +68,19 @@ class DocumentoEletronico(ABC):
         output.close()
         return contents, etree.fromstring(contents)
 
+    # list(mydict.keys())[list(mydict.values()).index(16)]
+
     def _post(self, raiz, url, operacao, classe):
+        from .nfe import SIGLA_ESTADO
+
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         with self._transmissao.cliente(url):
+            # Recupera a sigla do estado
+            uf_list = [uf for nUF, uf in SIGLA_ESTADO.items() if
+                       nUF == str(getattr(raiz, 'cUFAutor', ''))]
+            kwargs = dict(uf=uf_list and uf_list[0])
             retorno = self._transmissao.enviar(
-                operacao, xml_etree
+                operacao, xml_etree, **kwargs
             )
             return analisar_retorno_raw(
                 operacao, raiz, xml_string, retorno, classe
