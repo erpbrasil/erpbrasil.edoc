@@ -4,7 +4,7 @@
 from __future__ import division, print_function, unicode_literals
 
 import re
-from datetime import datetime
+import datetime
 import time
 from lxml import etree
 import collections
@@ -23,6 +23,7 @@ from nfelib.v4_00 import leiauteEvento
 from nfelib.v4_00 import leiauteEventoCancNFe
 from nfelib.v4_00 import leiauteCCe
 from nfelib.v4_00 import retEnvEvento
+from nfelib.v4_00 import leiauteInutNFe
 from erpbrasil.edoc.edoc import DocumentoEletronico
 
 try:
@@ -787,7 +788,7 @@ class NFe(DocumentoEletronico):
 
         raiz = enviNFe.TEnviNFe(
             versao=self.versao,
-            idLote=datetime.now().strftime('%Y%m%d%H%M%S'),
+            idLote=datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
             indSinc='0'
         )
         raiz.original_tagname_ = 'enviNFe'
@@ -805,6 +806,25 @@ class NFe(DocumentoEletronico):
                           int(self.ambiente)),
             'nfeAutorizacaoLote',
             retEnviNFe
+        )
+
+    def envia_inutilizacao(self, evento):
+        tinut = leiauteInutNFe.TInutNFe(
+            versao=self.versao,
+            infInut=evento,
+            Signature=None)
+        tinut.original_tagname_ = 'inutNFe'
+
+        xml_assinado = self.assina_raiz(tinut, tinut.infInut.Id)
+
+        xml_envio_etree = etree.fromstring(xml_assinado)
+
+        return self._post(
+            xml_envio_etree,
+            localizar_url(WS_NFE_INUTILIZACAO, str(self.uf), self.mod,
+                          int(self.ambiente)),
+            'nfeInutilizacaoNF',
+            leiauteInutNFe
         )
 
     def consulta_recibo(self, numero=False, proc_envio=False):
@@ -901,6 +921,27 @@ class NFe(DocumentoEletronico):
             ),
         )
         raiz.original_tagname_ = 'infEvento'
+        return raiz
+
+    def inutilizacao(self, cnpj, mod, serie, num_ini, num_fin,
+                     justificativa):
+        ano = str(datetime.date.today().year)[2:]
+        uf = str(self.uf)
+        raiz = leiauteInutNFe.infInutType(
+            Id='ID' + uf + ano + cnpj + mod + serie.zfill(3) +
+               str(num_ini).zfill(9) + str(num_fin).zfill(9),
+            tpAmb=self.ambiente,
+            xServ='INUTILIZAR',
+            cUF=self.uf,
+            ano=ano,
+            CNPJ=cnpj,
+            mod=mod,
+            serie=serie,
+            nNFIni=str(num_ini),
+            nNFFin=str(num_fin),
+            xJust=justificativa,
+        )
+        raiz.original_tagname_ = 'infInut'
         return raiz
 
     def _verifica_servico_em_operacao(self, proc_servico):
