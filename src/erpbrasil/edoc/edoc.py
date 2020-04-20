@@ -51,12 +51,19 @@ class DocumentoEletronico(ABC):
         if self._namespace:
             namespace = 'xmlns="' + self._namespace + '"'
 
-        ds.export(
-            output,
-            0,
-            pretty_print=False,
-            namespacedef_=namespace
-        )
+        if namespace:
+            ds.export(
+                output,
+                0,
+                pretty_print=False,
+                namespacedef_=namespace
+            )
+        else:
+            ds.export(
+                output,
+                0,
+                pretty_print=False,
+            )
         contents = output.getvalue()
         output.close()
         return contents, etree.fromstring(contents)

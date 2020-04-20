@@ -31,5 +31,7 @@ def analisar_retorno(operacao, raiz, xml, retorno, classe):
     resposta = False
     if retorno:
         classe.Validate_simpletypes_ = False
-        resposta = classe.parseString(retorno, silence=True)
+        resultado = etree.tostring(
+            etree.fromstring(retorno.encode('utf-8')))
+        resposta = classe.parseString(resultado, silence=True)
     return RetornoSoap(operacao, raiz, xml, retorno, resposta)
