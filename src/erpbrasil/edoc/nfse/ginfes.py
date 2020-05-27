@@ -58,23 +58,29 @@ class Ginfes(NFSe):
         # Assinamos todas as RPS e o Lote
         #
         xml_assinado = edoc
+        # for rps in edoc.LoteRps.ListaRps.Rps:
+        #     xml_assinado = self.assin a_raiz(xml_assinado, rps.InfRps.Id, getchildren=True)
+        # Assinamos o lote
+        # xml_assinado = self.assina_raiz(xml_assinado, edoc.LoteRps.Id)
+
         for rps in edoc.LoteRps.ListaRps.Rps:
             xml_assinado = self.assina_raiz(xml_assinado, rps.InfRps.Id)
         # Assinamos o lote
-        xml_assinado = self.assina_raiz(xml_assinado, edoc.LoteRps.Id)
+        # xml_assinado = self.assina_raiz(xml_assinado, edoc.LoteRps.Id)
+
         return xml_assinado
 
     def _prepara_consulta_recibo(self, proc_envio):
 
         raiz = consulta_situacao_lote.ConsultarSituacaoLoteRpsEnvio(
-            Id=self._gera_numero_lote(),
+            # Id=self._gera_numero_lote(),
             Prestador=tcIdentificacaoPrestador(
                 Cnpj=self.cnpj_prestador,
                 InscricaoMunicipal=self.im_prestador
             ),
             Protocolo=proc_envio.resposta.Protocolo
         )
-        xml_assinado = self.assina_raiz(raiz,raiz.Id)
+        xml_assinado = self.assina_raiz(raiz,"")
         return xml_assinado
 
     def _prepara_consultar_lote_rps(self, protocolo):
