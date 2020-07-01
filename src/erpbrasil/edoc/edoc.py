@@ -37,7 +37,7 @@ class DocumentoEletronico(ABC):
     def __init__(self, transmissao):
         self._transmissao = transmissao
 
-    def _generateds_to_string_etree(self, ds):
+    def _generateds_to_string_etree(self, ds, pretty_print=False):
 
         if type(ds) == _Element:
             return etree.tostring(ds), ds
@@ -55,14 +55,14 @@ class DocumentoEletronico(ABC):
             ds.export(
                 output,
                 0,
-                pretty_print=False,
+                pretty_print=pretty_print,
                 namespacedef_=namespace
             )
         else:
             ds.export(
                 output,
                 0,
-                pretty_print=False,
+                pretty_print=pretty_print,
             )
         contents = output.getvalue()
         output.close()
