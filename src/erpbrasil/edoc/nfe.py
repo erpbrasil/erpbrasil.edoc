@@ -1073,9 +1073,9 @@ class NFe(DocumentoEletronico):
         return self._post(
             raiz,
             # 'https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl',
-            localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), self.mod,
+            localizar_url(WS_NFE_RECEPCAO_EVENTO, str(91), self.mod,
                           int(self.ambiente)),
-            'nfeRecepcaoEvento',
+            'nfeRecepcaoEventoNF',
             retEnvEvento
         )
 
@@ -1104,7 +1104,7 @@ class NFe(DocumentoEletronico):
         nSeqEvento = '1'
         raiz = confRecebto.infEventoType(
             Id='ID{}{}{}'.format(tpEvento, chave, nSeqEvento.zfill(2)),
-            cOrgao=self.uf,
+            cOrgao=91,
             tpAmb=self.ambiente,
             CNPJ=cnpj_cpf if len(cnpj_cpf) > 11 else None,
             CPF=cnpj_cpf if len(cnpj_cpf) <= 11 else None,
@@ -1112,9 +1112,9 @@ class NFe(DocumentoEletronico):
             dhEvento=dhEvento or self._hora_agora(),
             tpEvento=tpEvento,
             nSeqEvento=nSeqEvento,
-            verEvento=self.versao,
+            verEvento='1.00',
             detEvento=confRecebto.detEventoType(
-                versao=self.versao,
+                versao='1.00',
                 descEvento=descEvento,
                 xJust=xJust
             )
