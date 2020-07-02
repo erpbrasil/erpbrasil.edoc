@@ -1070,12 +1070,8 @@ class NFe(DocumentoEletronico):
             # de eventos terá um evento assinado corretamente
             eventos.append(xml_object)
 
-        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
-            raiz
-        )
-
         return self._post(
-            xml_envio_etree,
+            raiz,
             # 'https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl',
             localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), self.mod,
                           int(self.ambiente)),
