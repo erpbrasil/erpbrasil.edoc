@@ -39,7 +39,6 @@ class Ginfes(NFSe):
         if ambiente == '2':
             self._url = 'https://homologacao.ginfes.com.br'
         else:
-            # self._url = 'https://homologacao.ginfes.com.br'
             self._url = 'https://producao.ginfes.com.br'
         self._servicos = servicos
 
