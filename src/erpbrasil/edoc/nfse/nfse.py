@@ -26,7 +26,7 @@ ServicoNFSe = collections.namedtuple(
 class NFSe(DocumentoEletronico):
 
     _consulta_servico_ao_enviar = False
-    _maximo_tentativas_consulta_recibo = 5
+    _maximo_tentativas_consulta_recibo = 10
     _tempo_medio = 1
     _header = False
     _namespace = False

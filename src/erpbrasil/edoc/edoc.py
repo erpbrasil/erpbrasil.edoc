@@ -211,12 +211,13 @@ class DocumentoEletronico(ABC):
         # return datetime.today().strftime(FORMAT) + '-00:00'
         return time.strftime(FORMAT, time.localtime()) + '-00:00'
 
-    def assina_raiz(self, raiz, id):
+    def assina_raiz(self, raiz, id, getchildren=False):
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
-            xml_etree, id
+            xml_etree, id, getchildren
         )
-        return xml_assinado.decode('utf-8').replace('\n', '').replace('\r', '')
+        return xml_assinado
+        return xml_assinado.replace('\n', '').replace('\r', '')
 
     def _verifica_servico_em_operacao(self, proc_servico):
         return True
