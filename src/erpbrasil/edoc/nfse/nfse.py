@@ -90,7 +90,10 @@ class NFSe(DocumentoEletronico):
         )
 
     def cancela_documento(self):
-        pass
+        return self._post(
+            body=self._prepara_cancelar_nfse_envio(),
+            servico=self._servicos[self.cancela_documento.__name__],
+        )
 
     def _edoc_situacao_ja_enviado(self, proc_consulta):
         _edoc_situacao_ja_enviado = "TODO"

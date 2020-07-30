@@ -10,8 +10,10 @@ from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_envio_v03 as servico
 from nfselib.ginfes.v3_01 import servico_enviar_lote_rps_resposta_v03 as servico_enviar_lote_rps_resposta
 from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_resposta_v03 as servico_consultar_situacao_lote_rps_resposta
 from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_resposta_v03 as servico_consultar_lote_rps_resposta
+from nfselib.ginfes.v3_01 import servico_cancelar_nfse_envio_v03 as servico_cancelar_nfse_envio
 from nfselib.ginfes.v3_01.cabecalho_v03 import cabecalho
 from nfselib.ginfes.v3_01.tipos_v03 import tcIdentificacaoPrestador
+from nfselib.ginfes.v3_01.tipos_v03 import tcPedidoCancelamento, tcInfPedidoCancelamento, tcIdentificacaoNfse
 
 
 endpoint = 'ServiceGinfesImpl?wsdl'
@@ -26,6 +28,9 @@ servicos = {
     'consultar_lote_rps': ServicoNFSe(
         'ConsultarLoteRpsV3',
         endpoint, servico_consultar_lote_rps_resposta, True),
+    'cancela_documento': ServicoNFSe(
+        'CancelarNfseV3',
+        endpoint, servico_cancelar_nfse_envio, True),
 }
 
 
@@ -105,6 +110,25 @@ class Ginfes(NFSe):
         if proc_recibo.resposta.Situacao == 2:
             return True
         return False
+
+    def _prepara_cancelar_nfse_envio(self):
+        raiz = servico_cancelar_nfse_envio.CancelarNfseEnvio(
+            Pedido=tcPedidoCancelamento(
+                InfPedidoCancelamento=tcInfPedidoCancelamento(
+                    Id=self.doc_numero,  # FIXME: Verificar qual atributo usar
+                    IdentificacaoNfse=tcIdentificacaoNfse(
+                        Numero=self.doc_numero,  # TODO: Atributo correto?
+                        Cnpj=self.cnpj_prestador,
+                        InscricaoMunicipal=self.im_prestador,
+                        CodigoMunicipio=self.cidade
+                    ),
+                    CodigoCancelamento='0001'  # FIXME: Verificar qual atributo usar
+                )
+            )
+        )
+        xml_assinado = self.assina_raiz(raiz, '')
+
+        return xml_assinado
 
     # def processar_documento(self, edoc):
     #     processo = super(NFSe, self).processar_documento(edoc)
