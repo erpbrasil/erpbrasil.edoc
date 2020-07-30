@@ -18,7 +18,9 @@ cidades = {
 
 
 def NFSeFactory(
-    transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador):
+    transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador,
+        doc_numero):
     """Factory"""
     return cidades[int(cidade_ibge)](
-        transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)
+        transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador,
+        doc_numero)
