@@ -34,13 +34,15 @@ class Ginfes(NFSe):
     _header = cabecalho(versao="3", versaoDados="3")
 
     def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador,
-                 im_prestador):
+                 im_prestador, doc_numero):
 
         if ambiente == '2':
             self._url = 'https://homologacao.ginfes.com.br'
         else:
             self._url = 'https://producao.ginfes.com.br'
         self._servicos = servicos
+
+        self.doc_numero = doc_numero
 
         super(Ginfes, self).__init__(
             transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)
