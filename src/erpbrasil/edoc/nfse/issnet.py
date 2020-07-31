@@ -24,7 +24,7 @@ from nfselib.issnet.v1_00.nfse import tcIdentificacaoPrestador
 from nfselib.issnet.v1_00.nfse import tcPedidoCancelamento, tcInfPedidoCancelamento, tcIdentificacaoNfse
 
 
-endpoint = 'ServiceGinfesImpl?wsdl' # TODO
+endpoint = '/webserviceabrasf/homologacao/servicos.asmx?WSDL'
 
 servicos = {
     'envia_documento': ServicoNFSe(
@@ -50,9 +50,9 @@ class Issnet(NFSe):
                  im_prestador):
 
         if ambiente == '2':
-            self._url = 'http://www.issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx'
+            self._url = 'http://www.issnetonline.com.br'
         else:
-            self._url = 'http://www.issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx'
+            self._url = 'http://www.issnetonline.com.br'
         self._servicos = servicos
 
         super(Issnet, self).__init__(
