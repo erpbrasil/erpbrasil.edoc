@@ -39,15 +39,13 @@ class Ginfes(NFSe):
     _header = cabecalho(versao="3", versaoDados="3")
 
     def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador,
-                 im_prestador, doc_numero):
+                 im_prestador):
 
         if ambiente == '2':
             self._url = 'https://homologacao.ginfes.com.br'
         else:
             self._url = 'https://producao.ginfes.com.br'
         self._servicos = servicos
-
-        self.doc_numero = doc_numero
 
         super(Ginfes, self).__init__(
             transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)
@@ -111,13 +109,13 @@ class Ginfes(NFSe):
             return True
         return False
 
-    def _prepara_cancelar_nfse_envio(self):
+    def _prepara_cancelar_nfse_envio(self, doc_numero):
         raiz = servico_cancelar_nfse_envio.CancelarNfseEnvio(
             Pedido=tcPedidoCancelamento(
                 InfPedidoCancelamento=tcInfPedidoCancelamento(
-                    Id=self.doc_numero,
+                    Id=doc_numero,
                     IdentificacaoNfse=tcIdentificacaoNfse(
-                        Numero=self.doc_numero,
+                        Numero=doc_numero,
                         Cnpj=self.cnpj_prestador,
                         InscricaoMunicipal=self.im_prestador,
                         CodigoMunicipio=self.cidade

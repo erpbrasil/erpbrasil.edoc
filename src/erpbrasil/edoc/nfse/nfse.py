@@ -89,9 +89,9 @@ class NFSe(DocumentoEletronico):
             servico=self._servicos[self.consultar_lote_rps.__name__],
         )
 
-    def cancela_documento(self):
+    def cancela_documento(self, doc_numero):
         return self._post(
-            body=self._prepara_cancelar_nfse_envio(),
+            body=self._prepara_cancelar_nfse_envio(doc_numero),
             servico=self._servicos[self.cancela_documento.__name__],
         )
 
