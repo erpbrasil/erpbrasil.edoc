@@ -115,14 +115,14 @@ class Ginfes(NFSe):
         raiz = servico_cancelar_nfse_envio.CancelarNfseEnvio(
             Pedido=tcPedidoCancelamento(
                 InfPedidoCancelamento=tcInfPedidoCancelamento(
-                    Id=self.doc_numero,  # FIXME: Verificar qual atributo usar
+                    Id=self.doc_numero,
                     IdentificacaoNfse=tcIdentificacaoNfse(
-                        Numero=self.doc_numero,  # TODO: Atributo correto?
+                        Numero=self.doc_numero,
                         Cnpj=self.cnpj_prestador,
                         InscricaoMunicipal=self.im_prestador,
                         CodigoMunicipio=self.cidade
                     ),
-                    CodigoCancelamento='0001'  # FIXME: Verificar qual atributo usar
+                    CodigoCancelamento='0001'
                 )
             )
         )
