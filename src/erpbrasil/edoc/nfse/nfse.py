@@ -108,3 +108,10 @@ class NFSe(DocumentoEletronico):
     def consulta_documento(self, chave):
         pass
 
+    def consulta_nfse_rps(self, rps_numero, rps_serie, rps_tipo):
+        return self._post(
+            body=self._prepara_consultar_nfse_rps(
+                rps_numero, rps_serie, rps_tipo),
+            servico=self._servicos[self.consulta_nfse_rps.__name__],
+        )
+
