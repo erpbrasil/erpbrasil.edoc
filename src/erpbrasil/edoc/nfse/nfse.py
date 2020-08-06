@@ -89,8 +89,11 @@ class NFSe(DocumentoEletronico):
             servico=self._servicos[self.consultar_lote_rps.__name__],
         )
 
-    def cancela_documento(self):
-        pass
+    def cancela_documento(self, doc_numero):
+        return self._post(
+            body=self._prepara_cancelar_nfse_envio(doc_numero),
+            servico=self._servicos[self.cancela_documento.__name__],
+        )
 
     def _edoc_situacao_ja_enviado(self, proc_consulta):
         _edoc_situacao_ja_enviado = "TODO"
@@ -104,4 +107,11 @@ class NFSe(DocumentoEletronico):
 
     def consulta_documento(self, chave):
         pass
+
+    def consulta_nfse_rps(self, rps_numero, rps_serie, rps_tipo):
+        return self._post(
+            body=self._prepara_consultar_nfse_rps(
+                rps_numero, rps_serie, rps_tipo),
+            servico=self._servicos[self.consulta_nfse_rps.__name__],
+        )
 

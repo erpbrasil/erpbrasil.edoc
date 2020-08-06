@@ -192,8 +192,9 @@ class DocumentoEletronico(ABC):
         pass
 
     @abc.abstractmethod
-    def cancela_documento(self):
-        pass
+    def cancela_documento(self, doc_numero):
+        proc_cancela = self.cancela_documento(doc_numero)
+        yield proc_cancela
 
     @abc.abstractmethod
     def consulta_documento(self):
