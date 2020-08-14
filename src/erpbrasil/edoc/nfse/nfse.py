@@ -53,12 +53,19 @@ class NFSe(DocumentoEletronico):
 
         body_string, body_etree = self._generateds_to_string_etree(body)
 
-        with self._transmissao.cliente(
-                urljoin(self._url, servico.endpoint)) as cliente:
-            resposta = cliente.service[servico.operacao](
-                header_string,
-                body_string,
-            )
+        if header_string:
+            with self._transmissao.cliente(
+                    urljoin(self._url, servico.endpoint)) as cliente:
+                resposta = cliente.service[servico.operacao](
+                    header_string,
+                    body_string,
+                )
+        else:
+            with self._transmissao.cliente(
+                    urljoin(self._url, servico.endpoint)) as cliente:
+                resposta = cliente.service[servico.operacao](
+                    body_string,
+                )
 
         return analisar_retorno(
             servico.operacao,

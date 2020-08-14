@@ -11,19 +11,20 @@ from nfselib.issnet.v1_00 import servico_enviar_lote_rps_resposta as servico_env
 from nfselib.issnet.v1_00 import servico_consultar_situacao_lote_rps_resposta as servico_consultar_situacao_lote_rps_resposta
 from nfselib.issnet.v1_00 import servico_consultar_lote_rps_resposta as servico_consultar_lote_rps_resposta
 from nfselib.issnet.v1_00 import servico_cancelar_nfse_envio as servico_cancelar_nfse_envio
-# from nfselib.issnet.v1_00.cabecalho import cabecalho
+from nfselib.issnet.v1_00 import servico_consultar_nfse_rps_envio as servico_consultar_nfse_rps_envio
 from nfselib.issnet.v1_00.tipos_complexos import tcIdentificacaoPrestador
-from nfselib.issnet.v1_00.tipos_complexos import tcPedidoCancelamento, tcInfPedidoCancelamento, tcIdentificacaoNfse, tcCpfCnpj
+from nfselib.issnet.v1_00.tipos_complexos import tcIdentificacaoNfse, tcIdentificacaoRps, tcCpfCnpj, tcPedidoCancelamento, tcInfPedidoCancelamento
+#from nfselib.issnet.v1_00.Servico_Cancelar_justificativa_tipo_complexos import tcPedidoCancelamento, tcInfPedidoCancelamento
 
 
-endpoint = '/webserviceabrasf/homologacao/servicos.asmx?WSDL'
+endpoint = 'webserviceabrasf/homologacao/servicos.asmx?WSDL'
 
 servicos = {
     'envia_documento': ServicoNFSe(
         'RecepcionarLoteRps',
         endpoint, servico_enviar_lote_rps_resposta, True),
     'consulta_recibo': ServicoNFSe(
-        'ConsultarSituacaoLoteRps',
+        'ConsultarSituacaoLoteRPS',
         endpoint, servico_consultar_situacao_lote_rps_resposta, True),
     'consultar_lote_rps': ServicoNFSe(
         'ConsultarLoteRps',
@@ -36,7 +37,6 @@ servicos = {
 
 class Issnet(NFSe):
 
-    #_header = cabecalho(versao="1", versaoDados="1")
     _header = None
 
     def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador,
@@ -56,23 +56,20 @@ class Issnet(NFSe):
         return edoc.LoteRps.id, edoc.LoteRps.NumeroLote
 
     def _prepara_envia_documento(self, edoc):
-        numero_lote = '202000000000001' #self._gera_numero_lote()
+        numero_lote = self._gera_numero_lote()
         edoc.LoteRps.id = 'L' + numero_lote
         edoc.LoteRps.NumeroLote = numero_lote
         #
-        # Assinamos todas as RPS e o Lote
+        # Assinamos o Lote
         #
         xml_assinado = edoc
+
         # for rps in edoc.LoteRps.ListaRps.Rps:
-        #     xml_assinado = self.assin a_raiz(xml_assinado, rps.InfRps.id, getchildren=True)
-        # Assinamos o lote
-        # xml_assinado = self.assina_raiz(xml_assinado, edoc.LoteRps.id)
+        #     xml_assinado = self.assina_raiz(xml_assinado, rps.InfRps.id)
 
-        for rps in edoc.LoteRps.ListaRps.Rps:
-            xml_assinado = self.assina_raiz(xml_assinado, rps.InfRps.id)
         # Assinamos o lote
-        xml_assinado = self.assina_raiz(xml_assinado, edoc.LoteRps.id, getchildren=True)
-
+        xml_assinado = self.assina_raiz(xml_assinado, edoc.LoteRps.id)
+        xml_assinado = '<?xml version="1.0"?>' + xml_assinado
         return xml_assinado
 
     def _prepara_consulta_recibo(self, proc_envio):
@@ -86,12 +83,14 @@ class Issnet(NFSe):
             ),
             Protocolo=proc_envio.resposta.Protocolo
         )
-        xml_assinado = self.assina_raiz(raiz,"")
-        return xml_assinado
+        #xml_assinado = self.assina_raiz(raiz,"")
+        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_string = '<?xml version="1.0"?>' + xml_string
+        return xml_string
 
     def _prepara_consultar_lote_rps(self, protocolo):
         raiz = servico_consultar_lote_rps_envio.ConsultarLoteRpsEnvio(
-            id=self._gera_numero_lote(),
+            # id=self._gera_numero_lote(),
             Prestador=tcIdentificacaoPrestador(
                 CpfCnpj=tcCpfCnpj(
                     Cnpj=self.cnpj_prestador,
@@ -100,8 +99,10 @@ class Issnet(NFSe):
             ),
             Protocolo=protocolo
         )
-        xml_assinado = self.assina_raiz(raiz, raiz.id)
-        return xml_assinado
+        # xml_assinado = self.assina_raiz(raiz,"")
+        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_string = '<?xml version="1.0"?>' + xml_string
+        return xml_string
 
     def _verifica_resposta_envio_sucesso(self, proc_envio):
         if proc_envio.resposta.Protocolo:
@@ -113,26 +114,72 @@ class Issnet(NFSe):
             return True
         return False
 
-    def _prepara_cancelar_nfse_envio(self, doc_numero):
-        raiz = servico_cancelar_nfse_envio.CancelarNfseEnvio(
-            Pedido=tcPedidoCancelamento(
-                InfPedidoCancelamento=tcInfPedidoCancelamento(
-                    id=doc_numero,
-                    IdentificacaoNfse=tcIdentificacaoNfse(
-                        Numero=doc_numero,
-                        CpfCnpj=tcCpfCnpj(
-                            Cnpj=self.cnpj_prestador,
-                        ),
-                        InscricaoMunicipal=self.im_prestador,
-                        Cidade=self.cidade
-                    ),
-                    CodigoCancelamento='0001'
-                )
+    def _prepara_cancelar_nfse_envio(self, doc_numero, justificativa):
+        # raiz = servico_cancelar_nfse_envio.CancelarNfseEnvio(
+        #     Pedido=tcPedidoCancelamento(
+        #         InfPedidoCancelamento=tcInfPedidoCancelamento(
+        #             id=doc_numero,
+        #             IdentificacaoNfse=tcIdentificacaoNfse(
+        #                 Numero=doc_numero,
+        #                 CpfCnpj=tcCpfCnpj(
+        #                     Cnpj=self.cnpj_prestador,
+        #                 ),
+        #                 InscricaoMunicipal=self.im_prestador,
+        #                 CodigoMunicipio=self.cidade
+        #             ),
+        #             CodigoCancelamento='5',
+        #             MotivoCancelamentoNfse='Cancelado pelo motivo xyz - ISSNET / Nota Control',
+        #         )
+        #     )
+        # )
+
+        Pedido = tcPedidoCancelamento(
+            InfPedidoCancelamento=tcInfPedidoCancelamento(
+                id=doc_numero,
+                IdentificacaoNfse=tcIdentificacaoNfse(
+                    Numero=doc_numero,
+                    Cnpj=self.cnpj_prestador,
+                    InscricaoMunicipal=self.im_prestador,
+                    CodigoMunicipio=self.cidade
+                ),
+                CodigoCancelamento='0001',
+                # MotivoCancelamentoNfse=self.'NFSe Cancelada pelo motivo XYZ', # TODO: Implementar
             )
         )
-        xml_assinado = self.assina_raiz(raiz, '')
+
+        # Foi codificado desta forma porque a assinatura fica dentro da tag Pedido. Acredito que de para melhorar.
+        pedido = self.assina_raiz(Pedido, "")
+        # xml_string, xml_etree = self._generateds_to_string_etree(pedido)
+
+        xml_assinado = '<?xml version="1.0"?>' \
+                       '<p1:CancelarNfseEnvio ' \
+                       'xmlns:p1="http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_cancelar_nfse_envio.xsd" ' \
+                       'xmlns:tc="http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd" ' \
+                       'xmlns:ts="http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_simples.xsd">' \
+                       + pedido + '</p1:CancelarNfseEnvio>'
 
         return xml_assinado
+
+    # def _prepara_consultar_nfse_rps(self, rps_numero, rps_serie, rps_tipo):
+    #     raiz = servico_consultar_nfse_rps_envio.ConsultarNfseRpsEnvio(
+    #         IdentificacaoRps=tcIdentificacaoRps(
+    #             Numero=rps_numero,
+    #             Serie=rps_serie,
+    #             Tipo=rps_tipo,
+    #         ),
+    #         Prestador=tcIdentificacaoPrestador(
+    #             CpfCnpj=tcCpfCnpj(
+    #                 Cnpj=self.cnpj_prestador,
+    #             ),
+    #             InscricaoMunicipal=self.im_prestador
+    #         ),
+    #     )
+    #     xml_assinado = self.assina_raiz(raiz, '')
+    #     xml_assinado = '<?xml version="1.0"?>' + xml_assinado
+    #
+    #     return xml_assinado
+
+
 
     # def processar_documento(self, edoc):
     #     processo = super(NFSe, self).processar_documento(edoc)
