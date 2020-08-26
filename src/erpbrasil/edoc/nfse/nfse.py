@@ -53,6 +53,11 @@ class NFSe(DocumentoEletronico):
 
         body_string, body_etree = self._generateds_to_string_etree(body)
 
+        # TODO: Verificar impacto para outros provedores
+        header = body_etree.find("Cabecalho")
+        if header and header.attrib:
+            header_string = header.attrib.get('Versao')
+
         with self._transmissao.cliente(
                 urljoin(self._url, servico.endpoint)) as cliente:
             resposta = cliente.service[servico.operacao](
