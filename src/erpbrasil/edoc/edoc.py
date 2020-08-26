@@ -10,7 +10,7 @@ from requests import Session
 
 from lxml import etree
 from lxml.etree import _Element
-from erpbrasil.assinatura.assinatura import Assinatura
+from erpbrasil.assinatura.assinatura import Assinatura, assina_string
 
 # Fix Python 2.x.
 try:
