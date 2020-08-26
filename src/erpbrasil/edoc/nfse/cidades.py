@@ -3,8 +3,9 @@
 
 from __future__ import division, print_function, unicode_literals
 
-from erpbrasil.edoc.nfse.ginfes import Ginfes
-from erpbrasil.edoc.nfse.dsf import Dsf
+from erpbrasil.edoc.nfse import Ginfes
+from erpbrasil.edoc.nfse import Dsf
+from erpbrasil.edoc.nfse import Paulistana
 
 cidades = {
     1501402: Dsf,  # Belem-PA
@@ -14,6 +15,7 @@ cidades = {
     3303500: Dsf,  # Nova Iguaçu - RJ
     3509502: Dsf,  # Campinas - SP
     5002704: Dsf,  # Campo Grande - MS
+    3550308: Paulistana,  # São Paulo - SP
 }
 
 
