@@ -224,24 +224,3 @@ class Ginfes(NFSe):
                 mensagem = 'Erro desconhecido.'
 
         return mensagem
-
-    # def processar_documento(self, edoc):
-    #     processo = super(NFSe, self).processar_documento(edoc)
-    #
-    #     ultimo_processo = None
-    #     for p in processo:
-    #         ultimo_processo = p
-    #
-    #     if ultimo_processo.webservice == u'ConsultarSituacaoLoteRpsV3':
-    #         if processo.resposta.Situacao == 1:
-    #             print('Não Recebido')
-    #
-    #         elif ultimo_processo.resposta.Situacao == 2:
-    #             print('Lote ainda não processado')
-    #
-    #         elif ultimo_processo.resposta.Situacao == 3:
-    #             print('Procesado com Erro')
-    #
-    #         elif ultimo_processo.resposta.Situacao == 4:
-    #             print('Procesado com Sucesso')
-    #

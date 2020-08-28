@@ -13,6 +13,7 @@ from nfelib.v4_00 import leiauteNFe
 from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
 from nfelib.v4_00 import consStatServ
 from nfelib.v4_00 import retConsStatServ
+from nfelib.v4_00 import retDistDFeInt
 from nfelib.v4_00 import consSitNFe
 from nfelib.v4_00 import retConsSitNFe
 from nfelib.v4_00 import enviNFe
@@ -25,6 +26,12 @@ from nfelib.v4_00 import leiauteCCe
 from nfelib.v4_00 import retEnvEvento
 from nfelib.v4_00 import leiauteInutNFe
 from erpbrasil.edoc.edoc import DocumentoEletronico
+
+from nfelib.v4_00 import distDFeInt
+
+# Manifestação do destinatário
+from nfelib.v4_00 import leiauteConfRecebtoManifestacao as confRecebto
+from nfelib.v4_00 import leiauteConfRecebto as confRecebto2
 
 try:
     from StringIO import StringIO
@@ -42,19 +49,19 @@ a correcao de dados cadastrais que implique mudanca do \
 remetente ou do destinatario; III - a data de emissao \
 ou de saida."""
 
-WS_NFE_INUTILIZACAO = 'NfeInutilizacao'
-WS_NFE_CONSULTA = 'NfeConsultaProtocolo'
-WS_NFE_SITUACAO = 'NfeStatusServico'
-WS_NFE_RECEPCAO_EVENTO = 'RecepcaoEvento'
-WS_NFE_AUTORIZACAO = 'NfeAutorizacao'
-WS_NFE_RET_AUTORIZACAO = 'NfeRetAutorizacao'
-
-WS_NFE_CADASTRO = 'NfeConsultaCadastro'
-
-WS_NFCE_QR_CODE = 'NfeQRCode'
-WS_NFCE_CONSULTA_DESTINADAS = 'NfeConsultaDest'
 WS_DFE_DISTRIBUICAO = 'NFeDistribuicaoDFe'
 WS_DOWNLOAD_NFE = 'nfeDistDFeInteresse'
+WS_NFCE_CONSULTA_DESTINADAS = 'NfeConsultaDest'
+WS_NFCE_QR_CODE = 'NfeQRCode'
+WS_NFE_AUTORIZACAO = 'NfeAutorizacao'
+WS_NFE_CADASTRO = 'NfeConsultaCadastro'
+
+WS_NFE_CONSULTA = 'NfeConsultaProtocolo'
+WS_NFE_INUTILIZACAO = 'NfeInutilizacao'
+WS_NFE_RECEPCAO_EVENTO = 'RecepcaoEvento'
+WS_NFE_RET_AUTORIZACAO = 'NfeRetAutorizacao'
+
+WS_NFE_SITUACAO = 'NfeStatusServico'
 
 AMBIENTE_PRODUCAO = 1
 AMBIENTE_HOMOLOGACAO = 2
@@ -907,7 +914,7 @@ class NFe(DocumentoEletronico):
             cOrgao=self.uf,
             tpAmb=self.ambiente,
             CNPJ=chave[6:20],
-            # CPF=None,
+            CPF=None,
             chNFe=chave,
             dhEvento=data_hora_evento or self._hora_agora(),
             tpEvento=tipo_evento,
@@ -968,3 +975,214 @@ class NFe(DocumentoEletronico):
         if proc_recibo.resposta.cStat == '105':
             return True
         return False
+
+    def consultar_distribuicao(self, cnpj_cpf, ultimo_nsu=False,
+                               nsu_especifico=False, chave=False):
+        """
+
+        :param cnpj_cpf: CPF ou CNPJ a ser consultado
+        :param ultimo_nsu: Último NSU para pesquisa. Formato: '999999999999999'
+        :param nsu_especifico: NSU Específico para pesquisa.
+                                Formato: '999999999999999'
+        :param chave: Chave de acesso do documento
+        :return: Retorna uma estrutura contendo as estruturas de envio
+        e retorno preenchidas
+        """
+
+        if not ultimo_nsu and not nsu_especifico and not chave:
+            return
+
+        distNSU = consNSU = consChNFe = None
+        if ultimo_nsu:
+            distNSU = distDFeInt.distNSUType(
+                ultNSU=ultimo_nsu
+            )
+        if nsu_especifico:
+            consNSU = distDFeInt.consNSUType(
+                NSU=nsu_especifico
+            )
+        if chave:
+            consChNFe = distDFeInt.consChNFeType(
+                chNFe=chave
+            )
+
+        if distNSU and consNSU or \
+            distNSU and consChNFe or \
+            consNSU and consChNFe:
+            # TODO: Raise?
+            return
+
+        raiz = distDFeInt.distDFeInt(
+            versao=self.versao,
+            tpAmb=self.ambiente,
+            cUFAutor=self.uf,
+            CNPJ=cnpj_cpf if len(cnpj_cpf) > 11 else None,
+            CPF=cnpj_cpf if len(cnpj_cpf) <= 11 else None,
+            distNSU=distNSU,
+            consNSU=consNSU,
+            consChNFe=consChNFe,
+        )
+
+        return self._post(
+            raiz,
+            localizar_url(WS_DFE_DISTRIBUICAO, str(self.uf), self.mod,
+                          int(self.ambiente)),
+            'nfeDistDFeInteresse',
+            retDistDFeInt
+        )
+
+# ----------------------------- MANIFESTAÇÃO DO DESTINATÁRIO -----------------
+
+    def nfe_recepcao_envia_lote_evento(self, lista_eventos, numero_lote=False):
+        """
+        Envia lote de eventos confRecebto.TEvento
+        :param lista_eventos: Lista com os eventos (infEvento)
+        :param numero_lote: Número do lote. Gerado caso None
+        :return: retorna a resposta do _post() de envio do lote
+        """
+
+        if not numero_lote:
+            numero_lote = self._gera_numero_lote()
+
+        eventos = []
+        raiz = leiauteEvento.TEnvEvento(
+            versao="1.00",
+            idLote=numero_lote,
+            evento=eventos
+        )
+        raiz.original_tagname_ = 'envEvento'
+
+        for raiz_evento in lista_eventos:
+            evento = confRecebto.TEvento(
+                versao="1.00", infEvento=raiz_evento,
+            )
+            evento.original_tagname_ = 'evento'
+
+            # Recupera o evento do XML assinado
+            xml_assinado = self.assina_raiz(evento, evento.infEvento.Id)
+
+            # Converte o xml_assinado para um objeto pelo
+            # parser do esquema leiauteConfRecebto
+            xml_object = confRecebto2.parseString(
+                bytearray(xml_assinado, 'utf8'))
+
+            # Adiciona o xml_object na lista de eventos. Desse modo a lista
+            # de eventos terá um evento assinado corretamente
+            eventos.append(xml_object)
+
+        return self._post(
+            raiz,
+            # 'https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl',
+            localizar_url(WS_NFE_RECEPCAO_EVENTO, str(91), self.mod,
+                          int(self.ambiente)),
+            'nfeRecepcaoEventoNF',
+            retEnvEvento
+        )
+
+    def nfe_recepcao_monta_evento(self, chave, cnpj_cpf, tpEvento, descEvento,
+                                  dhEvento=None, xJust=None):
+        """
+        Método para montar o evento(infEvento) da manifestação
+        :param chave: chave do documento
+        :param cnpj_cpf: CPF ou CNPJ
+        :param tpEvento:   Código do Evento
+                                210200 – Confirmação da Operação
+                                210210 – Ciência da Operação
+                                210220 – Desconhecimento da Operação
+                                210240 – Operação não Realizada
+        :param descEvento: Informar a descrição do evento:
+                                Confirmacao da Operacao
+                                Ciencia da Operacao
+                                Desconhecimento da Operacao
+                                Operacao nao Realizada
+        :param dhEvento:   Data/Hora no formato AAAA-MM-DDThh:mm:ssTZD
+        :param xJust:      Este campo deve ser informado somente no
+                                evento de Operação não realizada
+        :return: Um objeto da classe confRecebto.infEventoType preenchido
+        """
+
+        nSeqEvento = '1'
+        raiz = confRecebto.infEventoType(
+            Id='ID{}{}{}'.format(tpEvento, chave, nSeqEvento.zfill(2)),
+            cOrgao=91,
+            tpAmb=self.ambiente,
+            CNPJ=cnpj_cpf if len(cnpj_cpf) > 11 else None,
+            CPF=cnpj_cpf if len(cnpj_cpf) <= 11 else None,
+            chNFe=chave,
+            dhEvento=dhEvento or self._hora_agora(),
+            tpEvento=tpEvento,
+            nSeqEvento=nSeqEvento,
+            verEvento='1.00',
+            detEvento=confRecebto.detEventoType(
+                versao='1.00',
+                descEvento=descEvento,
+                xJust=xJust
+            )
+        )
+
+        raiz.original_tagname_ = 'infEvento'
+
+        return raiz
+
+    def nfe_recepcao_evento(self, chave, cnpj_cpf, tpEvento, descEvento, xJust=None):
+        """
+        Envia a manifestação do destinatário para o WS
+        :param cnpj_cpf:   CPF ou CNPJ
+        :param tpEvento:   Código do Evento
+                             210200 – Confirmação da Operação
+                             210210 – Ciência da Operação
+                             210220 – Desconhecimento da Operação
+                             210240 – Operação não Realizada
+        :param descEvento: Informar a descrição do evento:
+                             Confirmacao da Operacao
+                             Ciencia da Operacao
+                             Desconhecimento da Operacao
+                             Operacao nao Realizada
+        :param xJust:      Este campo deve ser informado somente no
+                             evento de Operação não realizada
+        :return:
+        """
+
+        evento = self.nfe_recepcao_monta_evento(
+            chave, cnpj_cpf, tpEvento, descEvento, xJust=xJust)
+
+        # TODO: Verificar possibilidade de adaptar e utilizar código existente
+        #  em self.enviar_lote_evento(lista_eventos=[evento]).
+        #  A única diferença é a classe utilizada pelo evento
+
+        return self.nfe_recepcao_envia_lote_evento(
+            lista_eventos=[evento], numero_lote='1'
+        )
+
+    def confirmacao_da_operacao(self, chave, cnpj_cpf):
+        return self.nfe_recepcao_evento(
+            chave,
+            cnpj_cpf,
+            confRecebto.tpEventoType._2_10200,
+            confRecebto.descEventoType.CONFIRMACAODA_OPERACAO,
+        )
+
+    def ciencia_da_operacao(self, chave, cnpj_cpf):
+        return self.nfe_recepcao_evento(
+            chave,
+            cnpj_cpf,
+            confRecebto.tpEventoType._2_10210,
+            confRecebto.descEventoType.CIENCIADA_OPERACAO,
+        )
+
+    def desconhecimento_da_operacao(self, chave, cnpj_cpf):
+        return self.nfe_recepcao_evento(
+            chave,
+            cnpj_cpf,
+            confRecebto.tpEventoType._2_10220,
+            confRecebto.descEventoType.DESCONHECIMENTODA_OPERACAO,
+        )
+
+    def operacao_nao_realizada(self, chave, cnpj_cpf):
+        return self.nfe_recepcao_evento(
+            chave,
+            cnpj_cpf,
+            confRecebto.tpEventoType._2_10240,
+            confRecebto.descEventoType.OPERACAONAO_REALIZADA,
+            xJust=''.zfill(15)
+        )

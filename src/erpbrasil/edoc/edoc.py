@@ -68,11 +68,19 @@ class DocumentoEletronico(ABC):
         output.close()
         return contents, etree.fromstring(contents)
 
+    # list(mydict.keys())[list(mydict.values()).index(16)]
+
     def _post(self, raiz, url, operacao, classe):
+        from .nfe import SIGLA_ESTADO
+
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         with self._transmissao.cliente(url):
+            # Recupera a sigla do estado
+            uf_list = [uf for nUF, uf in SIGLA_ESTADO.items() if
+                       nUF == str(getattr(raiz, 'cUFAutor', ''))]
+            kwargs = dict(uf=uf_list and uf_list[0])
             retorno = self._transmissao.enviar(
-                operacao, xml_etree
+                operacao, xml_etree, **kwargs
             )
             return analisar_retorno_raw(
                 operacao, raiz, xml_string, retorno, classe
@@ -217,7 +225,10 @@ class DocumentoEletronico(ABC):
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
             xml_etree, id, getchildren
         )
-        return xml_assinado
+
+        if isinstance(xml_assinado, bytes):
+            xml_assinado = xml_assinado.decode('utf-8')
+
         return xml_assinado.replace('\n', '').replace('\r', '')
 
     def _verifica_servico_em_operacao(self, proc_servico):

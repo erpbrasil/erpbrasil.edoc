@@ -3,8 +3,8 @@
 
 from __future__ import division, print_function, unicode_literals
 
-from erpbrasil.edoc.nfse import Ginfes
-from erpbrasil.edoc.nfse import Dsf
+from erpbrasil.edoc.nfse.ginfes import Ginfes
+from erpbrasil.edoc.nfse.dsf import Dsf
 
 cidades = {
     1501402: Dsf,  # Belem-PA
