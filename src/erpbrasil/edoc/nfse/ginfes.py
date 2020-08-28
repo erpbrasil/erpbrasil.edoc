@@ -2,7 +2,10 @@
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
 from __future__ import division, print_function, unicode_literals
+import xml.etree.ElementTree as ET
+from datetime import datetime
 
+from erpbrasil.base import misc
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 
 from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_envio_v03 as consulta_situacao_lote
@@ -148,23 +151,76 @@ class Ginfes(NFSe):
 
         return xml_assinado
 
-    # def processar_documento(self, edoc):
-    #     processo = super(NFSe, self).processar_documento(edoc)
-    #
-    #     ultimo_processo = None
-    #     for p in processo:
-    #         ultimo_processo = p
-    #
-    #     if ultimo_processo.webservice == u'ConsultarSituacaoLoteRpsV3':
-    #         if processo.resposta.Situacao == 1:
-    #             print('Não Recebido')
-    #
-    #         elif ultimo_processo.resposta.Situacao == 2:
-    #             print('Lote ainda não processado')
-    #
-    #         elif ultimo_processo.resposta.Situacao == 3:
-    #             print('Procesado com Erro')
-    #
-    #         elif ultimo_processo.resposta.Situacao == 4:
-    #             print('Procesado com Sucesso')
-    #
+    def analisa_retorno_consulta(self, processo, number, company_cnpj_cpf,
+                        company_legal_name):
+        retorno = ET.fromstring(processo.retorno)
+        nsmap = {'consulta': 'http://www.ginfes.com.br/servico_consultar_'
+                             'nfse_rps_resposta_v03.xsd',
+                 'tipo': 'http://www.ginfes.com.br/tipos_v03.xsd'}
+
+        mensagem = ''
+        if processo.webservice == 'ConsultarNfsePorRpsV3':
+            enviado = retorno.findall(
+                ".//consulta:CompNfse", namespaces=nsmap)
+            nao_encontrado = retorno.findall(
+                ".//tipo:MensagemRetorno", namespaces=nsmap)
+
+            if enviado:
+                # NFS-e já foi enviada
+
+                cancelada = retorno.findall(
+                    ".//tipo:NfseCancelamento", namespaces=nsmap)
+
+                if cancelada:
+                    # NFS-e enviada foi cancelada
+
+                    data = retorno.findall(
+                        ".//tipo:DataHora", namespaces=nsmap)[0].text
+                    data = datetime.strptime(data, '%Y-%m-%dT%H:%M:%S'). \
+                        strftime("%m/%d/%Y")
+                    mensagem = 'NFS-e cancelada em ' + data
+
+                else:
+                    numero_retorno = \
+                        retorno.findall(".//tipo:InfNfse/tipo:Numero",
+                                        namespaces=nsmap)[0].text
+                    cnpj_prestador_retorno = retorno.findall(
+                        ".//tipo:IdentificacaoPrestador/tipo:Cnpj",
+                        namespaces=nsmap)[0].text
+                    razao_social_prestador_retorno = retorno.findall(
+                        ".//tipo:PrestadorServico/tipo:RazaoSocial",
+                        namespaces=nsmap)[0].text
+
+                    varibles_error = []
+
+                    if numero_retorno != number:
+                        varibles_error.append('Número')
+                    if cnpj_prestador_retorno != misc.punctuation_rm(
+                        company_cnpj_cpf):
+                        varibles_error.append('CNPJ do prestador')
+                    if razao_social_prestador_retorno != company_legal_name:
+                        varibles_error.append('Razão Social de pestrador')
+
+                    if varibles_error:
+                        mensagem = 'Os seguintes campos não condizem com' \
+                                   ' o provedor NFS-e: \n'
+                        mensagem += '\n'.join(varibles_error)
+                    else:
+                        mensagem = "NFS-e enviada e corresponde com o provedor"
+
+            elif nao_encontrado:
+                # NFS-e não foi enviada
+
+                mensagem_erro = retorno.findall(
+                    ".//tipo:Mensagem", namespaces=nsmap)[0].text
+                correcao = retorno.findall(
+                    ".//tipo:Correcao", namespaces=nsmap)[0].text
+                codigo = retorno.findall(
+                    ".//tipo:Codigo", namespaces=nsmap)[0].text
+                mensagem = (codigo + ' - ' + mensagem_erro + ' - Correção: ' +
+                            correcao + '\n')
+
+            else:
+                mensagem = 'Erro desconhecido.'
+
+        return mensagem
