@@ -9,29 +9,39 @@ import time
 from lxml import etree
 import collections
 
-from nfelib.v4_00 import leiauteNFe
+# nfelib imports
+# xsd NFe
 from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
+from nfelib.v4_00 import leiauteInutNFe
 from nfelib.v4_00 import consStatServ
 from nfelib.v4_00 import retConsStatServ
-from nfelib.v4_00 import retDistDFeInt
 from nfelib.v4_00 import consSitNFe
 from nfelib.v4_00 import retConsSitNFe
 from nfelib.v4_00 import enviNFe
 from nfelib.v4_00 import retEnviNFe
 from nfelib.v4_00 import consReciNFe
 from nfelib.v4_00 import retConsReciNFe
-from nfelib.v4_00 import leiauteEvento
-from nfelib.v4_00 import leiauteEventoCancNFe
-from nfelib.v4_00 import leiauteCCe
-from nfelib.v4_00 import retEnvEvento
-from nfelib.v4_00 import leiauteInutNFe
-from erpbrasil.edoc.edoc import DocumentoEletronico
 
+# xsd Distrito Federal
 from nfelib.v4_00 import distDFeInt
+from nfelib.v4_00 import retDistDFeInt
 
-# Manifestação do destinatário
+# xsd Evento Generico
+from nfelib.v4_00 import leiauteEvento
+from nfelib.v4_00 import retEnvEvento
+
+# xsd Evento Cancelamento
+from nfelib.v4_00 import leiauteEventoCancNFe
+
+# xsd CCe
+from nfelib.v4_00 import leiauteCCe
+
+# xsd Manifestação do destinatário - TODO limpar a geracao
 from nfelib.v4_00 import leiauteConfRecebtoManifestacao as confRecebto
 from nfelib.v4_00 import leiauteConfRecebto as confRecebto2
+
+from erpbrasil.edoc.edoc import DocumentoEletronico
+
 
 try:
     from StringIO import StringIO
