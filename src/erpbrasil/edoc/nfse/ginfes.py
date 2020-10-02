@@ -224,3 +224,25 @@ class Ginfes(NFSe):
                 mensagem = 'Erro desconhecido.'
 
         return mensagem
+
+    def analisa_retorno_cancelamento(self, processo):
+        if processo.webservice in ['CancelarNfseV3', 'CancelarNfse']:
+            mensagem_completa = ''
+            situacao = True
+            retorno = ET.fromstring(processo.retorno)
+            nsmap = {'tipo': 'http://www.ginfes.com.br/tipos_v03.xsd'}
+
+            sucesso = retorno.findall(".//tipo:Sucesso", namespaces=nsmap)
+            if not sucesso:
+                mensagem_erro = retorno.findall(
+                    ".//tipo:Mensagem", namespaces=nsmap)[0].text
+                correcao = retorno.findall(
+                    ".//tipo:Correcao", namespaces=nsmap)[0].text
+                codigo = retorno.findall(
+                    ".//tipo:Codigo", namespaces=nsmap)[0].text
+                mensagem_completa += (
+                    codigo + ' - ' + mensagem_erro +
+                    ' - Correção: ' + correcao + '\n')
+                situacao = False
+
+            return situacao, mensagem_completa
