@@ -14,16 +14,31 @@ from lxml import etree
 from erpbrasil.edoc.edoc import DocumentoEletronico
 
 try:
-    from nfelib.v4_00 import distDFeInt
-    from nfelib.v4_00 import leiauteCCe
-    from nfelib.v4_00 import leiauteInutNFe
-    from nfelib.v4_00 import retConsReciNFe
-    from nfelib.v4_00 import retConsSitNFe
+    # nfelib imports
+    # xsd NFe
+    from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
+    from nfelib.v4_00 import retInutNFe
     from nfelib.v4_00 import retConsStatServ
-    from nfelib.v4_00 import retDistDFeInt
-    from nfelib.v4_00 import retEnvEvento
-    from nfelib.v4_00 import retEnvEventoCancNFe
+    from nfelib.v4_00 import retConsSitNFe
     from nfelib.v4_00 import retEnviNFe
+    from nfelib.v4_00 import retConsReciNFe
+
+    # xsd Distribuiçao NFe
+    from nfelib.v4_00 import distDFeInt
+    from nfelib.v4_00 import retDistDFeInt
+
+    # xsd Evento Generico
+    from nfelib.v4_00 import retEnvEvento
+
+    # xsd Evento Cancelamento
+    from nfelib.v4_00 import retEnvEventoCancNFe
+
+    # xsd CCe
+    from nfelib.v4_00 import retEnvCCe
+
+    # xsd Manifestação do destinatário - TODO checar se precisa de algum override
+    from nfelib.v4_00 import retEnvConfRecebto
+
 except ImportError:
     pass
 
@@ -896,7 +911,7 @@ class NFe(DocumentoEletronico):
     def carta_correcao(self, chave, sequencia, justificativa,
                        data_hora_evento=False):
         tipo_evento = '110110'
-        raiz = leiauteCCe.infEventoType(
+        raiz = retEnvCCe.infEventoType(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
             cOrgao=self.uf,
             tpAmb=self.ambiente,
@@ -907,7 +922,7 @@ class NFe(DocumentoEletronico):
             tpEvento=tipo_evento,
             nSeqEvento=sequencia,
             verEvento='1.00',
-            detEvento=leiauteCCe.detEventoType(
+            detEvento=retEnvCCe.detEventoType(
                 versao="1.00",
                 descEvento='Carta de Correcao',
                 xCorrecao=justificativa,
