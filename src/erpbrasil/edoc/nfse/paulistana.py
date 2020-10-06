@@ -4,7 +4,7 @@
 from __future__ import division, print_function, unicode_literals
 
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
-from erpbrasil.assinatura.assinatura import assina_string
+from erpbrasil.assinatura.assinatura import assina_tag
 
 from nfselib.paulistana.v02 import RetornoEnvioLoteRPS_v01 as RetornoEnvioLoteRPS
 from nfselib.paulistana.v02 import RetornoConsulta_v01 as RetornoConsulta
@@ -51,8 +51,8 @@ class Paulistana(NFSe):
 
     def _prepara_envia_documento(self, edoc):
         for rps in edoc.RPS:
-            rps.Assinatura = assina_string(self._transmissao, rps.Assinatura)
-        xml_assinado = self.assina_raiz(edoc, '')
+            rps.Assinatura = assina_tag(self._transmissao, rps.Assinatura)
+        xml_assinado = self.assina_raiz(edoc, '', metodo='nfse')
 
         return xml_assinado
 
