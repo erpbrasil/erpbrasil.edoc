@@ -2,12 +2,20 @@
 # Copyright (C) 2020 KMEE
 
 from __future__ import division, print_function, unicode_literals
+import xml.etree.ElementTree as ET
 
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 from erpbrasil.assinatura.assinatura import assina_tag
 
 from nfselib.paulistana.v02 import RetornoEnvioLoteRPS_v01 as RetornoEnvioLoteRPS
 from nfselib.paulistana.v02 import RetornoConsulta_v01 as RetornoConsulta
+
+from nfselib.paulistana.v02.PedidoConsultaLote_v01 import(
+    PedidoConsultaLote,
+    CabecalhoType
+)
+
+from nfselib.paulistana.v02.TiposNFe_v01 import tpCPFCNPJ
 
 endpoint = 'ws/lotenfe.asmx?WSDL'
 
@@ -57,7 +65,7 @@ class Paulistana(NFSe):
         return xml_assinado
 
     def _verifica_resposta_envio_sucesso(self, proc_envio):
-        return not proc_envio.resposta.Cabecalho.Sucesso
+        return proc_envio.resposta.Cabecalho.Sucesso
 
     def _edoc_situacao_em_processamento(self, proc_recibo):
         # if proc_recibo.resposta.Situacao == 2:
@@ -67,5 +75,17 @@ class Paulistana(NFSe):
 
     def _prepara_consulta_recibo(self, proc_envio):
 
-        pass
+        retorno = ET.fromstring(proc_envio.retorno)
+        numero_lote = retorno[0][1][0].text
+        cnpj = retorno[0][1][2][0].text
 
+        edoc =  PedidoConsultaLote(
+            Cabecalho=CabecalhoType(
+                CPFCNPJRemetente=cnpj,
+                NumeroLote=numero_lote
+            )
+        )
+
+        xml_assinado = self.assina_raiz(edoc, '', metodo='nfse')
+
+        return xml_assinado
