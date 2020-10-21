@@ -7,15 +7,15 @@ import xml.etree.ElementTree as ET
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 from erpbrasil.assinatura.assinatura import assina_tag
 
-from nfselib.paulistana.v02 import RetornoEnvioLoteRPS_v01 as RetornoEnvioLoteRPS
-from nfselib.paulistana.v02 import RetornoConsulta_v01 as RetornoConsulta
+from nfselib.paulistana.v02 import RetornoEnvioLoteRPS
+from nfselib.paulistana.v02 import RetornoConsulta
 
-from nfselib.paulistana.v02.PedidoConsultaLote_v01 import(
+from nfselib.paulistana.v02.PedidoConsultaLote import(
     PedidoConsultaLote,
-    CabecalhoType
+    CabecalhoType,
+    tpCPFCNPJ,
 )
 
-from nfselib.paulistana.v02.TiposNFe_v01 import tpCPFCNPJ
 
 endpoint = 'ws/lotenfe.asmx?WSDL'
 
@@ -76,12 +76,13 @@ class Paulistana(NFSe):
     def _prepara_consulta_recibo(self, proc_envio):
 
         retorno = ET.fromstring(proc_envio.retorno)
-        numero_lote = retorno[0][1][0].text
+        numero_lote = int(retorno[0][1][0].text)
         cnpj = retorno[0][1][2][0].text
 
-        edoc =  PedidoConsultaLote(
+        edoc = PedidoConsultaLote(
             Cabecalho=CabecalhoType(
-                CPFCNPJRemetente=cnpj,
+                Versao=1,
+                CPFCNPJRemetente=tpCPFCNPJ(CNPJ=cnpj),
                 NumeroLote=numero_lote
             )
         )
