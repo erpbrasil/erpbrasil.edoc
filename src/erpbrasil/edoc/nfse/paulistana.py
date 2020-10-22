@@ -15,8 +15,13 @@ from nfselib.paulistana.v02.PedidoConsultaLote import(
     CabecalhoType as CabecalhoLote,
     tpCPFCNPJ,
 )
+
+from nfselib.paulistana.v02.PedidoConsultaNFe import(
+    PedidoConsultaNFe,
     CabecalhoType,
+    DetalheType,
     tpCPFCNPJ,
+    tpChaveRPS
 )
 
 
@@ -33,6 +38,10 @@ servicos_hml = {
 
     'consulta_recibo': ServicoNFSe(
         'ConsultaLote',
+        endpoint, RetornoConsulta, True),
+
+    'consulta_nfse_rps': ServicoNFSe(
+        'ConsultaNFe',
         endpoint, RetornoConsulta, True),
 }
 servicos_hml.update(servicos_base.copy())
@@ -93,3 +102,35 @@ class Paulistana(NFSe):
         xml_assinado = self.assina_raiz(edoc, '', metodo='nfse')
 
         return xml_assinado
+
+    def _prepara_consultar_nfse_rps(
+            self, rps_numero, rps_serie, inscricao_prestador, cnpj_prestador):
+
+        raiz = PedidoConsultaNFe(
+            Cabecalho=CabecalhoType(
+                Versao=1,
+                CPFCNPJRemetente=tpCPFCNPJ(CNPJ=cnpj_prestador)
+            ),
+            Detalhe=[DetalheType(
+                ChaveRPS=tpChaveRPS(
+                    InscricaoPrestador=int(inscricao_prestador),
+                    SerieRPS=rps_serie,
+                    NumeroRPS=int(rps_numero),
+                ),
+            )],
+        )
+
+        xml_assinado = self.assina_raiz(raiz, '', metodo='nfse')
+
+        return xml_assinado
+
+    def analisa_retorno_consulta(self, processo):
+        retorno_mensagem = ''
+        if processo.resposta.Cabecalho.Sucesso:
+            retorno = ET.fromstring(processo.retorno)
+            codigo = retorno.find('.//Codigo').text
+            descricao = retorno.find('.//Descricao').text
+            retorno_mensagem = codigo + ' - ' + descricao
+        else:
+            retorno_mensagem = 'Error communicating with the webservice'
+        return retorno_mensagem
