@@ -12,6 +12,9 @@ from nfselib.paulistana.v02 import RetornoConsulta
 
 from nfselib.paulistana.v02.PedidoConsultaLote import(
     PedidoConsultaLote,
+    CabecalhoType as CabecalhoLote,
+    tpCPFCNPJ,
+)
     CabecalhoType,
     tpCPFCNPJ,
 )
@@ -76,11 +79,11 @@ class Paulistana(NFSe):
     def _prepara_consulta_recibo(self, proc_envio):
 
         retorno = ET.fromstring(proc_envio.retorno)
-        numero_lote = int(retorno[0][1][0].text)
-        cnpj = retorno[0][1][2][0].text
+        numero_lote = int(retorno.find('.//NumeroLote').text)
+        cnpj = retorno.find('.//CNPJ').text
 
         edoc = PedidoConsultaLote(
-            Cabecalho=CabecalhoType(
+            Cabecalho=CabecalhoLote(
                 Versao=1,
                 CPFCNPJRemetente=tpCPFCNPJ(CNPJ=cnpj),
                 NumeroLote=numero_lote
