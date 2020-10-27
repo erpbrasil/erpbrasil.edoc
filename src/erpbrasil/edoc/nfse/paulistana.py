@@ -9,6 +9,7 @@ from erpbrasil.assinatura.assinatura import assina_tag
 
 from nfselib.paulistana.v02 import RetornoEnvioLoteRPS
 from nfselib.paulistana.v02 import RetornoConsulta
+from nfselib.paulistana.v02 import RetornoCancelamentoNFe
 
 from nfselib.paulistana.v02.PedidoConsultaLote import(
     PedidoConsultaLote,
@@ -24,18 +25,17 @@ from nfselib.paulistana.v02.PedidoConsultaNFe import(
     tpChaveRPS
 )
 
+from nfselib.paulistana.v02.PedidoCancelamentoNFe import(
+    PedidoCancelamentoNFe,
+    CabecalhoType as CabecalhoCancelamento,
+    DetalheType,
+    tpChaveNFe,
+)
+
 
 endpoint = 'ws/lotenfe.asmx?WSDL'
 
 servicos_base = {
-
-}
-
-servicos_hml = {
-    'envia_documento': ServicoNFSe(
-        'TesteEnvioLoteRPS',
-        endpoint, RetornoEnvioLoteRPS, True),
-
     'consulta_recibo': ServicoNFSe(
         'ConsultaLote',
         endpoint, RetornoConsulta, True),
@@ -43,6 +43,16 @@ servicos_hml = {
     'consulta_nfse_rps': ServicoNFSe(
         'ConsultaNFe',
         endpoint, RetornoConsulta, True),
+
+    'cancela_documento': ServicoNFSe(
+        'CancelamentoNFe',
+        endpoint, RetornoCancelamentoNFe, True),
+}
+
+servicos_hml = {
+    'envia_documento': ServicoNFSe(
+        'TesteEnvioLoteRPS',
+        endpoint, RetornoEnvioLoteRPS, True),
 }
 servicos_hml.update(servicos_base.copy())
 
@@ -134,3 +144,42 @@ class Paulistana(NFSe):
         else:
             retorno_mensagem = 'Error communicating with the webservice'
         return retorno_mensagem
+
+    def _prepara_cancelar_nfse_envio(self, doc_numero):
+        numero_nfse = doc_numero.get('numero_nfse')
+        codigo_verificacao = doc_numero.get('codigo_verificacao') or ''
+
+        assinatura = numero_nfse.zfill(8)
+        assinatura += codigo_verificacao.zfill(12)
+
+        raiz = PedidoCancelamentoNFe(
+            Cabecalho=CabecalhoCancelamento(
+                Versao=1,
+                CPFCNPJRemetente=tpCPFCNPJ(CNPJ=self.cnpj_prestador),
+            ),
+            Detalhe=[DetalheType(
+                ChaveNFe=tpChaveNFe(
+                    InscricaoPrestador=int(self.im_prestador),
+                    NumeroNFe=int(numero_nfse),
+                    CodigoVerificacao=codigo_verificacao.zfill(8),
+                ),
+                AssinaturaCancelamento=assinatura,
+            )],
+        )
+
+        for detalhe in raiz.Detalhe:
+            detalhe.AssinaturaCancelamento = assina_tag(
+                self._transmissao, detalhe.AssinaturaCancelamento)
+
+        xml_assinado = self.assina_raiz(raiz, '', metodo='nfse')
+        return xml_assinado
+
+    def analisa_retorno_cancelamento_paulistana(self, processo):
+        retorno_mensagem = ''
+        status = True
+        if not processo.resposta.Cabecalho.Sucesso:
+            status = False
+            for erro in processo.resposta.Erro:
+                retorno_mensagem = \
+                    str(erro.Codigo) + ' - ' + erro.Descricao + '\n'
+        return status, retorno_mensagem
