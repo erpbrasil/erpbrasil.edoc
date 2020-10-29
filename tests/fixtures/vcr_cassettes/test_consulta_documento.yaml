@@ -1,0 +1,194 @@
+interactions:
+- request:
+    body: '<?xml version=''1.0'' encoding=''utf-8''?>
+
+      <soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Body><ns0:ConsultaNFeRequest
+      xmlns:ns0="http://www.prefeitura.sp.gov.br/nfe"><ns0:VersaoSchema>1</ns0:VersaoSchema><ns0:MensagemXML>&lt;PedidoConsultaNFe
+      xmlns="http://www.prefeitura.sp.gov.br/nfe"&gt;&lt;Cabecalho xmlns="" Versao="1"&gt;&lt;CPFCNPJRemetente&gt;&lt;CNPJ&gt;07865699000100&lt;/CNPJ&gt;&lt;/CPFCNPJRemetente&gt;&lt;/Cabecalho&gt;&lt;Detalhe
+      xmlns=""&gt;&lt;ChaveRPS&gt;&lt;InscricaoPrestador&gt;35707410&lt;/InscricaoPrestador&gt;&lt;SerieRPS&gt;1&lt;/SerieRPS&gt;&lt;NumeroRPS&gt;1&lt;/NumeroRPS&gt;&lt;/ChaveRPS&gt;&lt;/Detalhe&gt;&lt;Signature
+      xmlns="http://www.w3.org/2000/09/xmldsig#"&gt;
+
+      &lt;SignedInfo&gt;
+
+      &lt;CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/&gt;
+
+      &lt;SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/&gt;
+
+      &lt;Reference URI=""&gt;
+
+      &lt;Transforms&gt;
+
+      &lt;Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/&gt;
+
+      &lt;Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/&gt;
+
+      &lt;/Transforms&gt;
+
+      &lt;DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/&gt;
+
+      &lt;DigestValue&gt;riD7ZeFGI6iXouBshlFIcTy49X4=&lt;/DigestValue&gt;
+
+      &lt;/Reference&gt;
+
+      &lt;/SignedInfo&gt;
+
+      &lt;SignatureValue&gt;G8EBIXP0wgkZndIH7LILtiNwsSQu2W8vt6IxLgcvyyM4D2f4CnNK439VwnwyJAAN
+
+      r7ZT8T9izRMYDefIWjU+f+qiyep+dm9JUSPF1qqwsev5Dj607VGk2ZX37KNazdgo
+
+      6+oOUDWWz6QnbKutVpUt4C80J3vA19egcv4lhRnmlJAu7h8jxLmzOG/ciXFi9xvP
+
+      WuwQjDSoqNpItvEpIXKDFUdHWjkR+OYBjytglAByMBeXN50PNaPB3ILShzX1xd5y
+
+      BFwhRpDgLy1ixR0U1VzU7ImExa1JqGdGrRFMXj9JtHN01doP4qzYESiZM94R04f5
+
+      /ep27yZapbfcKi1BVVZdOQ==&lt;/SignatureValue&gt;
+
+      &lt;KeyInfo&gt;
+
+      &lt;X509Data&gt;
+
+      &lt;X509Certificate&gt;MIIH5jCCBc6gAwIBAgIISU98baeuQtUwDQYJKoZIhvcNAQELBQAwTDELMAkGA1UE
+
+      BhMCQlIxEzARBgNVBAoMCklDUC1CcmFzaWwxKDAmBgNVBAMMH1NFUkFTQSBDZXJ0
+
+      aWZpY2Fkb3JhIERpZ2l0YWwgdjUwHhcNMTkxMTI1MTU1OTAwWhcNMjAxMTI0MTU1
+
+      OTAwWjCCATUxCzAJBgNVBAYTAkJSMRMwEQYDVQQKDApJQ1AtQnJhc2lsMRQwEgYD
+
+      VQQLDAsoRU0gQlJBTkNPKTEYMBYGA1UECwwPMDAwMDAxMDA5MzgxMTUwMRQwEgYD
+
+      VQQLDAsoRU0gQlJBTkNPKTEUMBIGA1UECwwLKEVNIEJSQU5DTykxKDAmBgNVBAsM
+
+      H1NFUkFTQSBDZXJ0aWZpY2Fkb3JhIERpZ2l0YWwgdjUxFzAVBgNVBAsMDjYyMTcz
+
+      NjIwMDAwMTgwMRQwEgYDVQQLDAsoRU0gQlJBTkNPKTFcMFoGA1UEAwxTQVNUVVNU
+
+      RUMgTUVESUNBTCBURUNOT0xPR1kgQ09NRVJDSU8gRSBBU1NJU1RFTkNJQSBURUNO
+
+      SUNBIEVNIEFQQVJFTEhPUyBNRURJQ09TIExUREEwggEiMA0GCSqGSIb3DQEBAQUA
+
+      A4IBDwAwggEKAoIBAQDC0tI8SjH/sJPfLx6GHFFAIZpapad0lXOY9ZkbCQ8BTN+C
+
+      PgnIL7BdE2YgBJPI5AKsNSbKHPcfw/hbpyojN5pRvbNpQp2wDBJbTHxVGvCCwaug
+
+      uMY3C7hJqpk9r4LY03u/xsJG2UvlABzyqwKqQVTHvPD6mPoXfne4xgSDlKrn3yrI
+
+      dJ1ggZ2LW12amrKafz076f3LVNfDEbLEMc7NMi0DCHA+DYCHdYLgTrW/nuVyF6DP
+
+      sr3orVF6ex9nHdMeB8fISrKOP89Sp3RkBTFBwrzQM31xclyQhy1wRGLNNM3v4BZq
+
+      HNf2ESyX6OHw7HIRKc0ShIs7GIhXvgk0V4GUhdG9AgMBAAGjggLfMIIC2zAfBgNV
+
+      HSMEGDAWgBRWda9Kc7LYCMR9+2woHBHV98GozDCBlwYIKwYBBQUHAQEEgYowgYcw
+
+      RwYIKwYBBQUHMAKGO2h0dHA6Ly93d3cuY2VydGlmaWNhZG9kaWdpdGFsLmNvbS5i
+
+      ci9jYWRlaWFzL3NlcmFzYWNkdjUucDdiMDwGCCsGAQUFBzABhjBodHRwOi8vb2Nz
+
+      cC5jZXJ0aWZpY2Fkb2RpZ2l0YWwuY29tLmJyL3NlcmFzYWNkdjUwgb4GA1UdEQSB
+
+      tjCBs4EcRklOQU5DRUlSTzJAQVNUVVNNRURJQ0FMLkNPTaA+BgVgTAEDBKA1EzMw
+
+      NDA4MTk2NDA2MzI3Mjk3ODM4MDAwMDAwMDAwMDAwMDAwMDAwMTU1NTg5ODNTU1Ag
+
+      U1CgHwYFYEwBAwKgFhMUV0VTTEVJIE1PUkFJUyBCT1JHRVOgGQYFYEwBAwOgEBMO
+
+      MDc4NjU2OTkwMDAxMDCgFwYFYEwBAwegDhMMMDAwMDAwMDAwMDAwMHEGA1UdIARq
+
+      MGgwZgYGYEwBAgEGMFwwWgYIKwYBBQUHAgEWTmh0dHA6Ly9wdWJsaWNhY2FvLmNl
+
+      cnRpZmljYWRvZGlnaXRhbC5jb20uYnIvcmVwb3NpdG9yaW8vZHBjL2RlY2xhcmFj
+
+      YW8tc2NkLnBkZjAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwgZsGA1Ud
+
+      HwSBkzCBkDBJoEegRYZDaHR0cDovL3d3dy5jZXJ0aWZpY2Fkb2RpZ2l0YWwuY29t
+
+      LmJyL3JlcG9zaXRvcmlvL2xjci9zZXJhc2FjZHY1LmNybDBDoEGgP4Y9aHR0cDov
+
+      L2xjci5jZXJ0aWZpY2Fkb3MuY29tLmJyL3JlcG9zaXRvcmlvL2xjci9zZXJhc2Fj
+
+      ZHY1LmNybDAdBgNVHQ4EFgQUXW25t1h4gk4omFG13+bvgX/zbt4wDgYDVR0PAQH/
+
+      BAQDAgXgMA0GCSqGSIb3DQEBCwUAA4ICAQAPn2UzV3a9CFXxcZphaMSbVAXuJUqE
+
+      t6pNoU8DIbE8OZtd6FSw8vpaT7Pzfnc/oYctJIedKvkynWE/b+aYnAnlLc+u3E9h
+
+      Ag0bi1PxeVOKFssx9G6yHD1ALkG/Ty/XzFjuxRJu5DwzVpoEFeeLjE3dMbREfL5S
+
+      CQSNNfi7x9fX9buvM/ogI+3AP6chIeiutSDXi0a5Xta2vufwzAB73mY6TTzxiOFW
+
+      3yL5KlTtFH5K2qU4QaHp1b05ExOaWFWuByu474aSdpb1AUaAytam84ZCXc/H+5Gq
+
+      nBB14FfYAqjc9uNCnaxjilnh7H763ZJFKu//qfor5X8X7u6ZS7GOqyKHyEHBiKrN
+
+      Pux0mPyBmfaCKH5M2GoBEnB84KSj4nw70LKVxSgE/KzJBW33RyTmkgyzNb1Xouk6
+
+      hSY4R+pXgNxqsulYTrvK9UauDnrEYWwbVJfWmkiCzvUn9PQ4CzQU6nKdaV7ISFGU
+
+      ajwAvyx1IHk3ccynyvpUX+jfIYOijbn47H1W5CN2nnAOUuAeE6R89GxIedg3f7Un
+
+      ybLLwjxEMUdhpGBFeC5GWjJKbOawJ19NVipBbNVq2sQy+St4HGdxYO5zfiB4fTU2
+
+      PO+L+Kvn0/jFwrCV/HnMUb+qQr+QlHNOK+wdzR6iC86j2gZjbOvW4XtLf7aCjs69
+
+      L4Tm9zYugaUA+w==&lt;/X509Certificate&gt;
+
+      &lt;/X509Data&gt;
+
+      &lt;/KeyInfo&gt;
+
+      &lt;/Signature&gt;&lt;/PedidoConsultaNFe&gt;</ns0:MensagemXML></ns0:ConsultaNFeRequest></soap-env:Body></soap-env:Envelope>'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4715'
+      Content-Type:
+      - text/xml; charset=utf-8
+      SOAPAction:
+      - '"http://www.prefeitura.sp.gov.br/nfe/ws/consultaNFe"'
+      User-Agent:
+      - Zeep/3.4.0 (www.python-zeep.org)
+    method: POST
+    uri: https://nfe.prefeitura.sp.gov.br/ws/lotenfe.asmx
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcpl
+        VmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/Ih7/Hu8W
+        ZXqZ101RLT/7aHe881GaL6fVrFhefPbRuj3fPvjo9zh63FTZ6tHp8jIvq1We0ivL5hE+++yjeduu
+        Ht2920zn+SJrxvQVPh9X9cVd/HI315fufqSvvWsK+9bV1dX46h433tvZ2b37e3/x/DUD2i6WTZst
+        p7l7a3bzWx8pok+q2fXR45Nq2azLNnvxLH+VNyv6SzEPAK3q/Dwv2nWdjZvV+KK6HE/qu8vznGC9
+        ytuqXlYE/ugXlu3hRkp99eYZKPULL9pDtNVXDQrS7y0HYRt/DToFbwwOzWB5kk3yaVbOq/QnaVhZ
+        RaOycGyj1+tp3jQV/mzrdY6P7nqf8d8WkPnkuMxrM2wP1glR64Ib7e7ufIpP7rqP8OfTvJnWxTTj
+        D148e72dp8t/9C+tmNDLts5m2RjN7gbt8MnJPLvMX718bf4+W2qDl3VOFJpVNb65d//BzoP93R20
+        uBtvgq9e53VhgO3ig7v+J/jgxXqR15V+IE2Cj/iTLk53hSr2zw6T4PPH5kOa4aPHRBz5ymNh+tTj
+        cfndCObR/wM4vmCezgMAAA==
+    headers:
+      Cache-Control:
+      - private, max-age=0
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '529'
+      Content-Type:
+      - text/xml; charset=utf-8
+      Date:
+      - Thu, 29 Oct 2020 13:18:29 GMT
+      Server:
+      - Microsoft-IIS/8.5
+      Vary:
+      - Accept-Encoding
+      X-AspNet-Version:
+      - 4.0.30319
+      X-Powered-By:
+      - ASP.NET
+    status:
+      code: 200
+      message: OK
+version: 1
