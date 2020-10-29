@@ -20,7 +20,7 @@ from nfselib.paulistana.v02.PedidoConsultaLote import(
 from nfselib.paulistana.v02.PedidoConsultaNFe import(
     PedidoConsultaNFe,
     CabecalhoType,
-    DetalheType,
+    DetalheType as DetalheConsulta,
     tpCPFCNPJ,
     tpChaveRPS
 )
@@ -28,7 +28,7 @@ from nfselib.paulistana.v02.PedidoConsultaNFe import(
 from nfselib.paulistana.v02.PedidoCancelamentoNFe import(
     PedidoCancelamentoNFe,
     CabecalhoType as CabecalhoCancelamento,
-    DetalheType,
+    DetalheType as DetalheCancelamento,
     tpChaveNFe,
 )
 
@@ -121,7 +121,7 @@ class Paulistana(NFSe):
                 Versao=1,
                 CPFCNPJRemetente=tpCPFCNPJ(CNPJ=cnpj_prestador)
             ),
-            Detalhe=[DetalheType(
+            Detalhe=[DetalheConsulta(
                 ChaveRPS=tpChaveRPS(
                     InscricaoPrestador=int(inscricao_prestador),
                     SerieRPS=rps_serie,
@@ -157,7 +157,7 @@ class Paulistana(NFSe):
                 Versao=1,
                 CPFCNPJRemetente=tpCPFCNPJ(CNPJ=self.cnpj_prestador),
             ),
-            Detalhe=[DetalheType(
+            Detalhe=[DetalheCancelamento(
                 ChaveNFe=tpChaveNFe(
                     InscricaoPrestador=int(self.im_prestador),
                     NumeroNFe=int(numero_nfse),
