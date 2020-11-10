@@ -8,16 +8,15 @@ from datetime import datetime
 from erpbrasil.base import misc
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 
-from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_envio_v03 as consulta_situacao_lote
-from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_envio_v03 as servico_consultar_lote_rps_envio
-from nfselib.ginfes.v3_01 import servico_enviar_lote_rps_resposta_v03 as servico_enviar_lote_rps_resposta
-from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_resposta_v03 as servico_consultar_situacao_lote_rps_resposta
-from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_resposta_v03 as servico_consultar_lote_rps_resposta
-from nfselib.ginfes.v3_01 import servico_cancelar_nfse_envio_v03 as servico_cancelar_nfse_envio
-from nfselib.ginfes.v3_01 import servico_consultar_nfse_rps_envio_v03 as servico_consultar_nfse_rps_envio
-from nfselib.ginfes.v3_01.cabecalho_v03 import cabecalho
-from nfselib.ginfes.v3_01.tipos_v03 import tcIdentificacaoPrestador
-from nfselib.ginfes.v3_01.tipos_v03 import tcPedidoCancelamento, tcInfPedidoCancelamento, tcIdentificacaoNfse, tcIdentificacaoRps
+
+from nfselib.ginfes.v3_01 import servico_cancelar_nfse_envio
+from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_envio
+from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_resposta
+from nfselib.ginfes.v3_01 import servico_consultar_nfse_rps_envio
+from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_envio
+from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_resposta
+from nfselib.ginfes.v3_01 import servico_enviar_lote_rps_resposta
+from nfselib.ginfes.v3_01.cabecalho import cabecalho
 
 
 endpoint = 'ServiceGinfesImpl?wsdl'
@@ -64,7 +63,7 @@ class Ginfes(NFSe):
     def _prepara_envia_documento(self, edoc):
         numero_lote = self._gera_numero_lote()
         edoc.LoteRps.Id = 'lote' + numero_lote
-        edoc.LoteRps.NumeroLote = numero_lote
+        edoc.LoteRps.NumeroLote = int(numero_lote)
         #
         # Assinamos todas as RPS e o Lote
         #
@@ -83,9 +82,9 @@ class Ginfes(NFSe):
 
     def _prepara_consulta_recibo(self, proc_envio):
 
-        raiz = consulta_situacao_lote.ConsultarSituacaoLoteRpsEnvio(
+        raiz = servico_consultar_situacao_lote_rps_envio.ConsultarSituacaoLoteRpsEnvio(
             # Id=self._gera_numero_lote(),
-            Prestador=tcIdentificacaoPrestador(
+            Prestador=servico_consultar_situacao_lote_rps_envio.tcIdentificacaoPrestador(
                 Cnpj=self.cnpj_prestador,
                 InscricaoMunicipal=self.im_prestador
             ),
@@ -97,7 +96,7 @@ class Ginfes(NFSe):
     def _prepara_consultar_lote_rps(self, protocolo):
         raiz = servico_consultar_lote_rps_envio.ConsultarLoteRpsEnvio(
             Id=self._gera_numero_lote(),
-            Prestador=tcIdentificacaoPrestador(
+            Prestador=servico_consultar_lote_rps_envio.tcIdentificacaoPrestador(
                 Cnpj=self.cnpj_prestador,
                 InscricaoMunicipal=self.im_prestador
             ),
@@ -118,10 +117,10 @@ class Ginfes(NFSe):
 
     def _prepara_cancelar_nfse_envio(self, doc_numero):
         raiz = servico_cancelar_nfse_envio.CancelarNfseEnvio(
-            Pedido=tcPedidoCancelamento(
-                InfPedidoCancelamento=tcInfPedidoCancelamento(
+            Pedido=servico_cancelar_nfse_envio.tcPedidoCancelamento(
+                InfPedidoCancelamento=servico_cancelar_nfse_envio.tcInfPedidoCancelamento(
                     Id=doc_numero,
-                    IdentificacaoNfse=tcIdentificacaoNfse(
+                    IdentificacaoNfse=servico_cancelar_nfse_envio.tcIdentificacaoNfse(
                         Numero=doc_numero,
                         Cnpj=self.cnpj_prestador,
                         InscricaoMunicipal=self.im_prestador,
@@ -137,12 +136,12 @@ class Ginfes(NFSe):
 
     def _prepara_consultar_nfse_rps(self, rps_numero, rps_serie, rps_tipo):
         raiz = servico_consultar_nfse_rps_envio.ConsultarNfseRpsEnvio(
-            IdentificacaoRps=tcIdentificacaoRps(
+            IdentificacaoRps=servico_consultar_nfse_rps_envio.tcIdentificacaoRps(
                 Numero=rps_numero,
                 Serie=rps_serie,
                 Tipo=rps_tipo,
             ),
-            Prestador=tcIdentificacaoPrestador(
+            Prestador=servico_consultar_nfse_rps_envio.tcIdentificacaoPrestador(
                 Cnpj=self.cnpj_prestador,
                 InscricaoMunicipal=self.im_prestador
             ),

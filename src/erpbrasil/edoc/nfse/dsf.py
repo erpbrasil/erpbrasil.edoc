@@ -6,9 +6,13 @@ from __future__ import division, print_function, unicode_literals
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 from erpbrasil.edoc.chave import ChaveNFSeDSF
 
-from nfselib.dsf import RetornoEnvioLoteRPS
-from nfselib.dsf import RetornoConsultaLote
-from nfselib.dsf import RetornoConsultaNFSeRPS
+
+try:
+    from nfselib.dsf import RetornoEnvioLoteRPS
+    from nfselib.dsf import RetornoConsultaLote
+    from nfselib.dsf import RetornoConsultaNFSeRPS
+except ImportError:
+    pass
 
 endpoint = 'WsNFe2/LoteRps.jws'
 
