@@ -1,7 +1,9 @@
 # coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
-from __future__ import division, print_function, unicode_literals
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 from erpbrasil.edoc.nfse.ginfes import Ginfes
 

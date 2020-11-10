@@ -1,15 +1,18 @@
 # coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
-from __future__ import division, print_function, unicode_literals
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 from erpbrasil.edoc.chave import ChaveNFSeDSF
-from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
+from erpbrasil.edoc.nfse import NFSe
+from erpbrasil.edoc.nfse import ServicoNFSe
 
 try:
-    from nfselib.dsf import RetornoEnvioLoteRPS
     from nfselib.dsf import RetornoConsultaLote
     from nfselib.dsf import RetornoConsultaNFSeRPS
+    from nfselib.dsf import RetornoEnvioLoteRPS
 except ImportError:
     pass
 

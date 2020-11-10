@@ -1,27 +1,24 @@
 # coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
-from __future__ import division, print_function, unicode_literals
-
 import collections
 import datetime
 import time
 
-from erpbrasil.edoc.edoc import DocumentoEletronico
 from lxml import etree
+from nfelib.v4_00 import distDFeInt
+from nfelib.v4_00 import infInutType
+from nfelib.v4_00 import retConsReciNFe
+from nfelib.v4_00 import retConsSitNFe
+from nfelib.v4_00 import retConsStatServ
+from nfelib.v4_00 import retDistDFeInt
+from nfelib.v4_00 import retEnvCCe
+from nfelib.v4_00 import retEnvConfRecebto
+from nfelib.v4_00 import retEnvEvento
+from nfelib.v4_00 import retEnvEventoCancNFe
+from nfelib.v4_00 import retEnviNFe
 
-# xsd Manifestação do destinatário - TODO checar se precisa de algum override
-# xsd CCe
-# xsd Evento Inutilização
-# xsd Evento Cancelamento
-# xsd Evento Generico
-# xsd Distrito Federal
-# nfelib imports
-# xsd NFe
-from nfelib.v4_00 import (distDFeInt, infInutType, retConsReciNFe,
-                          retConsSitNFe, retConsStatServ, retDistDFeInt,
-                          retEnvCCe, retEnvConfRecebto, retEnvEvento,
-                          retEnvEventoCancNFe, retEnviNFe)
+from erpbrasil.edoc.edoc import DocumentoEletronico
 
 TEXTO_CARTA_CORRECAO = """A Carta de Correcao e disciplinada pelo paragrafo \
 1o-A do art. 7o do Convenio S/N, de 15 de dezembro de 1970 e \

@@ -4,9 +4,10 @@ import os
 from unittest import TestCase
 
 from erpbrasil.assinatura.certificado import Certificado
-from erpbrasil.edoc import NFe
 from erpbrasil.transmissao import TransmissaoSOAP
 from requests import Session
+
+from erpbrasil.edoc import NFe
 
 VALID_CSTAT_LIST = ['107', '108', '109']
 

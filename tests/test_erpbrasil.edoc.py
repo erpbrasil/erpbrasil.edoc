@@ -4,9 +4,10 @@ import os
 from unittest import TestCase
 
 from erpbrasil.assinatura.certificado import Certificado
-from erpbrasil.edoc import NFe
 from erpbrasil.transmissao import TransmissaoSOAP
 from requests import Session
+
+from erpbrasil.edoc import NFe
 
 logging.config.dictConfig({
     'version': 1,

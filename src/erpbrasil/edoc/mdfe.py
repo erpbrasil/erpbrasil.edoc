@@ -1,16 +1,21 @@
 # coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
-from __future__ import division, print_function, unicode_literals
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import datetime
 
 from erpbrasil.assinatura.assinatura import Assinatura
-from erpbrasil.edoc.edoc import DocumentoEletronico
 from lxml import etree
+from mdfelib.v3_00 import consMDFeNaoEnc
+from mdfelib.v3_00 import consReciMDFe
+from mdfelib.v3_00 import consSitMDFe
+from mdfelib.v3_00 import consStatServMDFe
+from mdfelib.v3_00 import enviMDFe
 
-from mdfelib.v3_00 import (consMDFeNaoEnc, consReciMDFe, consSitMDFe,
-                           consStatServMDFe, enviMDFe)
+from erpbrasil.edoc.edoc import DocumentoEletronico
 
 
 class MDFe(DocumentoEletronico):

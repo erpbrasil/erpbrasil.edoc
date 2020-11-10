@@ -1,22 +1,25 @@
 # coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
-from __future__ import division, print_function, unicode_literals
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
 from erpbrasil.base import misc
-from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
-
-from nfselib.ginfes.v3_01 import (servico_cancelar_nfse_envio,
-                                  servico_consultar_lote_rps_envio,
-                                  servico_consultar_lote_rps_resposta,
-                                  servico_consultar_nfse_rps_envio,
-                                  servico_consultar_situacao_lote_rps_envio,
-                                  servico_consultar_situacao_lote_rps_resposta,
-                                  servico_enviar_lote_rps_resposta)
+from nfselib.ginfes.v3_01 import servico_cancelar_nfse_envio
+from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_envio
+from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_resposta
+from nfselib.ginfes.v3_01 import servico_consultar_nfse_rps_envio
+from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_envio
+from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_resposta
+from nfselib.ginfes.v3_01 import servico_enviar_lote_rps_resposta
 from nfselib.ginfes.v3_01.cabecalho import cabecalho
+
+from erpbrasil.edoc.nfse import NFSe
+from erpbrasil.edoc.nfse import ServicoNFSe
 
 endpoint = 'ServiceGinfesImpl?wsdl'
 
