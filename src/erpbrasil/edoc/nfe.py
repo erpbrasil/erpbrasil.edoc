@@ -3,44 +3,25 @@
 
 from __future__ import division, print_function, unicode_literals
 
-import re
+import collections
 import datetime
 import time
-from lxml import etree
-import collections
-
-# nfelib imports
-# xsd NFe
-from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
-from nfelib.v4_00 import retInutNFe
-from nfelib.v4_00 import retConsStatServ
-from nfelib.v4_00 import retConsSitNFe
-from nfelib.v4_00 import retEnviNFe
-from nfelib.v4_00 import retConsReciNFe
-
-# xsd Distrito Federal
-from nfelib.v4_00 import distDFeInt
-from nfelib.v4_00 import retDistDFeInt
-
-# xsd Evento Generico
-from nfelib.v4_00 import retEnvEvento
-
-# xsd Evento Cancelamento
-from nfelib.v4_00 import retEnvEventoCancNFe
-
-# xsd CCe
-from nfelib.v4_00 import retEnvCCe
-
-# xsd Manifestação do destinatário - TODO checar se precisa de algum override
-from nfelib.v4_00 import retEnvConfRecebto
 
 from erpbrasil.edoc.edoc import DocumentoEletronico
+from lxml import etree
 
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+# xsd Manifestação do destinatário - TODO checar se precisa de algum override
+# xsd CCe
+# xsd Evento Inutilização
+# xsd Evento Cancelamento
+# xsd Evento Generico
+# xsd Distrito Federal
+# nfelib imports
+# xsd NFe
+from nfelib.v4_00 import (distDFeInt, infInutType, retConsReciNFe,
+                          retConsSitNFe, retConsStatServ, retDistDFeInt,
+                          retEnvCCe, retEnvConfRecebto, retEnvEvento,
+                          retEnvEventoCancNFe, retEnviNFe)
 
 TEXTO_CARTA_CORRECAO = """A Carta de Correcao e disciplinada pelo paragrafo \
 1o-A do art. 7o do Convenio S/N, de 15 de dezembro de 1970 e \
@@ -155,7 +136,7 @@ SVAN = {
     AMBIENTE_PRODUCAO: {
         'servidor': 'www.sefazvirtual.fazenda.gov.br',
         WS_NFE_INUTILIZACAO: 'NFeInutilizacao4/NFeInutilizacao4.asmx?wsdl',
-        WS_NFE_CONSULTA: 'NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl',   # noqa
+        WS_NFE_CONSULTA: 'NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl',  # noqa
         WS_NFE_SITUACAO: 'NFeStatusServico4/NFeStatusServico4.asmx?wsdl',
         WS_NFE_RECEPCAO_EVENTO: 'NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?wsdl',  # noqa
         WS_NFE_AUTORIZACAO: 'NFeAutorizacao4/NFeAutorizacao4.asmx?wsdl',
@@ -341,7 +322,6 @@ UFCE = {
     }
 }
 
-
 UFGO = {
     AMBIENTE_PRODUCAO: {
         'servidor': 'nfe.sefaz.go.gov.br',
@@ -364,7 +344,6 @@ UFGO = {
         WS_NFE_CADASTRO: 'nfe/services/CadConsultaCadastro4?wsdl',
     }
 }
-
 
 UFMT = {
     NFE_MODELO: {
@@ -558,7 +537,6 @@ UFPE = {
     }
 }
 
-
 UFRS = {
     NFE_MODELO: {
         AMBIENTE_PRODUCAO: {
@@ -576,7 +554,7 @@ UFRS = {
             WS_NFE_INUTILIZACAO: 'ws/nfeinutilizacao/nfeinutilizacao4.asmx?wsdl',  # noqa
             WS_NFE_CONSULTA: 'ws/NfeConsulta/NfeConsulta4.asmx?wsdl',
             WS_NFE_SITUACAO: 'ws/NfeStatusServico/NfeStatusServico4.asmx?wsdl',
-            WS_NFE_RECEPCAO_EVENTO: 'ws/recepcaoevento/recepcaoevento4.asmx?wsdl',  #noqa
+            WS_NFE_RECEPCAO_EVENTO: 'ws/recepcaoevento/recepcaoevento4.asmx?wsdl',  # noqa
             WS_NFE_AUTORIZACAO: 'ws/NfeAutorizacao/NFeAutorizacao4.asmx?wsdl',
             WS_NFE_RET_AUTORIZACAO: 'ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx?wsdl',  # noqa
             WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro4.asmx?wsdl',  # noqa
@@ -588,7 +566,7 @@ UFRS = {
             WS_NFE_RECEPCAO_EVENTO: 'ws/recepcaoevento/recepcaoevento.asmx',
             WS_NFE_AUTORIZACAO: 'ws/NfeAutorizacao/NFeAutorizacao.asmx',
             WS_NFE_RET_AUTORIZACAO: 'ws/NfeRetAutorizacao/NFeRetAutorizacao.asmx',  # noqa
-            WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro2.asmx',   # noqa
+            WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro2.asmx',  # noqa
             WS_NFE_INUTILIZACAO: 'ws/NfeInutilizacao/NfeInutilizacao2.asmx',
             WS_NFE_CONSULTA: 'ws/NfeConsulta/NfeConsulta2.asmx',
             WS_NFE_SITUACAO: 'ws/NfeStatusServico/NfeStatusServico2.asmx',
@@ -599,7 +577,7 @@ UFRS = {
             WS_NFE_RECEPCAO_EVENTO: 'ws/recepcaoevento/recepcaoevento.asmx',
             WS_NFE_AUTORIZACAO: 'ws/NfeAutorizacao/NFeAutorizacao.asmx',
             WS_NFE_RET_AUTORIZACAO: 'ws/NfeRetAutorizacao/NFeRetAutorizacao.asmx',  # noqa
-            WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro2.asmx',   # noqa
+            WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro2.asmx',  # noqa
             WS_NFE_INUTILIZACAO: 'ws/NfeInutilizacao/NfeInutilizacao2.asmx',
             WS_NFE_CONSULTA: 'ws/NfeConsulta/NfeConsulta2.asmx',
             WS_NFE_SITUACAO: 'ws/NfeStatusServico/NfeStatusServico2.asmx',
@@ -657,7 +635,6 @@ UFSP = {
     }
 }
 
-
 ESTADO_WS = {
     'AC': SVRS,
     'AL': SVRS,
@@ -689,6 +666,7 @@ ESTADO_WS = {
     'AN': AN,
 }
 
+
 def localizar_url(servico, estado, mod='55', ambiente=2):
     sigla = SIGLA_ESTADO[estado]
     ws = ESTADO_WS[sigla]
@@ -705,13 +683,13 @@ def localizar_url(servico, estado, mod='55', ambiente=2):
 
     if sigla == 'RS' and servico == WS_NFE_CADASTRO:
         dominio = 'cad.sefazrs.rs.gov.br'
-    if sigla in ('AC', 'RN', 'PB', 'SC', 'RJ') and \
-       servico == WS_NFE_CADASTRO:
+    if sigla in ('AC', 'RN', 'PB', 'SC', 'RJ') and servico == WS_NFE_CADASTRO:
         dominio = 'cad.svrs.rs.gov.br'
     if sigla == 'AN' and servico == WS_NFE_RECEPCAO_EVENTO:
         dominio = 'www.nfe.fazenda.gov.br'
 
     return "https://%s/%s" % (dominio, complemento)
+
 
 Metodo = collections.namedtuple('Metodo', ['webservice', 'metodo'])
 
@@ -820,7 +798,7 @@ class NFe(DocumentoEletronico):
         )
 
     def envia_inutilizacao(self, evento):
-        tinut = leiauteInutNFe.TInutNFe(
+        tinut = infInutType.TInutNFe(
             versao=self.versao,
             infInut=evento,
             Signature=None)
@@ -835,7 +813,7 @@ class NFe(DocumentoEletronico):
             localizar_url(WS_NFE_INUTILIZACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeInutilizacaoNF',
-            leiauteInutNFe
+            infInutType
         )
 
     def consulta_recibo(self, numero=False, proc_envio=False):
@@ -938,7 +916,7 @@ class NFe(DocumentoEletronico):
                      justificativa):
         ano = str(datetime.date.today().year)[2:]
         uf = str(self.uf)
-        raiz = leiauteInutNFe.infInutType(
+        raiz = infInutType.infInutType(
             Id='ID' + uf + ano + cnpj + mod + serie.zfill(3) +
                str(num_ini).zfill(9) + str(num_fin).zfill(9),
             tpAmb=self.ambiente,
@@ -956,8 +934,7 @@ class NFe(DocumentoEletronico):
         return raiz
 
     def _verifica_servico_em_operacao(self, proc_servico):
-        if proc_servico.resposta.cStat == \
-                self._edoc_situacao_servico_em_operacao:
+        if proc_servico.resposta.cStat == self._edoc_situacao_servico_em_operacao:
             return True
         return False
 
@@ -1010,9 +987,7 @@ class NFe(DocumentoEletronico):
                 chNFe=chave
             )
 
-        if distNSU and consNSU or \
-            distNSU and consChNFe or \
-            consNSU and consChNFe:
+        if (distNSU and consNSU or distNSU and consChNFe or consNSU and consChNFe):
             # TODO: Raise?
             return
 
@@ -1035,7 +1010,7 @@ class NFe(DocumentoEletronico):
             retDistDFeInt
         )
 
-# ----------------------------- MANIFESTAÇÃO DO DESTINATÁRIO -----------------
+    # ----------------------------- MANIFESTAÇÃO DO DESTINATÁRIO -----------------
 
     def nfe_recepcao_envia_lote_evento(self, lista_eventos, numero_lote=False):
         """

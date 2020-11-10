@@ -1,17 +1,12 @@
 # coding=utf-8
 import logging.config
-
-import collections
 import os
 from unittest import TestCase
 
 from erpbrasil.assinatura.certificado import Certificado
-from requests import Session
-
-from erpbrasil.transmissao import TransmissaoSOAP
 from erpbrasil.edoc import NFe
-
-
+from erpbrasil.transmissao import TransmissaoSOAP
+from requests import Session
 
 logging.config.dictConfig({
     'version': 1,

@@ -3,9 +3,8 @@
 
 from __future__ import division, print_function, unicode_literals
 
-from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 from erpbrasil.edoc.chave import ChaveNFSeDSF
-
+from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 
 try:
     from nfselib.dsf import RetornoEnvioLoteRPS
@@ -40,12 +39,12 @@ servicos_prod = {
 servicos_prod.update(servicos_base.copy())
 
 url = {
-    3509502: 'http://issdigital.campinas.sp.gov.br', # Campinas
+    3509502: 'http://issdigital.campinas.sp.gov.br',  # Campinas
     3170206: 'http://udigital.uberlandia.mg.gov.br',  # Uberlândia-MG
-    1501402: 'http://www.issdigitalbel.com.br', # Belem-PA
+    1501402: 'http://www.issdigitalbel.com.br',  # Belem-PA
     5002704: 'http://issdigital.pmcg.ms.gov.br',  # Campo Grande - MS
     3303500: 'http://www.issmaisfacil.com.br',  # Nova Iguaçu - RJ
-    2211001: 'http://www.issdigitalthe.com.br', # Teresina - PI
+    2211001: 'http://www.issdigitalthe.com.br',  # Teresina - PI
     # 2111300 : 'http://www.issdigitalslz.com.br',  # São Luiz - MA
 }
 

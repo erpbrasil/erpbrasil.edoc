@@ -3,20 +3,17 @@
 
 from __future__ import division, print_function, unicode_literals
 
-import time
 import collections
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+import time
+
+from erpbrasil.edoc.edoc import DocumentoEletronico
+from erpbrasil.edoc.resposta import analisar_retorno
 
 try:
     from urllib.parse import urljoin
 except ImportError:
     from urlparse import urljoin
 
-from erpbrasil.edoc.edoc import DocumentoEletronico
-from erpbrasil.edoc.resposta import analisar_retorno
 
 ServicoNFSe = collections.namedtuple(
     'ServicoNFSe', ['operacao', 'endpoint', 'classe_retorno', 'assinar']
@@ -24,7 +21,6 @@ ServicoNFSe = collections.namedtuple(
 
 
 class NFSe(DocumentoEletronico):
-
     _consulta_servico_ao_enviar = False
     _maximo_tentativas_consulta_recibo = 10
     _tempo_medio = 1
@@ -44,7 +40,6 @@ class NFSe(DocumentoEletronico):
         super(NFSe, self).__init__(transmissao)
 
     def _post(self, body, servico):
-
         header_string = None
         if self._header:
             header_string, header_etree = self._generateds_to_string_etree(
@@ -96,7 +91,6 @@ class NFSe(DocumentoEletronico):
         )
 
     def _edoc_situacao_ja_enviado(self, proc_consulta):
-        _edoc_situacao_ja_enviado = "TODO"
         return False
 
     def _verifica_servico_em_operacao(self, proc_servico):
@@ -114,4 +108,3 @@ class NFSe(DocumentoEletronico):
                 rps_numero, rps_serie, rps_tipo),
             servico=self._servicos[self.consulta_nfse_rps.__name__],
         )
-

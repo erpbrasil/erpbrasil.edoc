@@ -3,23 +3,14 @@
 
 from __future__ import division, print_function, unicode_literals
 
-import re
 import datetime
+
+from erpbrasil.assinatura.assinatura import Assinatura
+from erpbrasil.edoc.edoc import DocumentoEletronico
 from lxml import etree
 
-from mdfelib.v3_00 import consStatServMDFe
-from mdfelib.v3_00 import consSitMDFe
-from mdfelib.v3_00 import consMDFeNaoEnc
-from mdfelib.v3_00 import enviMDFe
-from mdfelib.v3_00 import consReciMDFe
-
-from erpbrasil.edoc.edoc import DocumentoEletronico
-from erpbrasil.assinatura.assinatura import Assinatura
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from mdfelib.v3_00 import (consMDFeNaoEnc, consReciMDFe, consSitMDFe,
+                           consStatServMDFe, enviMDFe)
 
 
 class MDFe(DocumentoEletronico):
@@ -32,7 +23,6 @@ class MDFe(DocumentoEletronico):
 
     _consulta_servico_ao_enviar = True
     _maximo_tentativas_consulta_recibo = 5
-
 
     def get_documento_id(self, edoc):
         return edoc.infMDFe.Id[:3], edoc.infMDFe.Id[3:]
@@ -124,7 +114,7 @@ class MDFe(DocumentoEletronico):
         raiz.original_tagname_ = 'consReciMDFe'
         return self._post(
             raiz,
-            'https://mdfe-homologacao.svrs.rs.gov.br/ws/MDFeRetRecepcao/MDFeRetRecepcao.asmx?wsdl', #'ws/MDFeretautorizacao4.asmx'
+            'https://mdfe-homologacao.svrs.rs.gov.br/ws/MDFeRetRecepcao/MDFeRetRecepcao.asmx?wsdl',  # 'ws/MDFeretautorizacao4.asmx'
             'mdfeRetRecepcao',
             consReciMDFe,
         )

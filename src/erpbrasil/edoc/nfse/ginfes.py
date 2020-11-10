@@ -2,22 +2,21 @@
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
 from __future__ import division, print_function, unicode_literals
+
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
 from erpbrasil.base import misc
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 
-
-from nfselib.ginfes.v3_01 import servico_cancelar_nfse_envio
-from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_envio
-from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_resposta
-from nfselib.ginfes.v3_01 import servico_consultar_nfse_rps_envio
-from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_envio
-from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_resposta
-from nfselib.ginfes.v3_01 import servico_enviar_lote_rps_resposta
+from nfselib.ginfes.v3_01 import (servico_cancelar_nfse_envio,
+                                  servico_consultar_lote_rps_envio,
+                                  servico_consultar_lote_rps_resposta,
+                                  servico_consultar_nfse_rps_envio,
+                                  servico_consultar_situacao_lote_rps_envio,
+                                  servico_consultar_situacao_lote_rps_resposta,
+                                  servico_enviar_lote_rps_resposta)
 from nfselib.ginfes.v3_01.cabecalho import cabecalho
-
 
 endpoint = 'ServiceGinfesImpl?wsdl'
 
@@ -41,7 +40,6 @@ servicos = {
 
 
 class Ginfes(NFSe):
-
     _header = cabecalho(versao="3", versaoDados="3")
 
     def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador,
@@ -90,7 +88,7 @@ class Ginfes(NFSe):
             ),
             Protocolo=proc_envio.resposta.Protocolo
         )
-        xml_assinado = self.assina_raiz(raiz,"")
+        xml_assinado = self.assina_raiz(raiz, "")
         return xml_assinado
 
     def _prepara_consultar_lote_rps(self, protocolo):
@@ -151,7 +149,7 @@ class Ginfes(NFSe):
         return xml_assinado
 
     def analisa_retorno_consulta(self, processo, number, company_cnpj_cpf,
-                        company_legal_name):
+                                 company_legal_name):
         retorno = ET.fromstring(processo.retorno)
         nsmap = {'consulta': 'http://www.ginfes.com.br/servico_consultar_'
                              'nfse_rps_resposta_v03.xsd',
@@ -195,7 +193,7 @@ class Ginfes(NFSe):
                     if numero_retorno != number:
                         varibles_error.append('Número')
                     if cnpj_prestador_retorno != misc.punctuation_rm(
-                        company_cnpj_cpf):
+                            company_cnpj_cpf):
                         varibles_error.append('CNPJ do prestador')
                     if razao_social_prestador_retorno != company_legal_name:
                         varibles_error.append('Razão Social de pestrador')

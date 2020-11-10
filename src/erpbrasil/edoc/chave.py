@@ -1,8 +1,14 @@
 # coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - mileo at kmee com br
 
-import hashlib
+# Python 3 compatibility hack
+try:
+    unicode('')
+except NameError:
+    unicode = str
+
 import datetime
+import hashlib
 
 
 class ChaveNFSeDSF(object):

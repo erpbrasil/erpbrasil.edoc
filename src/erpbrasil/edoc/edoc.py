@@ -5,12 +5,12 @@
 import abc
 import time
 from datetime import datetime
-from .resposta import analisar_retorno_raw
-from requests import Session
 
+from erpbrasil.assinatura.assinatura import Assinatura
 from lxml import etree
 from lxml.etree import _Element
-from erpbrasil.assinatura.assinatura import Assinatura
+
+from .resposta import analisar_retorno_raw
 
 # Fix Python 2.x.
 try:
@@ -47,7 +47,7 @@ class DocumentoEletronico(ABC):
         #     return ds, etree.fromstring(ds)
 
         output = StringIO()
-        namespace=False
+        namespace = False
         if self._namespace:
             namespace = 'xmlns="' + self._namespace + '"'
 
