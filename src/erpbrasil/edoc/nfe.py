@@ -6,17 +6,21 @@ import datetime
 import time
 
 from lxml import etree
-from nfelib.v4_00 import distDFeInt
-from nfelib.v4_00 import infInutType
-from nfelib.v4_00 import retConsReciNFe
-from nfelib.v4_00 import retConsSitNFe
-from nfelib.v4_00 import retConsStatServ
-from nfelib.v4_00 import retDistDFeInt
-from nfelib.v4_00 import retEnvCCe
-from nfelib.v4_00 import retEnvConfRecebto
-from nfelib.v4_00 import retEnvEvento
-from nfelib.v4_00 import retEnvEventoCancNFe
-from nfelib.v4_00 import retEnviNFe
+
+try:
+    from nfelib.v4_00 import distDFeInt
+    from nfelib.v4_00 import infInutType
+    from nfelib.v4_00 import retConsReciNFe
+    from nfelib.v4_00 import retConsSitNFe
+    from nfelib.v4_00 import retConsStatServ
+    from nfelib.v4_00 import retDistDFeInt
+    from nfelib.v4_00 import retEnvCCe
+    from nfelib.v4_00 import retEnvConfRecebto
+    from nfelib.v4_00 import retEnvEvento
+    from nfelib.v4_00 import retEnvEventoCancNFe
+    from nfelib.v4_00 import retEnviNFe
+except ImportError:
+    pass
 
 from erpbrasil.edoc.edoc import DocumentoEletronico
 

@@ -9,11 +9,15 @@ import datetime
 
 from erpbrasil.assinatura.assinatura import Assinatura
 from lxml import etree
-from mdfelib.v3_00 import consMDFeNaoEnc
-from mdfelib.v3_00 import consReciMDFe
-from mdfelib.v3_00 import consSitMDFe
-from mdfelib.v3_00 import consStatServMDFe
-from mdfelib.v3_00 import enviMDFe
+
+try:
+    from mdfelib.v3_00 import consMDFeNaoEnc
+    from mdfelib.v3_00 import consReciMDFe
+    from mdfelib.v3_00 import consSitMDFe
+    from mdfelib.v3_00 import consStatServMDFe
+    from mdfelib.v3_00 import enviMDFe
+except ImportError:
+    pass
 
 from erpbrasil.edoc.edoc import DocumentoEletronico
 
