@@ -68,3 +68,4 @@ docs/_build
 
 # Mypy Cache
 .mypy_cache/
+*.orig
