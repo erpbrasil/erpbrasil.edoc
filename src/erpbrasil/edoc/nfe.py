@@ -9,33 +9,29 @@ import time
 from lxml import etree
 import collections
 
-# nfelib imports
-# xsd NFe
+from nfelib.v4_00 import leiauteNFe
 from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
-from nfelib.v4_00 import retInutNFe
+from nfelib.v4_00 import consStatServ
 from nfelib.v4_00 import retConsStatServ
-from nfelib.v4_00 import retConsSitNFe
-from nfelib.v4_00 import retEnviNFe
-from nfelib.v4_00 import retConsReciNFe
-
-# xsd Distrito Federal
-from nfelib.v4_00 import distDFeInt
 from nfelib.v4_00 import retDistDFeInt
-
-# xsd Evento Generico
+from nfelib.v4_00 import consSitNFe
+from nfelib.v4_00 import retConsSitNFe
+from nfelib.v4_00 import enviNFe
+from nfelib.v4_00 import retEnviNFe
+from nfelib.v4_00 import consReciNFe
+from nfelib.v4_00 import retConsReciNFe
+from nfelib.v4_00 import leiauteEvento
+from nfelib.v4_00 import leiauteEventoCancNFe
+from nfelib.v4_00 import leiauteCCe
 from nfelib.v4_00 import retEnvEvento
-
-# xsd Evento Cancelamento
-from nfelib.v4_00 import retEnvEventoCancNFe
-
-# xsd CCe
-from nfelib.v4_00 import retEnvCCe
-
-# xsd Manifestação do destinatário - TODO checar se precisa de algum override
-from nfelib.v4_00 import retEnvConfRecebto
-
+from nfelib.v4_00 import leiauteInutNFe
 from erpbrasil.edoc.edoc import DocumentoEletronico
 
+from nfelib.v4_00 import distDFeInt
+
+# Manifestação do destinatário
+from nfelib.v4_00 import leiauteConfRecebtoManifestacao as confRecebto
+from nfelib.v4_00 import leiauteConfRecebto as confRecebto2
 
 try:
     from StringIO import StringIO
@@ -752,7 +748,7 @@ class NFe(DocumentoEletronico):
         return edoc.infNFe.Id[:3], edoc.infNFe.Id[3:]
 
     def status_servico(self):
-        raiz = retConsStatServ.TConsStatServ(
+        raiz = consStatServ.TConsStatServ(
             versao=self.versao,
             tpAmb=self.ambiente,
             cUF=self.uf,
@@ -769,7 +765,7 @@ class NFe(DocumentoEletronico):
         )
 
     def consulta_documento(self, chave):
-        raiz = retConsSitNFe.TConsSitNFe(
+        raiz = consSitNFe.TConsSitNFe(
             versao=self.versao,
             tpAmb=self.ambiente,
             xServ='CONSULTAR',
@@ -797,7 +793,7 @@ class NFe(DocumentoEletronico):
         """
         xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
 
-        raiz = retEnviNFe.TEnviNFe(
+        raiz = enviNFe.TEnviNFe(
             versao=self.versao,
             idLote=datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
             indSinc='0'
@@ -845,7 +841,7 @@ class NFe(DocumentoEletronico):
         if not numero:
             return
 
-        raiz = retConsReciNFe.TConsReciNFe(
+        raiz = consReciNFe.TConsReciNFe(
             versao=self.versao,
             tpAmb=self.ambiente,
             nRec=numero,
@@ -864,14 +860,14 @@ class NFe(DocumentoEletronico):
         if not numero_lote:
             numero_lote = self._gera_numero_lote()
 
-        raiz = retEnvEvento.TEnvEvento(versao="1.00", idLote=numero_lote)
+        raiz = leiauteEvento.TEnvEvento(versao="1.00", idLote=numero_lote)
         raiz.original_tagname_ = 'envEvento'
         xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
             raiz
         )
 
         for raiz_evento in lista_eventos:
-            evento = retEnvEventoCancNFe.TEvento(
+            evento = leiauteEventoCancNFe.TEvento(
                 versao="1.00", infEvento=raiz_evento,
             )
             evento.original_tagname_ = 'evento'
@@ -890,7 +886,7 @@ class NFe(DocumentoEletronico):
                           data_hora_evento=False):
         tipo_evento = '110111'
         sequencia = '1'
-        raiz = retEnvEventoCancNFe.infEventoType(
+        raiz = leiauteEventoCancNFe.infEventoType(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
             cOrgao=self.uf,
             tpAmb=self.ambiente,
@@ -900,7 +896,7 @@ class NFe(DocumentoEletronico):
             tpEvento='110111',
             nSeqEvento='1',
             verEvento='1.00',
-            detEvento=retEnvEventoCancNFe.detEventoType(
+            detEvento=leiauteEventoCancNFe.detEventoType(
                 versao="1.00",
                 descEvento='Cancelamento',
                 nProt=protocolo_autorizacao,
@@ -913,7 +909,7 @@ class NFe(DocumentoEletronico):
     def carta_correcao(self, chave, sequencia, justificativa,
                        data_hora_evento=False):
         tipo_evento = '110110'
-        raiz = retEnvCCe.infEventoType(
+        raiz = leiauteCCe.infEventoType(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
             cOrgao=self.uf,
             tpAmb=self.ambiente,
@@ -924,7 +920,7 @@ class NFe(DocumentoEletronico):
             tpEvento=tipo_evento,
             nSeqEvento=sequencia,
             verEvento='1.00',
-            detEvento=retEnvCCe.detEventoType(
+            detEvento=leiauteCCe.detEventoType(
                 versao="1.00",
                 descEvento='Carta de Correcao',
                 xCorrecao=justificativa,
@@ -1049,7 +1045,7 @@ class NFe(DocumentoEletronico):
             numero_lote = self._gera_numero_lote()
 
         eventos = []
-        raiz = retEnvEvento.TEnvEvento(
+        raiz = leiauteEvento.TEnvEvento(
             versao="1.00",
             idLote=numero_lote,
             evento=eventos
@@ -1057,7 +1053,7 @@ class NFe(DocumentoEletronico):
         raiz.original_tagname_ = 'envEvento'
 
         for raiz_evento in lista_eventos:
-            evento = retEnvConfRecebto.TEvento(
+            evento = confRecebto.TEvento(
                 versao="1.00", infEvento=raiz_evento,
             )
             evento.original_tagname_ = 'evento'
@@ -1067,7 +1063,7 @@ class NFe(DocumentoEletronico):
 
             # Converte o xml_assinado para um objeto pelo
             # parser do esquema leiauteConfRecebto
-            xml_object = retEnvConfRecebto.parseString(
+            xml_object = confRecebto2.parseString(
                 bytearray(xml_assinado, 'utf8'))
 
             # Adiciona o xml_object na lista de eventos. Desse modo a lista
@@ -1106,7 +1102,7 @@ class NFe(DocumentoEletronico):
         """
 
         nSeqEvento = '1'
-        raiz = retEnvConfRecebto.infEventoType(
+        raiz = confRecebto.infEventoType(
             Id='ID{}{}{}'.format(tpEvento, chave, nSeqEvento.zfill(2)),
             cOrgao=91,
             tpAmb=self.ambiente,
@@ -1117,7 +1113,7 @@ class NFe(DocumentoEletronico):
             tpEvento=tpEvento,
             nSeqEvento=nSeqEvento,
             verEvento='1.00',
-            detEvento=retEnvConfRecebto.detEventoType(
+            detEvento=confRecebto.detEventoType(
                 versao='1.00',
                 descEvento=descEvento,
                 xJust=xJust
@@ -1162,31 +1158,31 @@ class NFe(DocumentoEletronico):
         return self.nfe_recepcao_evento(
             chave,
             cnpj_cpf,
-            retEnvConfRecebto.tpEventoType._2_10200,
-            retEnvConfRecebto.descEventoType.CONFIRMACAODA_OPERACAO,
+            confRecebto.tpEventoType._2_10200,
+            confRecebto.descEventoType.CONFIRMACAODA_OPERACAO,
         )
 
     def ciencia_da_operacao(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
             chave,
             cnpj_cpf,
-            retEnvConfRecebto.tpEventoType._2_10210,
-            retEnvConfRecebto.descEventoType.CIENCIADA_OPERACAO,
+            confRecebto.tpEventoType._2_10210,
+            confRecebto.descEventoType.CIENCIADA_OPERACAO,
         )
 
     def desconhecimento_da_operacao(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
             chave,
             cnpj_cpf,
-            retEnvConfRecebto.tpEventoType._2_10220,
-            retEnvConfRecebto.descEventoType.DESCONHECIMENTODA_OPERACAO,
+            confRecebto.tpEventoType._2_10220,
+            confRecebto.descEventoType.DESCONHECIMENTODA_OPERACAO,
         )
 
     def operacao_nao_realizada(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
             chave,
             cnpj_cpf,
-            retEnvConfRecebto.tpEventoType._2_10240,
-            retEnvConfRecebto.descEventoType.OPERACAONAO_REALIZADA,
+            confRecebto.tpEventoType._2_10240,
+            confRecebto.descEventoType.OPERACAONAO_REALIZADA,
             xJust=''.zfill(15)
         )
