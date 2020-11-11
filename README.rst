@@ -7,17 +7,12 @@ Overview
 .. list-table::
     :stub-columns: 1
 
-    * - docs
-      - |docs|
     * - tests
-      - | |travis| |appveyor| |requires|
+      - | |travis| |appveyor|
         | |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
-.. |docs| image:: https://readthedocs.org/projects/erpbrasil.edoc/badge/?style=flat
-    :target: https://readthedocs.org/projects/erpbrasiledoc
-    :alt: Documentation Status
 
 .. |travis| image:: https://api.travis-ci.org/erpbrasil/erpbrasil.edoc.svg?branch=master
     :alt: Travis-CI Build Status
@@ -26,10 +21,6 @@ Overview
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/erpbrasil/erpbrasil.edoc?branch=master&svg=true
     :alt: AppVeyor Build Status
     :target: https://ci.appveyor.com/project/erpbrasil/erpbrasil.edoc
-
-.. |requires| image:: https://requires.io/github/erpbrasil/erpbrasil.edoc/requirements.svg?branch=master
-    :alt: Requirements Status
-    :target: https://requires.io/github/erpbrasil/erpbrasil.edoc/requirements/?branch=master
 
 .. |codecov| image:: https://codecov.io/github/erpbrasil/erpbrasil.edoc/coverage.svg?branch=master
     :alt: Coverage Status
@@ -110,9 +101,7 @@ Para permitir que a instalação do seu ERP cresça somente com a necessidade do
 Documentation
 =============
 
-
-https://erpbrasiledoc.readthedocs.io/
-
+https://erpbrasil.github.io/docs/
 
 Development
 ===========

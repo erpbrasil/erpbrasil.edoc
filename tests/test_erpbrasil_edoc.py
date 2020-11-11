@@ -7,7 +7,7 @@ from erpbrasil.assinatura.certificado import Certificado
 from erpbrasil.transmissao import TransmissaoSOAP
 from requests import Session
 
-from erpbrasil.edoc import NFe
+from erpbrasil.edoc.nfe import NFe
 
 logging.config.dictConfig({
     'version': 1,
