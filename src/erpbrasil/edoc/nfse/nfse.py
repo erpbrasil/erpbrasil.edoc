@@ -50,6 +50,11 @@ class NFSe(DocumentoEletronico):
 
         body_string, body_etree = self._generateds_to_string_etree(body)
 
+        # TODO: Verificar impacto para outros provedores
+        header = body_etree.find("Cabecalho")
+        if header and header.attrib:
+            header_string = header.attrib.get('Versao')
+
         with self._transmissao.cliente(
                 urljoin(self._url, servico.endpoint)) as cliente:
             resposta = cliente.service[servico.operacao](
@@ -104,9 +109,14 @@ class NFSe(DocumentoEletronico):
     def consulta_documento(self, chave):
         pass
 
-    def consulta_nfse_rps(self, rps_numero, rps_serie, rps_tipo):
+    def consulta_nfse_rps(self, **kwargs):
+        rps_numero = kwargs.get('numero_rps')
+        rps_serie = kwargs.get('serie_rps')
+        inscricao_prestador = kwargs.get('insc_prest')
+        cnpj_prestador = kwargs.get('cnpj_prest')
+
         return self._post(
             body=self._prepara_consultar_nfse_rps(
-                rps_numero, rps_serie, rps_tipo),
+                rps_numero, rps_serie, inscricao_prestador, cnpj_prestador),
             servico=self._servicos[self.consulta_nfse_rps.__name__],
         )

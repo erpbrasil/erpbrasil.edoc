@@ -220,15 +220,17 @@ class DocumentoEletronico(ABC):
         # return datetime.today().strftime(FORMAT) + '-00:00'
         return time.strftime(FORMAT, time.localtime()) + '-00:00'
 
-    def assina_raiz(self, raiz, id, getchildren=False):
+    def assina_raiz(self, raiz, id, getchildren=False, metodo='nfe'):
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
-        xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
-            xml_etree, id, getchildren
-        )
-
-        if isinstance(xml_assinado, bytes):
-            xml_assinado = xml_assinado.decode('utf-8')
-
+        if metodo == 'nfe':
+            xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
+                xml_etree, id, getchildren
+            )
+        elif metodo == 'nfse':
+            xml_assinado = Assinatura(self._transmissao.certificado).assina_nfse(
+                xml_etree
+            )
+        return xml_assinado
         return xml_assinado.replace('\n', '').replace('\r', '')
 
     def _verifica_servico_em_operacao(self, proc_servico):
