@@ -14,6 +14,34 @@ from os.path import splitext
 from setuptools import find_packages
 from setuptools import setup
 
+install_requires = [
+    "erpbrasil.base>=2.0.0",
+    "erpbrasil.assinatura>=1.0.1",
+    "erpbrasil.transmissao>=1.0.0",
+]
+
+nfselib_ginfes_require = [
+    "nfselib.ginfes",
+]
+nfselib_paulistana_require = [
+    "nfselib.paulistana",
+]
+nfselib_dsf_require = [
+    "nfselib.dsf",
+]
+nfselib_betha_require = [
+    "nfselib.betha",
+]
+nfselib_issnet_require = [
+    "nfselib.issnet",
+]
+nfelib_require = [
+    "nfselib",
+]
+mdfelib_require = [
+    "mdfelib",
+]
+
 
 def read(*names, **kwargs):
     with io.open(
@@ -73,13 +101,15 @@ setup(
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
     python_requires='>=3.5, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
-    install_requires=[
-        # eg: 'aspectlib==1.1.1', 'six>=1.7',
-    ],
+    install_requires=install_requires,
     extras_require={
-        # eg:
-        #   'rst': ['docutils>=0.11'],
-        #   ':python_version=="2.6"': ['argparse'],
+        "nfselib.ginfes": nfselib_ginfes_require,
+        "nfselib.paulistana": nfselib_paulistana_require,
+        "nfselib.dsf": nfselib_dsf_require,
+        "nfselib.betha": nfselib_betha_require,
+        "nfselib.issnet": nfselib_issnet_require,
+        "nfelib": nfelib_require,
+        "mdfelib": mdfelib_require,
     },
     setup_requires=[
     ],
