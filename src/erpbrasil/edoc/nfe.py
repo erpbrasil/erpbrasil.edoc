@@ -18,7 +18,7 @@ try:
     from nfelib.v4_00 import retConsSitNFe
     from nfelib.v4_00 import retConsStatServ
     from nfelib.v4_00 import retDistDFeInt
-    from nfelib.v4_00 import retEnvCCe
+    from nfelib.v4_00 import leiauteCCe
     from nfelib.v4_00 import retEnvConfRecebto
     from nfelib.v4_00 import retEnvEvento
     from nfelib.v4_00 import retEnvEventoCancNFe
@@ -896,7 +896,7 @@ class NFe(DocumentoEletronico):
     def carta_correcao(self, chave, sequencia, justificativa,
                        data_hora_evento=False):
         tipo_evento = '110110'
-        raiz = retEnvCCe.infEventoType(
+        raiz = leiauteCCe.infEventoType(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
             cOrgao=self.uf,
             tpAmb=self.ambiente,
@@ -907,7 +907,7 @@ class NFe(DocumentoEletronico):
             tpEvento=tipo_evento,
             nSeqEvento=sequencia,
             verEvento='1.00',
-            detEvento=retEnvCCe.detEventoType(
+            detEvento=leiauteCCe.detEventoType(
                 versao="1.00",
                 descEvento='Carta de Correcao',
                 xCorrecao=justificativa,
