@@ -1,21 +1,19 @@
 import os
-import vcr
-from requests import Session
 from unittest import TestCase
 
+import vcr
+from erpbrasil.assinatura.certificado import Certificado
 from erpbrasil.base import misc
 from erpbrasil.transmissao import TransmissaoSOAP
-from erpbrasil.assinatura.certificado import Certificado
+from requests import Session
 
 try:
-    from nfselib.paulistana.v02.PedidoEnvioLoteRPS import (
-        CabecalhoType,
-        PedidoEnvioLoteRPS,
-        tpEndereco,
-        tpCPFCNPJ,
-        tpRPS,
-        tpChaveRPS,
-    )
+    from nfselib.paulistana.v02.PedidoEnvioLoteRPS import CabecalhoType
+    from nfselib.paulistana.v02.PedidoEnvioLoteRPS import PedidoEnvioLoteRPS
+    from nfselib.paulistana.v02.PedidoEnvioLoteRPS import tpChaveRPS
+    from nfselib.paulistana.v02.PedidoEnvioLoteRPS import tpCPFCNPJ
+    from nfselib.paulistana.v02.PedidoEnvioLoteRPS import tpEndereco
+    from nfselib.paulistana.v02.PedidoEnvioLoteRPS import tpRPS
 except ImportError:
     pass
 

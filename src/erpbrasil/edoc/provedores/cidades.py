@@ -5,8 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from erpbrasil.edoc.provedores.ginfes import Ginfes
 from erpbrasil.edoc.provedores.dsf import Dsf
+from erpbrasil.edoc.provedores.ginfes import Ginfes
 from erpbrasil.edoc.provedores.paulistana import Paulistana
 
 cidades = {
@@ -21,8 +21,7 @@ cidades = {
 }
 
 
-def NFSeFactory(
-	transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador):
+def NFSeFactory(transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador):
     """Factory"""
     return cidades[int(cidade_ibge)](
         transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)

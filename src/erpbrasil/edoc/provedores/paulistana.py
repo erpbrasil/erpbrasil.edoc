@@ -1,37 +1,23 @@
 # coding=utf-8
 # Copyright (C) 2020 KMEE
 
-from __future__ import division, print_function, unicode_literals
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import xml.etree.ElementTree as ET
 
-from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
+from erpbrasil.edoc.nfse import NFSe
+from erpbrasil.edoc.nfse import ServicoNFSe
 
 try:
     from erpbrasil.assinatura.assinatura import assina_tag
-    from nfselib.paulistana.v02 import RetornoEnvioLoteRPS
-    from nfselib.paulistana.v02 import RetornoConsulta
+    from nfselib.paulistana.v02 import PedidoCancelamentoNFe
+    from nfselib.paulistana.v02 import PedidoConsultaLote
+    from nfselib.paulistana.v02 import PedidoConsultaNFe
     from nfselib.paulistana.v02 import RetornoCancelamentoNFe
-
-    from nfselib.paulistana.v02.PedidoConsultaLote import(
-        PedidoConsultaLote,
-        CabecalhoType as CabecalhoLote,
-        tpCPFCNPJ,
-    )
-
-    from nfselib.paulistana.v02.PedidoConsultaNFe import(
-        PedidoConsultaNFe,
-        CabecalhoType,
-        DetalheType as DetalheConsulta,
-        tpCPFCNPJ,
-        tpChaveRPS
-    )
-
-    from nfselib.paulistana.v02.PedidoCancelamentoNFe import(
-        PedidoCancelamentoNFe,
-        CabecalhoType as CabecalhoCancelamento,
-        DetalheType as DetalheCancelamento,
-        tpChaveNFe,
-    )
+    from nfselib.paulistana.v02 import RetornoConsulta
+    from nfselib.paulistana.v02 import RetornoEnvioLoteRPS
     paulistana = True
 except ImportError:
     paulistana = False
@@ -104,10 +90,10 @@ class Paulistana(NFSe):
         numero_lote = int(retorno.find('.//NumeroLote').text)
         cnpj = retorno.find('.//CNPJ').text
 
-        edoc = PedidoConsultaLote(
-            Cabecalho=CabecalhoLote(
+        edoc = PedidoConsultaLote.PedidoConsultaLote(
+            Cabecalho=PedidoConsultaLote.CabecalhoLote(
                 Versao=1,
-                CPFCNPJRemetente=tpCPFCNPJ(CNPJ=cnpj),
+                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj),
                 NumeroLote=numero_lote
             )
         )
@@ -119,13 +105,13 @@ class Paulistana(NFSe):
     def _prepara_consultar_nfse_rps(
             self, rps_numero, rps_serie, inscricao_prestador, cnpj_prestador):
 
-        raiz = PedidoConsultaNFe(
-            Cabecalho=CabecalhoType(
+        raiz = PedidoConsultaNFe.PedidoConsultaNFe(
+            Cabecalho=PedidoConsultaNFe.CabecalhoType(
                 Versao=1,
-                CPFCNPJRemetente=tpCPFCNPJ(CNPJ=cnpj_prestador)
+                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj_prestador)
             ),
-            Detalhe=[DetalheConsulta(
-                ChaveRPS=tpChaveRPS(
+            Detalhe=[PedidoConsultaNFe.DetalheConsulta(
+                ChaveRPS=PedidoConsultaNFe.tpChaveRPS(
                     InscricaoPrestador=int(inscricao_prestador),
                     SerieRPS=rps_serie,
                     NumeroRPS=int(rps_numero),
@@ -155,13 +141,13 @@ class Paulistana(NFSe):
         assinatura = numero_nfse.zfill(8)
         assinatura += codigo_verificacao.zfill(12)
 
-        raiz = PedidoCancelamentoNFe(
-            Cabecalho=CabecalhoCancelamento(
+        raiz = PedidoCancelamentoNFe.PedidoCancelamentoNFe(
+            Cabecalho=PedidoCancelamentoNFe.CabecalhoType(
                 Versao=1,
-                CPFCNPJRemetente=tpCPFCNPJ(CNPJ=self.cnpj_prestador),
+                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=self.cnpj_prestador),
             ),
-            Detalhe=[DetalheCancelamento(
-                ChaveNFe=tpChaveNFe(
+            Detalhe=[PedidoCancelamentoNFe.DetalheType(
+                ChaveNFe=PedidoCancelamentoNFe.tpChaveNFe(
                     InscricaoPrestador=int(self.im_prestador),
                     NumeroNFe=int(numero_nfse),
                     CodigoVerificacao=codigo_verificacao.zfill(8),
