@@ -5,61 +5,64 @@ from __future__ import division, print_function, unicode_literals
 import xml.etree.ElementTree as ET
 
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
-from erpbrasil.assinatura.assinatura import assina_tag
 
-from nfselib.paulistana.v02 import RetornoEnvioLoteRPS
-from nfselib.paulistana.v02 import RetornoConsulta
-from nfselib.paulistana.v02 import RetornoCancelamentoNFe
+try:
+    from erpbrasil.assinatura.assinatura import assina_tag
+    from nfselib.paulistana.v02 import RetornoEnvioLoteRPS
+    from nfselib.paulistana.v02 import RetornoConsulta
+    from nfselib.paulistana.v02 import RetornoCancelamentoNFe
 
-from nfselib.paulistana.v02.PedidoConsultaLote import(
-    PedidoConsultaLote,
-    CabecalhoType as CabecalhoLote,
-    tpCPFCNPJ,
-)
+    from nfselib.paulistana.v02.PedidoConsultaLote import(
+        PedidoConsultaLote,
+        CabecalhoType as CabecalhoLote,
+        tpCPFCNPJ,
+    )
 
-from nfselib.paulistana.v02.PedidoConsultaNFe import(
-    PedidoConsultaNFe,
-    CabecalhoType,
-    DetalheType as DetalheConsulta,
-    tpCPFCNPJ,
-    tpChaveRPS
-)
+    from nfselib.paulistana.v02.PedidoConsultaNFe import(
+        PedidoConsultaNFe,
+        CabecalhoType,
+        DetalheType as DetalheConsulta,
+        tpCPFCNPJ,
+        tpChaveRPS
+    )
 
-from nfselib.paulistana.v02.PedidoCancelamentoNFe import(
-    PedidoCancelamentoNFe,
-    CabecalhoType as CabecalhoCancelamento,
-    DetalheType as DetalheCancelamento,
-    tpChaveNFe,
-)
-
+    from nfselib.paulistana.v02.PedidoCancelamentoNFe import(
+        PedidoCancelamentoNFe,
+        CabecalhoType as CabecalhoCancelamento,
+        DetalheType as DetalheCancelamento,
+        tpChaveNFe,
+    )
+    paulistana = True
+except ImportError:
+    paulistana = False
 
 endpoint = 'ws/lotenfe.asmx?WSDL'
 
-servicos_base = {
-    'consulta_recibo': ServicoNFSe(
-        'ConsultaLote',
-        endpoint, RetornoConsulta, True),
+if paulistana:
+    servicos_base = {
+        'consulta_recibo': ServicoNFSe(
+            'ConsultaLote',
+            endpoint, RetornoConsulta, True),
 
-    'consulta_nfse_rps': ServicoNFSe(
-        'ConsultaNFe',
-        endpoint, RetornoConsulta, True),
+        'consulta_nfse_rps': ServicoNFSe(
+            'ConsultaNFe',
+            endpoint, RetornoConsulta, True),
 
-    'cancela_documento': ServicoNFSe(
-        'CancelamentoNFe',
-        endpoint, RetornoCancelamentoNFe, True),
-}
+        'cancela_documento': ServicoNFSe(
+            'CancelamentoNFe',
+            endpoint, RetornoCancelamentoNFe, True),
+    }
 
-servicos_hml = {
-    'envia_documento': ServicoNFSe(
-        'TesteEnvioLoteRPS',
-        endpoint, RetornoEnvioLoteRPS, True),
-}
-servicos_hml.update(servicos_base.copy())
+    servicos_hml = {
+        'envia_documento': ServicoNFSe(
+            'TesteEnvioLoteRPS',
+            endpoint, RetornoEnvioLoteRPS, True),
+    }
+    servicos_hml.update(servicos_base.copy())
 
-servicos_prod = {
+    servicos_prod = {}
+    servicos_prod.update(servicos_base.copy())
 
-}
-servicos_prod.update(servicos_base.copy())
 
 class Paulistana(NFSe):
 

@@ -19,35 +19,41 @@ try:
     from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_resposta
     from nfselib.ginfes.v3_01 import servico_enviar_lote_rps_resposta
     from nfselib.ginfes.v3_01.cabecalho import cabecalho
+    ginfes = True
 except ImportError:
-    pass
+    ginfes = False
 
 from erpbrasil.edoc.nfse import NFSe
 from erpbrasil.edoc.nfse import ServicoNFSe
 
 endpoint = 'ServiceGinfesImpl?wsdl'
 
-servicos = {
-    'envia_documento': ServicoNFSe(
-        'RecepcionarLoteRpsV3',
-        endpoint, servico_enviar_lote_rps_resposta, True),
-    'consulta_recibo': ServicoNFSe(
-        'ConsultarSituacaoLoteRpsV3',
-        endpoint, servico_consultar_situacao_lote_rps_resposta, True),
-    'consultar_lote_rps': ServicoNFSe(
-        'ConsultarLoteRpsV3',
-        endpoint, servico_consultar_lote_rps_resposta, True),
-    'cancela_documento': ServicoNFSe(
-        'CancelarNfseV3',
-        endpoint, servico_cancelar_nfse_envio, True),
-    'consulta_nfse_rps': ServicoNFSe(
-        'ConsultarNfsePorRpsV3',
-        endpoint, servico_cancelar_nfse_envio, True),
-}
+if ginfes:
+    servicos = {
+        'envia_documento': ServicoNFSe(
+            'RecepcionarLoteRpsV3',
+            endpoint, servico_enviar_lote_rps_resposta, True),
+        'consulta_recibo': ServicoNFSe(
+            'ConsultarSituacaoLoteRpsV3',
+            endpoint, servico_consultar_situacao_lote_rps_resposta, True),
+        'consultar_lote_rps': ServicoNFSe(
+            'ConsultarLoteRpsV3',
+            endpoint, servico_consultar_lote_rps_resposta, True),
+        'cancela_documento': ServicoNFSe(
+            'CancelarNfseV3',
+            endpoint, servico_cancelar_nfse_envio, True),
+        'consulta_nfse_rps': ServicoNFSe(
+            'ConsultarNfsePorRpsV3',
+            endpoint, servico_cancelar_nfse_envio, True),
+    }
+    cabecalho = cabecalho(versao="3", versaoDados="3")
+else:
+    servicos = {}
+    cabecalho = None
 
 
 class Ginfes(NFSe):
-    _header = cabecalho(versao="3", versaoDados="3")
+    _header = cabecalho
 
     def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador,
                  im_prestador):

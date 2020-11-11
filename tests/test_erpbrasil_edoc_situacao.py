@@ -18,10 +18,10 @@ class Tests(TestCase):
     def setUp(self):
         certificado_nfe_caminho = os.environ.get(
             'certificado_nfe_caminho',
-            'tests/teste.pfx'
+            'fixtures/dummy_cert.pfx'
         )
         certificado_nfe_senha = os.environ.get(
-            'certificado_nfe_senha', 'teste'
+            'certificado_nfe_senha', 'dummy_password'
         )
         self.certificado = Certificado(
             certificado_nfe_caminho,

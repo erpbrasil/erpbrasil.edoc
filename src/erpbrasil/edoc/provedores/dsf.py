@@ -13,43 +13,45 @@ try:
     from nfselib.dsf import RetornoConsultaLote
     from nfselib.dsf import RetornoConsultaNFSeRPS
     from nfselib.dsf import RetornoEnvioLoteRPS
+    dsf = True
 except ImportError:
-    pass
+    dsf = False
 
 endpoint = 'WsNFe2/LoteRps.jws'
 
-servicos_base = {
-    'consulta_recibo': ServicoNFSe(
-        'consultarLote',
-        endpoint, RetornoConsultaLote, True),
-    'consultar_lote_rps': ServicoNFSe(
-        'ConsultarNota',
-        endpoint, RetornoConsultaNFSeRPS, True),
-}
+if dsf:
+    servicos_base = {
+        'consulta_recibo': ServicoNFSe(
+            'consultarLote',
+            endpoint, RetornoConsultaLote, True),
+        'consultar_lote_rps': ServicoNFSe(
+            'ConsultarNota',
+            endpoint, RetornoConsultaNFSeRPS, True),
+    }
 
-servicos_hml = {
-    'envia_documento': ServicoNFSe(
-        'testeEnviar',
-        endpoint, RetornoEnvioLoteRPS, True),
-}
-servicos_hml.update(servicos_base.copy())
+    servicos_hml = {
+        'envia_documento': ServicoNFSe(
+            'testeEnviar',
+            endpoint, RetornoEnvioLoteRPS, True),
+    }
+    servicos_hml.update(servicos_base.copy())
 
-servicos_prod = {
-    'envia_documento': ServicoNFSe(
-        'enviar',
-        endpoint, RetornoEnvioLoteRPS, True),
-}
-servicos_prod.update(servicos_base.copy())
+    servicos_prod = {
+        'envia_documento': ServicoNFSe(
+            'enviar',
+            endpoint, RetornoEnvioLoteRPS, True),
+    }
+    servicos_prod.update(servicos_base.copy())
 
-url = {
-    3509502: 'http://issdigital.campinas.sp.gov.br',  # Campinas
-    3170206: 'http://udigital.uberlandia.mg.gov.br',  # Uberlândia-MG
-    1501402: 'http://www.issdigitalbel.com.br',  # Belem-PA
-    5002704: 'http://issdigital.pmcg.ms.gov.br',  # Campo Grande - MS
-    3303500: 'http://www.issmaisfacil.com.br',  # Nova Iguaçu - RJ
-    2211001: 'http://www.issdigitalthe.com.br',  # Teresina - PI
-    # 2111300 : 'http://www.issdigitalslz.com.br',  # São Luiz - MA
-}
+    url = {
+        3509502: 'http://issdigital.campinas.sp.gov.br',  # Campinas
+        3170206: 'http://udigital.uberlandia.mg.gov.br',  # Uberlândia-MG
+        1501402: 'http://www.issdigitalbel.com.br',  # Belem-PA
+        5002704: 'http://issdigital.pmcg.ms.gov.br',  # Campo Grande - MS
+        3303500: 'http://www.issmaisfacil.com.br',  # Nova Iguaçu - RJ
+        2211001: 'http://www.issdigitalthe.com.br',  # Teresina - PI
+        # 2111300 : 'http://www.issdigitalslz.com.br',  # São Luiz - MA
+    }
 
 
 class Dsf(NFSe):

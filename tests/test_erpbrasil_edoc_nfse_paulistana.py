@@ -4,18 +4,22 @@ from requests import Session
 from unittest import TestCase
 
 from erpbrasil.base import misc
-from erpbrasil.edoc.nfse import NFSeFactory
 from erpbrasil.transmissao import TransmissaoSOAP
 from erpbrasil.assinatura.certificado import Certificado
 
-from nfselib.paulistana.v02.PedidoEnvioLoteRPS import (
-    CabecalhoType,
-    PedidoEnvioLoteRPS,
-    tpEndereco,
-    tpCPFCNPJ,
-    tpRPS,
-    tpChaveRPS,
-)
+try:
+    from nfselib.paulistana.v02.PedidoEnvioLoteRPS import (
+        CabecalhoType,
+        PedidoEnvioLoteRPS,
+        tpEndereco,
+        tpCPFCNPJ,
+        tpRPS,
+        tpChaveRPS,
+    )
+except ImportError:
+    pass
+
+from erpbrasil.edoc.provedores.cidades import NFSeFactory
 
 
 class Tests(TestCase):
