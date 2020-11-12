@@ -91,7 +91,7 @@ class Paulistana(NFSe):
         cnpj = retorno.find('.//CNPJ').text
 
         edoc = PedidoConsultaLote.PedidoConsultaLote(
-            Cabecalho=PedidoConsultaLote.CabecalhoLote(
+            Cabecalho=PedidoConsultaLote.CabecalhoType(
                 Versao=1,
                 CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj),
                 NumeroLote=numero_lote
@@ -110,7 +110,7 @@ class Paulistana(NFSe):
                 Versao=1,
                 CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj_prestador)
             ),
-            Detalhe=[PedidoConsultaNFe.DetalheConsulta(
+            Detalhe=[PedidoConsultaNFe.DetalheType(
                 ChaveRPS=PedidoConsultaNFe.tpChaveRPS(
                     InscricaoPrestador=int(inscricao_prestador),
                     SerieRPS=rps_serie,
