@@ -145,7 +145,11 @@ class Ginfes(NFSe):
 
         return xml_assinado
 
-    def _prepara_consultar_nfse_rps(self, rps_numero, rps_serie, rps_tipo):
+    def _prepara_consultar_nfse_rps(self, **kwargs):
+        rps_numero = kwargs.get('rps_number')
+        rps_serie = kwargs.get('rps_serie')
+        rps_tipo = kwargs.get('rps_type')
+
         raiz = servico_consultar_nfse_rps_envio.ConsultarNfseRpsEnvio(
             IdentificacaoRps=servico_consultar_nfse_rps_envio.tcIdentificacaoRps(
                 Numero=rps_numero,
