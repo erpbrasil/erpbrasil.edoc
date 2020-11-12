@@ -52,6 +52,7 @@ class NFSe(DocumentoEletronico):
 
         # TODO: Verificar impacto para outros provedores
         header = body_etree.find("Cabecalho")
+
         if header and header.attrib:
             header_string = header.attrib.get('Versao')
 
