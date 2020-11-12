@@ -91,7 +91,7 @@ class Paulistana(NFSe):
         cnpj = retorno.find('.//CNPJ').text
 
         edoc = PedidoConsultaLote.PedidoConsultaLote(
-            Cabecalho=PedidoConsultaLote.CabecalhoLote(
+            Cabecalho=PedidoConsultaLote.CabecalhoType(
                 Versao=1,
                 CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj),
                 NumeroLote=numero_lote
@@ -102,15 +102,18 @@ class Paulistana(NFSe):
 
         return xml_assinado
 
-    def _prepara_consultar_nfse_rps(
-            self, rps_numero, rps_serie, inscricao_prestador, cnpj_prestador):
+    def _prepara_consultar_nfse_rps(self, **kwargs):
+        cnpj_prestador = kwargs.get("cnpj_prest")
+        inscricao_prestador = kwargs.get("insc_prest")
+        rps_serie = kwargs.get("serie_rps")
+        rps_numero = kwargs.get("numero_rps")
 
         raiz = PedidoConsultaNFe.PedidoConsultaNFe(
             Cabecalho=PedidoConsultaNFe.CabecalhoType(
                 Versao=1,
                 CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj_prestador)
             ),
-            Detalhe=[PedidoConsultaNFe.DetalheConsulta(
+            Detalhe=[PedidoConsultaNFe.DetalheType(
                 ChaveRPS=PedidoConsultaNFe.tpChaveRPS(
                     InscricaoPrestador=int(inscricao_prestador),
                     SerieRPS=rps_serie,
