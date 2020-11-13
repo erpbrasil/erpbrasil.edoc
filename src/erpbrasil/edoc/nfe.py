@@ -13,12 +13,12 @@ from lxml import etree
 
 try:
     from nfelib.v4_00 import distDFeInt
+    from nfelib.v4_00 import leiauteCCe
     from nfelib.v4_00 import leiauteInutNFe
     from nfelib.v4_00 import retConsReciNFe
     from nfelib.v4_00 import retConsSitNFe
     from nfelib.v4_00 import retConsStatServ
     from nfelib.v4_00 import retDistDFeInt
-    from nfelib.v4_00 import leiauteCCe
     from nfelib.v4_00 import retEnvConfRecebto
     from nfelib.v4_00 import retEnvEvento
     from nfelib.v4_00 import retEnvEventoCancNFe
