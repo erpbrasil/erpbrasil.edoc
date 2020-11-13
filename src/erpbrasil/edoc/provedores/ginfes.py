@@ -213,7 +213,7 @@ class Ginfes(NFSe):
                             company_cnpj_cpf):
                         varibles_error.append('CNPJ do prestador')
                     if razao_social_prestador_retorno != company_legal_name:
-                        varibles_error.append('Razão Social de pestrador')
+                        varibles_error.append('Razão Social de prestador')
 
                     if varibles_error:
                         mensagem = 'Os seguintes campos não condizem com' \
