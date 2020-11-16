@@ -27,7 +27,7 @@ from erpbrasil.edoc.nfse import ServicoNFSe
 
 cidade = {
 
-    3543402: 'ribeiraopreto', # Ribeirão Preto - SP
+    3543402: 'ribeiraopreto',  # Ribeirão Preto - SP
 
 }
 
@@ -54,6 +54,7 @@ if issnet:
 else:
     servicos = ()
 
+
 class Issnet(NFSe):
     _header = None
 
@@ -61,7 +62,7 @@ class Issnet(NFSe):
                  im_prestador):
 
         if ambiente == '2':
-           self._url = 'https://www.issnetonline.com.br/webserviceabrasf/homologacao/'
+            self._url = 'https://www.issnetonline.com.br/webserviceabrasf/homologacao/'
         else:
             self._url = 'https://www.issnetonline.com.br/webserviceabrasf/' + cidade[int(cidade_ibge)] + '/'
         self._servicos = servicos
@@ -137,7 +138,7 @@ class Issnet(NFSe):
         return False
 
     def _prepara_cancelar_nfse_envio(self, doc_numero):
-        Pedido=servico_cancelar_nfse_envio.tcPedidoCancelamento(
+        raiz = servico_cancelar_nfse_envio.tcPedidoCancelamento(
             InfPedidoCancelamento=servico_cancelar_nfse_envio.tcInfPedidoCancelamento(
                 id=doc_numero,
                 IdentificacaoNfse=servico_cancelar_nfse_envio.tcIdentificacaoNfse(
@@ -153,13 +154,15 @@ class Issnet(NFSe):
         )
 
         # Foi codificado desta forma porque a assinatura fica dentro da tag Pedido. Acredito que de para melhorar.
-        pedido = self.assina_raiz(Pedido, '')
+        pedido = self.assina_raiz(raiz, '')
+
         xml_assinado = '<?xml version="1.0"?>' \
                        '<p1:CancelarNfseEnvio ' \
                        'xmlns:p1="http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_cancelar_nfse_envio.xsd" ' \
                        'xmlns:tc="http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd" ' \
                        'xmlns:ts="http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_simples.xsd">' \
                        + pedido + '</p1:CancelarNfseEnvio>'
+
         xml_assinado = xml_assinado.replace('tcPedidoCancelamento', 'Pedido')
 
         return xml_assinado
@@ -193,7 +196,7 @@ class Issnet(NFSe):
         nsmap = {'consulta': 'http://www.issnetonline.com.br/webserviceabrasf/vsd/'
                              'servico_consultar_nfse_rps_resposta.xsd',
                  'tc': 'http://www.issnetonline.com.br/webserviceabrasf/vsd/'
-                         'tipos_complexos.xsd'}
+                       'tipos_complexos.xsd'}
 
         mensagem = ''
         if processo.webservice == 'ConsultarNFSePorRPS':
