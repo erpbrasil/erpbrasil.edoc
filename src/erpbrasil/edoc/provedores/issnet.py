@@ -145,6 +145,8 @@ class Issnet(NFSe):
                     Cnpj=self.cnpj_prestador,
                     InscricaoMunicipal=self.im_prestador,
                     CodigoMunicipio=self.cidade
+                    if self.ambiente == '1'
+                    else 999,
                 ),
                 CodigoCancelamento='0001'
             )
@@ -158,6 +160,7 @@ class Issnet(NFSe):
                        'xmlns:tc="http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd" ' \
                        'xmlns:ts="http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_simples.xsd">' \
                        + pedido + '</p1:CancelarNfseEnvio>'
+        xml_assinado = xml_assinado.replace('tcPedidoCancelamento', 'Pedido')
 
         return xml_assinado
 
@@ -283,10 +286,11 @@ class Issnet(NFSe):
                     0].text
                 mensagem_completa += (
                     codigo + ' - ' +
-                    mensagem_erro +
-                    ' - Correção: ' +
-                    correcao + '\n'
+                    mensagem_erro
                 )
+                if correcao:
+                    mensagem_completa += (' - Correção: ' + correcao + '\n')
+
                 situacao = False
 
             return situacao, mensagem_completa
