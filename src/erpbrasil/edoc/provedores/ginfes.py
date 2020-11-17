@@ -205,20 +205,20 @@ class Ginfes(NFSe):
                         ".//tipo:PrestadorServico/tipo:RazaoSocial",
                         namespaces=nsmap)[0].text
 
-                    varibles_error = []
+                    variables_error = []
 
                     if numero_retorno != number:
-                        varibles_error.append('Número')
+                        variables_error.append('Número')
                     if cnpj_prestador_retorno != misc.punctuation_rm(
                             company_cnpj_cpf):
-                        varibles_error.append('CNPJ do prestador')
+                        variables_error.append('CNPJ do prestador')
                     if razao_social_prestador_retorno != company_legal_name:
-                        varibles_error.append('Razão Social de pestrador')
+                        variables_error.append('Razão Social de prestador')
 
-                    if varibles_error:
+                    if variables_error:
                         mensagem = 'Os seguintes campos não condizem com' \
                                    ' o provedor NFS-e: \n'
-                        mensagem += '\n'.join(varibles_error)
+                        mensagem += '\n'.join(variables_error)
                     else:
                         mensagem = "NFS-e enviada e corresponde com o provedor"
 
