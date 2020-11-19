@@ -4,7 +4,7 @@
 
 import abc
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from erpbrasil.assinatura.assinatura import Assinatura
 from lxml import etree
@@ -78,7 +78,10 @@ class DocumentoEletronico(ABC):
             # Recupera a sigla do estado
             uf_list = [uf for nUF, uf in SIGLA_ESTADO.items() if
                        nUF == str(getattr(raiz, 'cUFAutor', ''))]
-            kwargs = dict(uf=uf_list and uf_list[0])
+            if uf_list:
+                kwargs = dict(uf=uf_list and uf_list[0])
+            else:
+                kwargs = {}
             retorno = self._transmissao.enviar(
                 operacao, xml_etree, **kwargs
             )
@@ -218,7 +221,9 @@ class DocumentoEletronico(ABC):
     def _hora_agora(self):
         FORMAT = '%Y-%m-%dT%H:%M:%S'
         # return datetime.today().strftime(FORMAT) + '-00:00'
-        return time.strftime(FORMAT, time.localtime()) + '-00:00'
+        return datetime.strftime(
+            datetime.now(tz=timezone(timedelta(hours=-3))), FORMAT
+        ) + str(timezone(timedelta(hours=-3)))[3:]
 
     def assina_raiz(self, raiz, id, getchildren=False, metodo='nfe'):
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)

@@ -19,10 +19,18 @@ try:
     from nfelib.v4_00 import retConsSitNFe
     from nfelib.v4_00 import retConsStatServ
     from nfelib.v4_00 import retDistDFeInt
-    from nfelib.v4_00 import retEnvConfRecebto
     from nfelib.v4_00 import retEnvEvento
     from nfelib.v4_00 import retEnvEventoCancNFe
     from nfelib.v4_00 import retEnviNFe
+
+
+    from nfelib.v4_00 import leiauteConfRecebto
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import tpEventoType as eventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import descEventoType as descEventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import infEventoType as infEventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import detEventoType as detEventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import TEvento as TEventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import TEnvEvento as TEnvEventoManifestacao  # noga
 except ImportError:
     pass
 
@@ -1029,7 +1037,7 @@ class NFe(DocumentoEletronico):
             numero_lote = self._gera_numero_lote()
 
         eventos = []
-        raiz = retEnvEvento.TEnvEvento(
+        raiz = TEnvEventoManifestacao(
             versao="1.00",
             idLote=numero_lote,
             evento=eventos
@@ -1037,18 +1045,18 @@ class NFe(DocumentoEletronico):
         raiz.original_tagname_ = 'envEvento'
 
         for raiz_evento in lista_eventos:
-            evento = retEnvConfRecebto.TEvento(
+            evento = TEventoManifestacao(
                 versao="1.00", infEvento=raiz_evento,
             )
             evento.original_tagname_ = 'evento'
 
             # Recupera o evento do XML assinado
-            xml_assinado = self.assina_raiz(evento, evento.infEvento.Id)
+            xml_assinado = self.assina_raiz(evento, evento.infEvento.Id
+                                            ).replace('\n', '').encode()
 
             # Converte o xml_assinado para um objeto pelo
             # parser do esquema leiauteConfRecebto
-            xml_object = retEnvConfRecebto.parseString(
-                bytearray(xml_assinado, 'utf8'))
+            xml_object = leiauteConfRecebto.parseString(xml_assinado)
 
             # Adiciona o xml_object na lista de eventos. Desse modo a lista
             # de eventos terá um evento assinado corretamente
@@ -1086,7 +1094,7 @@ class NFe(DocumentoEletronico):
         """
 
         nSeqEvento = '1'
-        raiz = retEnvConfRecebto.infEventoType(
+        raiz = infEventoManifestacao(
             Id='ID{}{}{}'.format(tpEvento, chave, nSeqEvento.zfill(2)),
             cOrgao=91,
             tpAmb=self.ambiente,
@@ -1097,7 +1105,7 @@ class NFe(DocumentoEletronico):
             tpEvento=tpEvento,
             nSeqEvento=nSeqEvento,
             verEvento='1.00',
-            detEvento=retEnvConfRecebto.detEventoType(
+            detEvento=detEventoManifestacao(
                 versao='1.00',
                 descEvento=descEvento,
                 xJust=xJust
@@ -1142,31 +1150,31 @@ class NFe(DocumentoEletronico):
         return self.nfe_recepcao_evento(
             chave,
             cnpj_cpf,
-            retEnvConfRecebto.tpEventoType._2_10200,
-            retEnvConfRecebto.descEventoType.CONFIRMACAODA_OPERACAO,
+            eventoManifestacao._2_10200,
+            descEventoManifestacao.CONFIRMACAODA_OPERACAO,
         )
 
     def ciencia_da_operacao(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
             chave,
             cnpj_cpf,
-            retEnvConfRecebto.tpEventoType._2_10210,
-            retEnvConfRecebto.descEventoType.CIENCIADA_OPERACAO,
+            eventoManifestacao._2_10210,
+            descEventoManifestacao.CIENCIADA_OPERACAO,
         )
 
     def desconhecimento_da_operacao(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
             chave,
             cnpj_cpf,
-            retEnvConfRecebto.tpEventoType._2_10220,
-            retEnvConfRecebto.descEventoType.DESCONHECIMENTODA_OPERACAO,
+            eventoManifestacao._2_10220,
+            descEventoManifestacao.DESCONHECIMENTODA_OPERACAO,
         )
 
     def operacao_nao_realizada(self, chave, cnpj_cpf):
         return self.nfe_recepcao_evento(
             chave,
             cnpj_cpf,
-            retEnvConfRecebto.tpEventoType._2_10240,
-            retEnvConfRecebto.descEventoType.OPERACAONAO_REALIZADA,
+            eventoManifestacao._2_10240,
+            descEventoManifestacao.OPERACAONAO_REALIZADA,
             xJust=''.zfill(15)
         )
