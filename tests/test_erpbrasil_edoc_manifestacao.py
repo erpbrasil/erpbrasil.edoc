@@ -6,10 +6,10 @@ import logging.config
 from unittest import TestCase
 
 from erpbrasil.assinatura.certificado import Certificado
-from erpbrasil.transmissao import TransmissaoSOAP
+from erpbrasil.edoc.mde import TransmissaoMDE
 from requests import Session
 
-from erpbrasil.edoc.nfe import NFe
+from erpbrasil.edoc.mde import MDe
 
 logging.config.dictConfig({
     'version': 1,
@@ -55,8 +55,8 @@ class Tests(TestCase):
         session = Session()
         session.verify = False
 
-        transmissao = TransmissaoSOAP(self.certificado, session)
-        self.nfe = NFe(
+        transmissao = TransmissaoMDE(self.certificado, session)
+        self.mde = MDe(
             transmissao, '35',
             versao='1.00', ambiente='1'
         )
@@ -66,7 +66,7 @@ class Tests(TestCase):
         )
 
     def test_confirmacao_da_operacao(self):
-        ret = self.nfe.confirmacao_da_operacao(
+        ret = self.mde.confirmacao_da_operacao(
             chave=self.chave,
             cnpj_cpf="23765766000162"
         )
@@ -74,7 +74,7 @@ class Tests(TestCase):
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
     def test_ciencia_da_operacao(self):
-        ret = self.nfe.ciencia_da_operacao(
+        ret = self.mde.ciencia_da_operacao(
             chave=self.chave,
             cnpj_cpf="23765766000162"
         )
@@ -82,7 +82,7 @@ class Tests(TestCase):
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
     def test_desconhecimento_da_operacao(self):
-        ret = self.nfe.desconhecimento_da_operacao(
+        ret = self.mde.desconhecimento_da_operacao(
             chave=self.chave,
             cnpj_cpf="23765766000162"
         )
@@ -90,7 +90,7 @@ class Tests(TestCase):
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
     def test_operacao_nao_realizada(self):
-        ret = self.nfe.operacao_nao_realizada(
+        ret = self.mde.operacao_nao_realizada(
             chave=self.chave,
             cnpj_cpf="23765766000162"
         )
