@@ -1,0 +1,207 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Zeep/3.4.0 (www.python-zeep.org)
+    method: GET
+    uri: https://homologacao.ginfes.com.br/ServiceGinfesImpl?wsdl
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAO1bz2+bMBS+96/gxi1u15wiEmndYZrUdVM7VbtNLrgUiWBkO0v73882kCZgfhSb
+        GGk+hZDn9/x9frafP0gQoeckS1iCM+plcIvW/gMif5MQfU2yZ0S/bfO0vOF7DJIYsTtuRXMYctMX
+        xvIVAC94i1McwxDiRSybLUK8XTwR33vdphk9GNLwBW0hXfC7FMN8gUkM9jRKQWm4Enf7rcW3QxN2
+        5L+vI6tXGh2M9/v9Yn8tvX66vLwCv7/fPsiI/ubCC9hbjugmAMUnv8FBUxijNpL+fIFZiFJI7p4p
+        uucEcUKR8OQFOSSsbEYQ25GMM8m9rn3emxVlJMlin0cSZiIQKCMNCsqj7FJWRP2JyX1OH6+tRl+e
+        P/otZoiHbgTk2Xo5QbiHhO1EhpVhH5cfD1y3vjLYzaM0tDEYdXauZ8XOPQpRHvLF7pA1M+ugYkpN
+        nNcKSmaW0bV5Ptfu1TL/XMuRnOiW1nxra/1cZ21j9bO7F8+LpKOd6ZyToyqLZkvGjMdpzqxZmFuN
+        0s/eAmgh9BwT4qRv85pHqlrTesqerQOqstLabLEzV85aAVpaD4rN1WIdaDGhz34wM4Y1x4T94rZt
+        sYsAOEcECmWwNDsp4Dzul99liPwgESIleNHOC5Is3zGvjLf2WUZXfeVgAGSjoj3esQ86eGcmAEVr
+        iQAcIPQC4hubEpInN4WRuMRuqYnsOMNHY1tOgW2pj205Eltd+dNPxoaWOAZa666jA85cYirO0AZQ
+        jk7QpqwzEc6RidpRcY/CaWjZPK0wdIBpLJwKldIsskr61MVXr080UZqfjKcKhRm42lPyREOaDrDm
+        xFQ/dRoNeJqxNTGqRsZzmpE0MYbao1dX3s0tRQ1NXwdr61HcBGjz2at4kmcQvXZONx/DToxfM9M7
+        tMOP4FccQ7XTXXW0HQG168CqB9FYcquf/xrBOjahlc9fJ0M7Lom7xbx2tAGolAbx5SnJoiSL20SH
+        m+LnSsVQ9qQQJsT7P6vKG2VvqZBA8pC3JDCjImTnO0Ty9SHxuw/6dY6CJhnx3U58/RyKy7VfOClH
+        RF5WHcTRm/Q4+GWpHeVmacJHHaaV2+ZgTRBjtGTi2OkSXRw73bKN46dP+XEM9WlGjqEOtcmR0ytb
+        OYoGaF6OpAE6mSOpU1tz9HRqc46eYdqe42moHOiYGiocOqb6JEbHUL9C6Tjq1zX/a44CUGqW4poW
+        0mabGFr951J6EYqmV7ZtEUYP4mmLP16lsmP2YRQRRKmX4hAWzPeBBaCpxhb6qRR5Jb4S1OYiAEf/
+        K938A3eLz1ZlOgAA
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - text/xml
+      Date:
+      - Fri, 20 Nov 2020 17:48:40 GMT
+      Server:
+      - nginx
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Powered-By:
+      - Servlet 2.5; JBoss-5.0/JBossWeb-2.1
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '<?xml version=''1.0'' encoding=''utf-8''?>
+
+      <soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Body><ns0:CancelarNfseV3
+      xmlns:ns0="http://homologacao.ginfes.com.br"><arg0>&lt;ns2:cabecalho xmlns:ns2="http://www.ginfes.com.br/cabecalho_v03.xsd"
+      versao="3"&gt;&lt;versaoDados&gt;3&lt;/versaoDados&gt;&lt;/ns2:cabecalho&gt;</arg0><arg1>&lt;p:CancelarNfseEnvio
+      xmlns:p="http://www.ginfes.com.br/servico_cancelar_nfse_envio_v03.xsd" xmlns:p1="http://www.ginfes.com.br/tipos_v03.xsd"&gt;&lt;Pedido&gt;&lt;p1:InfPedidoCancelamento
+      Id="115"&gt;&lt;p1:IdentificacaoNfse&gt;&lt;p1:Numero&gt;115&lt;/p1:Numero&gt;&lt;p1:Cnpj&gt;23130935000198&lt;/p1:Cnpj&gt;&lt;p1:InscricaoMunicipal&gt;35172&lt;/p1:InscricaoMunicipal&gt;&lt;p1:CodigoMunicipio&gt;3132404&lt;/p1:CodigoMunicipio&gt;&lt;/p1:IdentificacaoNfse&gt;&lt;p1:CodigoCancelamento&gt;0001&lt;/p1:CodigoCancelamento&gt;&lt;/p1:InfPedidoCancelamento&gt;&lt;/Pedido&gt;&lt;Signature
+      xmlns="http://www.w3.org/2000/09/xmldsig#"&gt;&lt;SignedInfo&gt;&lt;CanonicalizationMethod
+      Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/&gt;&lt;SignatureMethod
+      Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/&gt;&lt;Reference URI=""&gt;&lt;Transforms&gt;&lt;Transform
+      Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/&gt;&lt;Transform
+      Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/&gt;&lt;/Transforms&gt;&lt;DigestMethod
+      Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/&gt;&lt;DigestValue&gt;/V6AvI2PR8PAzjFHGl67gX+uLVM=&lt;/DigestValue&gt;&lt;/Reference&gt;&lt;/SignedInfo&gt;&lt;SignatureValue&gt;Jo//qXtpUIL+aN6Goyr2Ktes6N6ddgoQ3CcvOz7y7tCi5uphTYALjt1y86IJDFc4d8yQnrTtq3+YzipGuYL41A09keIfidhrwrm99AG3DF2GOqYC9CsY5I2Cb5sasuqA3zp4K8/NiyZe6AyhyEof0RsSSBFqLXE4xtsLTHUKFiDXwkyTvBIePTSgT+wvNnZFNGGtH6bKOoN0x+Zg76YnImwkajvYYW05ii2rnb1pOe9PLJ9q2Oat4CEYUmBmyO0coslNMTFFp12qBEEkUrnJlVJxwcHNUIK/WCZVz02g+9mB6TCvqK0zH0DGBThafYbapBOXottDvsqtn9OpauneFg==&lt;/SignatureValue&gt;&lt;KeyInfo&gt;&lt;X509Data&gt;&lt;X509Certificate&gt;MIIH4zCCBcugAwIBAgIIHwSZMUkzNT4wDQYJKoZIhvcNAQELBQAwdDELMAkGA1UE
+
+      BhMCQlIxEzARBgNVBAoTCklDUC1CcmFzaWwxNjA0BgNVBAsTLVNlY3JldGFyaWEg
+
+      ZGEgUmVjZWl0YSBGZWRlcmFsIGRvIEJyYXNpbCAtIFJGQjEYMBYGA1UEAxMPQUMg
+
+      VkFMSUQgUkZCIHY1MB4XDTE5MTIwNDE1MTcwMFoXDTIwMTIwMzE1MTcwMFowggEF
+
+      MQswCQYDVQQGEwJCUjELMAkGA1UECBMCTUcxEDAOBgNVBAcTB0lUQUpVQkExEzAR
+
+      BgNVBAoTCklDUC1CcmFzaWwxNjA0BgNVBAsTLVNlY3JldGFyaWEgZGEgUmVjZWl0
+
+      YSBGZWRlcmFsIGRvIEJyYXNpbCAtIFJGQjEWMBQGA1UECxMNUkZCIGUtQ05QSiBB
+
+      MTEqMCgGA1UECxMhQVIgVkFMRUNFUlQgQ0VSVElGSUNBRE9SQSBESUdJVEFMMRcw
+
+      FQYDVQQLEw4yNDA2Mjc5MjAwMDE5NzEtMCsGA1UEAxMkS01FRSBJTkZPUk1BVElD
+
+      QSBMVERBOjIzMTMwOTM1MDAwMTk4MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+
+      CgKCAQEAzyhZGUXxAQ0qXkrcnpKczV05KFxty6kH+oCdRdXrzuwSh2CWyC0bj1eD
+
+      KFd0NzPGivYZha2/zIQQg0Pw6b5kurBtVVzh44g82+cWyEDLwD439c610ajlSCFM
+
+      V4+0IQ4QiTEUSBX5rCMYGhdwzlOe7QJyqXdQ1FZushxi9weCauHkBnSoB7Ra+GyT
+
+      tCHNx48IW9WXONq2zVHOvbcqxU4V7zXTD1jmA3fvwpisIDjmypA7xli8SNh9GH/f
+
+      XB/2ksbSw025kE8sQqBrvdcM2dBagC4WRF9BcyaHEpVm1X0Drmcle6Zta+gkraLu
+
+      aeh/QKZkENkC0D2gDipQ2hzkOs/9yQIDAQABo4IC5DCCAuAwgZwGCCsGAQUFBwEB
+
+      BIGPMIGMMFUGCCsGAQUFBzAChklodHRwOi8vaWNwLWJyYXNpbC52YWxpZGNlcnRp
+
+      ZmljYWRvcmEuY29tLmJyL2FjLXZhbGlkcmZiL2FjLXZhbGlkcmZidjUucDdiMDMG
+
+      CCsGAQUFBzABhidodHRwOi8vb2NzcHY1LnZhbGlkY2VydGlmaWNhZG9yYS5jb20u
+
+      YnIwCQYDVR0TBAIwADAfBgNVHSMEGDAWgBRTy6XkdVCZQCy+WxVFyb7LMKqJxTBw
+
+      BgNVHSAEaTBnMGUGBmBMAQIBJTBbMFkGCCsGAQUFBwIBFk1odHRwOi8vaWNwLWJy
+
+      YXNpbC52YWxpZGNlcnRpZmljYWRvcmEuY29tLmJyL2FjLXZhbGlkcmZiL2RwYy1h
+
+      Yy12YWxpZHJmYnY1LnBkZjCBtgYDVR0fBIGuMIGrMFOgUaBPhk1odHRwOi8vaWNw
+
+      LWJyYXNpbC52YWxpZGNlcnRpZmljYWRvcmEuY29tLmJyL2FjLXZhbGlkcmZiL2xj
+
+      ci1hYy12YWxpZHJmYnY1LmNybDBUoFKgUIZOaHR0cDovL2ljcC1icmFzaWwyLnZh
+
+      bGlkY2VydGlmaWNhZG9yYS5jb20uYnIvYWMtdmFsaWRyZmIvbGNyLWFjLXZhbGlk
+
+      cmZidjUuY3JsMA4GA1UdDwEB/wQEAwIF4DAdBgNVHSUEFjAUBggrBgEFBQcDAgYI
+
+      KwYBBQUHAwQwgbgGA1UdEQSBsDCBrYETYW5hbmlhc0BrbWVlLmNvbS5icqA4BgVg
+
+      TAEDBKAvBC0xMTA0MTk4MDAwNzcxNjM2NDgyMDAwMDAwMDAwMDAwMDAwMDAwMDAw
+
+      MDAwMDCgKAYFYEwBAwKgHwQdQU5BTklBUyBQRVJFSVJBIEJBVElTVEEgRklMSE+g
+
+      GQYFYEwBAwOgEAQOMjMxMzA5MzUwMDAxOTigFwYFYEwBAwegDgQMMDAwMDAwMDAw
+
+      MDAwMA0GCSqGSIb3DQEBCwUAA4ICAQBDae6+hrTCn/xEHTZsbsEfQIFmj7t1Tcl3
+
+      YnF2r2rmZaXJpiCxDzRCnqaaPdcfmFCkvdvt8YhmhK7ik+ma861VQ2orv8lrzY8P
+
+      q8juNAwJ08FI6+LEYvAUvzJj5WzQqahIQd1KzzcVjYgcieNpdnejCZsECu5RP9Tr
+
+      knPLegaC5J8YX2fKuNxev4t4SSJPMoYgkUNPaENXRzswS1vz5X8vX/g00a/efbJ8
+
+      9z/vC7e3WttYwpojIaoe8MKa7twN1eMOe7xbwFmM3nqhO/i59UmW0OlArsMrqLdJ
+
+      YD507Aih00zfeLJT0ML+AfKuMg926wpOkqcgSaKrn7TtvobYPSydMxUyiHwg+4Yi
+
+      jIYT/rmZL3X/ntFmkhR19+28237BbLBNROxNNtn4oBvfZ4tApLzuJUFtajAa9sRO
+
+      CizmOYFiESKAXYj/P+5heb0dDTz87izXmj0TrDLrJxIqU4CIPTFTHj5DHI4/U7zn
+
+      6Ux6IypM3CxzxQ5WXj7OepU0gJUutIJ0Zd2X41+JxVw05JXUM3JbucHHGxxN2DMU
+
+      Z+ruvJC48iqs9ZgwpGQUIV6ksSmYtaa5isLDbB4EeCBo2pOgq7nafIVw/K7to3+H
+
+      Z5DuZifc1bc3xuqUbu/R08yPZhNQwjN5CKFQztQ+rfNm+lZugo5/7O3oAc1PqMAc
+
+      1c8J4lLBZw==
+
+      &lt;/X509Certificate&gt;&lt;/X509Data&gt;&lt;/KeyInfo&gt;&lt;/Signature&gt;&lt;/p:CancelarNfseEnvio&gt;</arg1></ns0:CancelarNfseV3></soap-env:Body></soap-env:Envelope>'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4943'
+      Content-Type:
+      - text/xml; charset=utf-8
+      SOAPAction:
+      - '""'
+      User-Agent:
+      - Zeep/3.4.0 (www.python-zeep.org)
+    method: POST
+    uri: https://homologacao.ginfes.com.br//ServiceGinfesImpl
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAIVUXW/aMBT9K0iT6BOxk4AGIU2ldZvKw6ppa/eKPPsSPCV2ZjvQ/vvZjsNCCerb
+        9T333HN8/ZGDOGRfxAEq2cDkpa6Ezmzq9mZvTJMhpOkeaqIji2hJmkiqErkAQeCgmyJ3PR6AMFBF
+        joYLF3+S7LXIhcbZPREUKqIedxp+pT9AN1LoXtQWnET3spaVLAklMiq52IGOqKyj38pqKTCtEsW0
+        Mus7y5wcQGkuxe30byvNOo5wF0xAUMm4KAPw/PR1tgyQNkQwUkkBAXwF3QV309KsXWuh0zO73qzl
+        ncwmgRocH4/H6Jj66SQYY4RXyFYyzcsPQdQTL0ln20OGW5XtAafRi2ZDolVM3yNrUAdO5ZYG31th
+        jW9VcH7edWSfNQgj+/y9FDuuancCfeo7MM5Oq43YdYkhe7Jh/TnEi3OhDbMFfMepa+km2gOPbQ3K
+        t3Ucm0D/M96JaP64OEnjFK/ShZ1uvFr6wh7q/GiqbHf5rRWc8oZUDkkX8cfE147j3VYZL/s097pW
+        KpnjeSdyCXcNr22oI7wdqrM96Dc2czQ60xN6Mf/BGY0RfrYUtPZLo1rwPQY5t/5MDHmQivj54gTP
+        4niW4Kd4ns2X2Tz1lGFN7/IdZTRye9C1m4auPTVXkKPw3HN0/QMJf073z6Dhf1b8A4keaT3eBAAA
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - text/xml;charset=UTF-8
+      Date:
+      - Fri, 20 Nov 2020 17:48:43 GMT
+      Server:
+      - nginx
+      Set-Cookie:
+      - JSESSIONID=009AECB406AB017669367834F7783313; Path=/
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Powered-By:
+      - Servlet 2.5; JBoss-5.0/JBossWeb-2.1
+    status:
+      code: 200
+      message: OK
+version: 1
