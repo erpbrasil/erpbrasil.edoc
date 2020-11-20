@@ -7,26 +7,24 @@ from erpbrasil.base import misc
 from erpbrasil.transmissao import TransmissaoSOAP
 from requests import Session
 
+from erpbrasil.edoc.provedores.cidades import NFSeFactory
+
 try:
-    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import (
-        EnviarLoteRpsEnvio,
-        ListaRpsType,
-        tcCpfCnpj,
-        tcDadosServico,
-        tcDadosTomador,
-        tcEndereco,
-        tcIdentificacaoPrestador,
-        tcIdentificacaoRps,
-        tcIdentificacaoTomador,
-        tcInfRps,
-        tcLoteRps,
-        tcRps,
-        tcValores,
-    )
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import EnviarLoteRpsEnvio
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import ListaRpsType
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcCpfCnpj
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcDadosServico
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcDadosTomador
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcEndereco
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcIdentificacaoPrestador
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcIdentificacaoRps
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcIdentificacaoTomador
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcInfRps
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcLoteRps
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcRps
+    from nfselib.ginfes.v3_01.servico_enviar_lote_rps_envio import tcValores
 except ImportError:
     pass
-
-from erpbrasil.edoc.provedores.cidades import NFSeFactory
 
 
 class Tests(TestCase):

@@ -10,6 +10,8 @@ import datetime
 from erpbrasil.assinatura.assinatura import Assinatura
 from lxml import etree
 
+from erpbrasil.edoc.edoc import DocumentoEletronico
+
 try:
     from mdfelib.v3_00 import consMDFeNaoEnc
     from mdfelib.v3_00 import consReciMDFe
@@ -18,8 +20,6 @@ try:
     from mdfelib.v3_00 import enviMDFe
 except ImportError:
     pass
-
-from erpbrasil.edoc.edoc import DocumentoEletronico
 
 
 class MDFe(DocumentoEletronico):

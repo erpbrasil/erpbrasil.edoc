@@ -5,10 +5,10 @@ from unittest import TestCase
 
 import vcr
 from erpbrasil.assinatura.certificado import Certificado
-from erpbrasil.edoc.mde import TransmissaoMDE
 from requests import Session
 
 from erpbrasil.edoc.mde import MDe
+from erpbrasil.edoc.mde import TransmissaoMDE
 
 logging.config.dictConfig({
     'version': 1,

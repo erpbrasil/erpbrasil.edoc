@@ -5,23 +5,22 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from erpbrasil.transmissao import TransmissaoSOAP
 from lxml import etree
 
-from .resposta import analisar_retorno_raw
-from nfelib.v4_00 import retEnvEvento
-
-from erpbrasil.edoc.nfe import NFe, localizar_url
-from erpbrasil.transmissao import TransmissaoSOAP
-
+from erpbrasil.edoc.nfe import NFe
+from erpbrasil.edoc.nfe import localizar_url
+from erpbrasil.edoc.resposta import analisar_retorno_raw
 
 try:
     from nfelib.v4_00 import leiauteConfRecebto
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import tpEventoType as eventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import descEventoType as descEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import infEventoType as infEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import detEventoType as detEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import TEvento as TEventoManifestacao  # noga
+    from nfelib.v4_00 import retEnvEvento
     from nfelib.v4_00.leiauteConfRecebtoManifestacao import TEnvEvento as TEnvEventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import TEvento as TEventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import descEventoType as descEventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import detEventoType as detEventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import infEventoType as infEventoManifestacao  # noga
+    from nfelib.v4_00.leiauteConfRecebtoManifestacao import tpEventoType as eventoManifestacao  # noga
 except ImportError:
     pass
 
@@ -254,11 +253,10 @@ class TransmissaoMDE(TransmissaoSOAP):
 
             if 'distDFeInt' in mensagem.tag:
                 mensagem = dict(nfeDadosMsg=mensagem)
-            elif 'TEnvEvento'in mensagem.tag:
+            elif 'TEnvEvento' in mensagem.tag:
                 xmlns += 'NFeRecepcaoEvento4'
                 mensagem = dict(nfeCabecMsg=mensagem)
-            elif operacao == 'nfeRecepcaoEvento' and \
-                'consStatServ' in mensagem.tag:
+            elif operacao == 'nfeRecepcaoEvento' and 'consStatServ' in mensagem.tag:
                 xmlns += 'RecepcaoEvento'
                 mensagem = dict(mensagem=mensagem)
 
@@ -295,4 +293,3 @@ class TransmissaoMDE(TransmissaoSOAP):
             return self._cliente.service[operacao](
                 mensagem
             )
-

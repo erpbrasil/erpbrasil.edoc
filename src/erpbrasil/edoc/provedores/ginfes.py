@@ -10,6 +10,9 @@ from datetime import datetime
 
 from erpbrasil.base import misc
 
+from erpbrasil.edoc.nfse import NFSe
+from erpbrasil.edoc.nfse import ServicoNFSe
+
 try:
     from nfselib.ginfes.v3_01 import servico_cancelar_nfse_envio
     from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_envio
@@ -23,8 +26,6 @@ try:
 except ImportError:
     ginfes = False
 
-from erpbrasil.edoc.nfse import NFSe
-from erpbrasil.edoc.nfse import ServicoNFSe
 
 endpoint = 'ServiceGinfesImpl?wsdl'
 

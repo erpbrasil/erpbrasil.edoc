@@ -11,6 +11,8 @@ import time
 
 from lxml import etree
 
+from erpbrasil.edoc.edoc import DocumentoEletronico
+
 try:
     from nfelib.v4_00 import distDFeInt
     from nfelib.v4_00 import leiauteCCe
@@ -25,7 +27,6 @@ try:
 except ImportError:
     pass
 
-from erpbrasil.edoc.edoc import DocumentoEletronico
 
 TEXTO_CARTA_CORRECAO = """A Carta de Correcao e disciplinada pelo paragrafo \
 1o-A do art. 7o do Convenio S/N, de 15 de dezembro de 1970 e \

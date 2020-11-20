@@ -3,8 +3,9 @@
 # License MIT
 
 import abc
-import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 
 from erpbrasil.assinatura.assinatura import Assinatura
 from lxml import etree
@@ -68,11 +69,7 @@ class DocumentoEletronico(ABC):
         output.close()
         return contents, etree.fromstring(contents)
 
-    # list(mydict.keys())[list(mydict.values()).index(16)]
-
     def _post(self, raiz, url, operacao, classe):
-        from .nfe import SIGLA_ESTADO
-
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         with self._transmissao.cliente(url):
             retorno = self._transmissao.enviar(
