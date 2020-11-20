@@ -4,10 +4,10 @@ import os
 from unittest import TestCase
 
 from erpbrasil.assinatura.certificado import Certificado
-from erpbrasil.transmissao import TransmissaoSOAP
+from erpbrasil.edoc.mde import TransmissaoMDE
 from requests import Session
 
-from erpbrasil.edoc.nfe import NFe
+from erpbrasil.edoc.mde import MDe
 
 logging.config.dictConfig({
     'version': 1,
@@ -41,7 +41,7 @@ class Tests(TestCase):
     def setUp(self):
         certificado_nfe_caminho = os.environ.get(
             'certificado_nfe_caminho',
-            'fixtures/dummy_cert.pfx'
+            'test/fixtures/dummy_cert.pfx'
         )
         certificado_nfe_senha = os.environ.get(
             'certificado_nfe_senha', 'dummy_password'
@@ -52,21 +52,21 @@ class Tests(TestCase):
         )
 
         self.chave = os.environ.get(
-            'chNFe', '26180812984794000154550010000016871192213339'
+            'chNFe', '35200309091076000144550010001807401003642343'
         )
 
         session = Session()
         session.verify = False
 
-        transmissao = TransmissaoSOAP(self.certificado, session)
-        self.nfe = NFe(
+        transmissao = TransmissaoMDE(self.certificado, session)
+        self.mde = MDe(
             transmissao, '35',
             versao='1.01', ambiente='1'
         )
 
     def test_ultimo_nsu(self):
 
-        ret = self.nfe.consultar_distribuicao(
+        ret = self.mde.consultar_distribuicao(
             cnpj_cpf=self.certificado.cnpj_cpf,
             ultimo_nsu='1'.zfill(15),
         )
@@ -75,7 +75,7 @@ class Tests(TestCase):
 
     def test_nsu_especifico(self):
 
-        ret = self.nfe.consultar_distribuicao(
+        ret = self.mde.consultar_distribuicao(
             cnpj_cpf=self.certificado.cnpj_cpf,
             nsu_especifico='1'.zfill(15),
         )
@@ -84,7 +84,7 @@ class Tests(TestCase):
 
     def test_chave(self):
 
-        ret = self.nfe.consultar_distribuicao(
+        ret = self.mde.consultar_distribuicao(
             cnpj_cpf=self.certificado.cnpj_cpf,
             chave=self.chave
         )
