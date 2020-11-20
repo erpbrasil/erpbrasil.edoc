@@ -5,6 +5,7 @@ import os
 import logging.config
 from unittest import TestCase
 
+import vcr
 from erpbrasil.assinatura.certificado import Certificado
 from erpbrasil.edoc.mde import TransmissaoMDE
 from requests import Session
@@ -65,6 +66,8 @@ class Tests(TestCase):
             'chNFe', '35200309091076000144550010001807401003642343'
         )
 
+    @vcr.use_cassette(
+        'tests/fixtures/vcr_cassettes/test_confirmacao_da_operacao.yaml')
     def test_confirmacao_da_operacao(self):
         ret = self.mde.confirmacao_da_operacao(
             chave=self.chave,
@@ -73,6 +76,8 @@ class Tests(TestCase):
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
+    @vcr.use_cassette(
+        'tests/fixtures/vcr_cassettes/test_ciencia_da_operacao.yaml')
     def test_ciencia_da_operacao(self):
         ret = self.mde.ciencia_da_operacao(
             chave=self.chave,
@@ -81,6 +86,8 @@ class Tests(TestCase):
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
+    @vcr.use_cassette(
+        'tests/fixtures/vcr_cassettes/test_desconhecimento_da_operacao.yaml')
     def test_desconhecimento_da_operacao(self):
         ret = self.mde.desconhecimento_da_operacao(
             chave=self.chave,
@@ -89,6 +96,8 @@ class Tests(TestCase):
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
+    @vcr.use_cassette(
+        'tests/fixtures/vcr_cassettes/test_operacao_nao_realizada.yaml')
     def test_operacao_nao_realizada(self):
         ret = self.mde.operacao_nao_realizada(
             chave=self.chave,
