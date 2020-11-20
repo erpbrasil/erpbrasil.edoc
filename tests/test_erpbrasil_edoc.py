@@ -3,6 +3,7 @@ import logging.config
 import os
 from unittest import TestCase
 
+import vcr
 from erpbrasil.assinatura.certificado import Certificado
 from erpbrasil.edoc.mde import TransmissaoMDE
 from requests import Session
@@ -64,6 +65,7 @@ class Tests(TestCase):
             versao='1.01', ambiente='1'
         )
 
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_ultimo_nsu.yaml')
     def test_ultimo_nsu(self):
 
         ret = self.mde.consultar_distribuicao(
@@ -73,6 +75,7 @@ class Tests(TestCase):
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_nsu_especifico.yaml')
     def test_nsu_especifico(self):
 
         ret = self.mde.consultar_distribuicao(
@@ -82,6 +85,7 @@ class Tests(TestCase):
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_chave.yaml')
     def test_chave(self):
 
         ret = self.mde.consultar_distribuicao(

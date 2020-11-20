@@ -3,6 +3,7 @@
 import os
 from unittest import TestCase
 
+import vcr
 from erpbrasil.assinatura.certificado import Certificado
 from erpbrasil.transmissao import TransmissaoSOAP
 from requests import Session
@@ -36,6 +37,7 @@ class Tests(TestCase):
             versao='4.00', ambiente='1'
         )
 
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_status_servico.yaml')
     def test_status_servico(self):
         ret = self.nfe.status_servico()
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)

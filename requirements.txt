@@ -1,1 +1,2 @@
 -e git://github.com/erpbrasil/nfelib.git@feature/distribuicao#egg=nfelib
+nfselib.ginfes
