@@ -68,7 +68,7 @@ class Tests(TestCase):
     def test_confirmacao_da_operacao(self):
         ret = self.mde.confirmacao_da_operacao(
             chave=self.chave,
-            cnpj_cpf="23765766000162"
+            cnpj_cpf=self.certificado.cnpj_cpf
         )
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
@@ -76,7 +76,7 @@ class Tests(TestCase):
     def test_ciencia_da_operacao(self):
         ret = self.mde.ciencia_da_operacao(
             chave=self.chave,
-            cnpj_cpf="23765766000162"
+            cnpj_cpf=self.certificado.cnpj_cpf
         )
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
@@ -84,7 +84,7 @@ class Tests(TestCase):
     def test_desconhecimento_da_operacao(self):
         ret = self.mde.desconhecimento_da_operacao(
             chave=self.chave,
-            cnpj_cpf="23765766000162"
+            cnpj_cpf=self.certificado.cnpj_cpf
         )
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
@@ -92,7 +92,7 @@ class Tests(TestCase):
     def test_operacao_nao_realizada(self):
         ret = self.mde.operacao_nao_realizada(
             chave=self.chave,
-            cnpj_cpf="23765766000162"
+            cnpj_cpf=self.certificado.cnpj_cpf
         )
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)

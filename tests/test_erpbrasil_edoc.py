@@ -67,7 +67,7 @@ class Tests(TestCase):
     def test_ultimo_nsu(self):
 
         ret = self.mde.consultar_distribuicao(
-            cnpj_cpf="23765766000162",
+            cnpj_cpf=self.certificado.cnpj_cpf,
             ultimo_nsu='1'.zfill(15),
         )
 
@@ -76,7 +76,7 @@ class Tests(TestCase):
     def test_nsu_especifico(self):
 
         ret = self.mde.consultar_distribuicao(
-            cnpj_cpf="23765766000162",
+            cnpj_cpf=self.certificado.cnpj_cpf,
             nsu_especifico='1'.zfill(15),
         )
 
@@ -85,7 +85,7 @@ class Tests(TestCase):
     def test_chave(self):
 
         ret = self.mde.consultar_distribuicao(
-            cnpj_cpf="23765766000162",
+            cnpj_cpf=self.certificado.cnpj_cpf,
             chave=self.chave
         )
 
