@@ -1,6 +1,11 @@
 language: python
 dist: xenial
 cache: false
+
+addons:
+  apt:
+    packages:
+      - swig
 env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
@@ -10,18 +15,9 @@ matrix:
     - python: '3.6'
       env:
         - TOXENV=check
-    - python: '3.6'
+    - python: '3.7'
       env:
         - TOXENV=docs
-    - env:
-        - TOXENV=py27,codecov
-      python: '2.7'
-    - env:
-        - TOXENV=py34,codecov
-      python: '3.4'
-    - env:
-        - TOXENV=py35,codecov
-      python: '3.5'
     - env:
         - TOXENV=py36,codecov
       python: '3.6'
@@ -29,12 +25,8 @@ matrix:
         - TOXENV=py37,codecov
       python: '3.7'
     - env:
-        - TOXENV=pypy,codecov
-      python: 'pypy2.7-6.0'
-    - env:
-        - TOXENV=pypy3,codecov
-        - TOXPYTHON=pypy3
-      python: 'pypy3.5-6.0'
+        - TOXENV=py38,codecov
+      python: '3.8'
 before_install:
   - python --version
   - uname -a

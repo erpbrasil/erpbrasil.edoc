@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 # See http://peak.telecommunity.com/DevCenter/setuptools#namespace-packages
+# Trecho duplicado para permitir a importação do erpbrasil.edoc.pdf e o
+# erpbrasil.edoc.gen
 try:
     __import__("pkg_resources").declare_namespace(__name__)
 except ImportError:
@@ -12,8 +14,6 @@ import abc
 
 ABC = abc.ABCMeta('ABC', (object,), {})
 
-from erpbrasil.edoc.nfe import NFe
-from erpbrasil.edoc.nfse import NFSe
 
 def importar_documento(xml):
     pass

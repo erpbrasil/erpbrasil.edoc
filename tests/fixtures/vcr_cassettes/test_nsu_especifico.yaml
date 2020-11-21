@@ -1,0 +1,52 @@
+interactions:
+- request:
+    body: '<?xml version=''1.0'' encoding=''utf-8''?>
+
+      <soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Header><nfeCabecMsg
+      xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/"><cUF>SP</cUF><versaoDados>1.00</versaoDados></nfeCabecMsg></soap-env:Header><soap-env:Body><ns0:nfeDistDFeInteresse
+      xmlns:ns0="http://www.portalfiscal.inf.br/nfe/wsdl/NFeDistribuicaoDFe"><ns0:nfeDadosMsg><distDFeInt
+      xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.01"><tpAmb>1</tpAmb><cUFAutor>35</cUFAutor><CNPJ>23765766000162</CNPJ><consNSU><NSU>000000000000001</NSU></consNSU></distDFeInt></ns0:nfeDadosMsg></ns0:nfeDistDFeInteresse></soap-env:Body></soap-env:Envelope>'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '673'
+      Content-Type:
+      - text/xml; charset=utf-8
+      SOAPAction:
+      - '"http://www.portalfiscal.inf.br/nfe/wsdl/NFeDistribuicaoDFe/nfeDistDFeInteresse"'
+      User-Agent:
+      - Zeep/3.4.0 (www.python-zeep.org)
+    method: POST
+    uri: https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx
+  response:
+    body:
+      string: <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><nfeDistDFeInteresseResponse
+        xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeDistribuicaoDFe"><nfeDistDFeInteresseResult><retDistDFeInt
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        versao="1.01" xmlns="http://www.portalfiscal.inf.br/nfe"><tpAmb>1</tpAmb><verAplic>1.2.1</verAplic><cStat>137</cStat><xMotivo>Nenhum
+        documento localizado</xMotivo><dhResp>2020-11-20T07:55:35-03:00</dhResp><ultNSU>000000000000051</ultNSU><maxNSU>000000000020175</maxNSU></retDistDFeInt></nfeDistDFeInteresseResult></nfeDistDFeInteresseResponse></soap:Body></soap:Envelope>
+    headers:
+      Cache-Control:
+      - private, max-age=0
+      Content-Length:
+      - '826'
+      Content-Type:
+      - text/xml; charset=utf-8
+      Date:
+      - Fri, 20 Nov 2020 10:55:33 GMT
+      Server:
+      - Microsoft-IIS/8.5
+      X-AspNet-Version:
+      - 4.0.30319
+      X-Powered-By:
+      - ASP.NET
+    status:
+      code: 200
+      message: OK
+version: 1

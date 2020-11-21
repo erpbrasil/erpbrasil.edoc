@@ -1,0 +1,124 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Zeep/3.4.0 (www.python-zeep.org)
+    method: GET
+    uri: https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx?wsdl
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<wsdl:definitions xmlns:s=\"\
+        http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://schemas.xmlsoap.org/wsdl/soap12/\"\
+        \ xmlns:http=\"http://schemas.xmlsoap.org/wsdl/http/\" xmlns:mime=\"http://schemas.xmlsoap.org/wsdl/mime/\"\
+        \ xmlns:tns=\"http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4\"\
+        \ xmlns:soap=\"http://schemas.xmlsoap.org/wsdl/soap/\" xmlns:tm=\"http://microsoft.com/wsdl/mime/textMatching/\"\
+        \ xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\" targetNamespace=\"\
+        http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4\" xmlns:wsdl=\"\
+        http://schemas.xmlsoap.org/wsdl/\">\r\n  <wsdl:documentation xmlns:wsdl=\"\
+        http://schemas.xmlsoap.org/wsdl/\">Servi\xE7o destinado \xE0 consulta do status\
+        \ do servi\xE7o prestado pelo Portal da Secretaria de Fazenda Estadual.</wsdl:documentation>\r\
+        \n  <wsdl:types>\r\n    <s:schema elementFormDefault=\"qualified\" targetNamespace=\"\
+        http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4\">\r\n      <s:element\
+        \ name=\"nfeDadosMsg\">\r\n        <s:complexType mixed=\"true\">\r\n    \
+        \      <s:sequence>\r\n            <s:any />\r\n          </s:sequence>\r\n\
+        \        </s:complexType>\r\n      </s:element>\r\n      <s:element name=\"\
+        nfeResultMsg\">\r\n        <s:complexType mixed=\"true\">\r\n          <s:sequence>\r\
+        \n            <s:any />\r\n          </s:sequence>\r\n        </s:complexType>\r\
+        \n      </s:element>\r\n    </s:schema>\r\n  </wsdl:types>\r\n  <wsdl:message\
+        \ name=\"nfeStatusServicoNFSoap12In\">\r\n    <wsdl:part name=\"nfeDadosMsg\"\
+        \ element=\"tns:nfeDadosMsg\" />\r\n  </wsdl:message>\r\n  <wsdl:message name=\"\
+        nfeStatusServicoNFSoap12Out\">\r\n    <wsdl:part name=\"nfeStatusServicoNFResult\"\
+        \ element=\"tns:nfeResultMsg\" />\r\n  </wsdl:message>\r\n  <wsdl:portType\
+        \ name=\"NFeStatusServico4Soap12\">\r\n    <wsdl:operation name=\"nfeStatusServicoNF\"\
+        >\r\n      <wsdl:documentation xmlns:wsdl=\"http://schemas.xmlsoap.org/wsdl/\"\
+        >Consulta Status do Servi\xE7o</wsdl:documentation>\r\n      <wsdl:input message=\"\
+        tns:nfeStatusServicoNFSoap12In\" />\r\n      <wsdl:output message=\"tns:nfeStatusServicoNFSoap12Out\"\
+        \ />\r\n    </wsdl:operation>\r\n  </wsdl:portType>\r\n  <wsdl:binding name=\"\
+        NFeStatusServico4Soap12\" type=\"tns:NFeStatusServico4Soap12\">\r\n    <soap12:binding\
+        \ transport=\"http://schemas.xmlsoap.org/soap/http\" />\r\n    <wsdl:operation\
+        \ name=\"nfeStatusServicoNF\">\r\n      <soap12:operation soapAction=\"http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4/nfeStatusServicoNF\"\
+        \ style=\"document\" />\r\n      <wsdl:input>\r\n        <soap12:body use=\"\
+        literal\" />\r\n      </wsdl:input>\r\n      <wsdl:output>\r\n        <soap12:body\
+        \ use=\"literal\" />\r\n      </wsdl:output>\r\n    </wsdl:operation>\r\n\
+        \  </wsdl:binding>\r\n  <wsdl:service name=\"NFeStatusServico4\">\r\n    <wsdl:documentation\
+        \ xmlns:wsdl=\"http://schemas.xmlsoap.org/wsdl/\">Servi\xE7o destinado \xE0\
+        \ consulta do status do servi\xE7o prestado pelo Portal da Secretaria de Fazenda\
+        \ Estadual.</wsdl:documentation>\r\n    <wsdl:port name=\"NFeStatusServico4Soap12\"\
+        \ binding=\"tns:NFeStatusServico4Soap12\">\r\n      <soap12:address location=\"\
+        https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx\" />\r\n    </wsdl:port>\r\
+        \n  </wsdl:service>\r\n</wsdl:definitions>"
+    headers:
+      Cache-Control:
+      - private, max-age=0
+      Content-Length:
+      - '3077'
+      Content-Type:
+      - text/xml; charset=utf-8
+      Date:
+      - Fri, 20 Nov 2020 11:14:35 GMT
+      Server:
+      - Microsoft-IIS/10.0
+      X-AspNet-Version:
+      - 4.0.30319
+      X-Powered-By:
+      - ASP.NET
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '<?xml version=''1.0'' encoding=''utf-8''?>
+
+      <soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope"><soap-env:Body><ns0:nfeDadosMsg
+      xmlns:ns0="http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4"><consStatServ
+      xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><tpAmb>1</tpAmb><cUF>35</cUF><xServ>STATUS</xServ></consStatServ></ns0:nfeDadosMsg></soap-env:Body></soap-env:Envelope>'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '407'
+      Content-Type:
+      - application/soap+xml; charset=utf-8; action="http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4/nfeStatusServicoNF"
+      SOAPAction:
+      - '"http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4/nfeStatusServicoNF"'
+      User-Agent:
+      - Zeep/3.4.0 (www.python-zeep.org)
+    method: POST
+    uri: https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx
+  response:
+    body:
+      string: "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:soap=\"\
+        http://www.w3.org/2003/05/soap-envelope\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\
+        \ xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><soap:Body><nfeResultMsg\
+        \ xmlns=\"http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4\"><retConsStatServ\
+        \ versao=\"4.00\" xmlns=\"http://www.portalfiscal.inf.br/nfe\"><tpAmb>1</tpAmb><verAplic>SP_NFE_PL009_V4</verAplic><cStat>107</cStat><xMotivo>Servi\xE7\
+        o em Opera\xE7\xE3o</xMotivo><cUF>35</cUF><dhRecbto>2020-11-20T08:14:32-03:00</dhRecbto><tMed>1</tMed></retConsStatServ></nfeResultMsg></soap:Body></soap:Envelope>"
+    headers:
+      Cache-Control:
+      - private, max-age=0
+      Content-Length:
+      - '615'
+      Content-Type:
+      - application/soap+xml; charset=utf-8
+      Date:
+      - Fri, 20 Nov 2020 11:14:35 GMT
+      Server:
+      - Microsoft-IIS/10.0
+      X-AspNet-Version:
+      - 4.0.30319
+      X-Powered-By:
+      - ASP.NET
+    status:
+      code: 200
+      message: OK
+version: 1

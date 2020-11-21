@@ -1,48 +1,60 @@
 # coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
-from __future__ import division, print_function, unicode_literals
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
 from erpbrasil.base import misc
-from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 
+from erpbrasil.edoc.nfse import NFSe
+from erpbrasil.edoc.nfse import ServicoNFSe
 
-from nfselib.ginfes.v3_01 import servico_cancelar_nfse_envio
-from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_envio
-from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_resposta
-from nfselib.ginfes.v3_01 import servico_consultar_nfse_rps_envio
-from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_envio
-from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_resposta
-from nfselib.ginfes.v3_01 import servico_enviar_lote_rps_resposta
-from nfselib.ginfes.v3_01.cabecalho import cabecalho
+try:
+    from nfselib.ginfes.v3_01 import servico_cancelar_nfse_envio
+    from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_envio
+    from nfselib.ginfes.v3_01 import servico_consultar_lote_rps_resposta
+    from nfselib.ginfes.v3_01 import servico_consultar_nfse_rps_envio
+    from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_envio
+    from nfselib.ginfes.v3_01 import servico_consultar_situacao_lote_rps_resposta
+    from nfselib.ginfes.v3_01 import servico_enviar_lote_rps_resposta
+    from nfselib.ginfes.v3_01.cabecalho import cabecalho
+    ginfes = True
+except ImportError:
+    ginfes = False
 
 
 endpoint = 'ServiceGinfesImpl?wsdl'
 
-servicos = {
-    'envia_documento': ServicoNFSe(
-        'RecepcionarLoteRpsV3',
-        endpoint, servico_enviar_lote_rps_resposta, True),
-    'consulta_recibo': ServicoNFSe(
-        'ConsultarSituacaoLoteRpsV3',
-        endpoint, servico_consultar_situacao_lote_rps_resposta, True),
-    'consultar_lote_rps': ServicoNFSe(
-        'ConsultarLoteRpsV3',
-        endpoint, servico_consultar_lote_rps_resposta, True),
-    'cancela_documento': ServicoNFSe(
-        'CancelarNfseV3',
-        endpoint, servico_cancelar_nfse_envio, True),
-    'consulta_nfse_rps': ServicoNFSe(
-        'ConsultarNfsePorRpsV3',
-        endpoint, servico_cancelar_nfse_envio, True),
-}
+if ginfes:
+    servicos = {
+        'envia_documento': ServicoNFSe(
+            'RecepcionarLoteRpsV3',
+            endpoint, servico_enviar_lote_rps_resposta, True),
+        'consulta_recibo': ServicoNFSe(
+            'ConsultarSituacaoLoteRpsV3',
+            endpoint, servico_consultar_situacao_lote_rps_resposta, True),
+        'consultar_lote_rps': ServicoNFSe(
+            'ConsultarLoteRpsV3',
+            endpoint, servico_consultar_lote_rps_resposta, True),
+        'cancela_documento': ServicoNFSe(
+            'CancelarNfseV3',
+            endpoint, servico_cancelar_nfse_envio, True),
+        'consulta_nfse_rps': ServicoNFSe(
+            'ConsultarNfsePorRpsV3',
+            endpoint, servico_cancelar_nfse_envio, True),
+    }
+    cabecalho = cabecalho(versao="3", versaoDados="3")
+else:
+    servicos = {}
+    cabecalho = None
 
 
 class Ginfes(NFSe):
-
-    _header = cabecalho(versao="3", versaoDados="3")
+    _header = cabecalho
 
     def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador,
                  im_prestador):
@@ -90,7 +102,7 @@ class Ginfes(NFSe):
             ),
             Protocolo=proc_envio.resposta.Protocolo
         )
-        xml_assinado = self.assina_raiz(raiz,"")
+        xml_assinado = self.assina_raiz(raiz, "")
         return xml_assinado
 
     def _prepara_consultar_lote_rps(self, protocolo):
@@ -134,7 +146,11 @@ class Ginfes(NFSe):
 
         return xml_assinado
 
-    def _prepara_consultar_nfse_rps(self, rps_numero, rps_serie, rps_tipo):
+    def _prepara_consultar_nfse_rps(self, **kwargs):
+        rps_numero = kwargs.get('rps_number')
+        rps_serie = kwargs.get('rps_serie')
+        rps_tipo = kwargs.get('rps_type')
+
         raiz = servico_consultar_nfse_rps_envio.ConsultarNfseRpsEnvio(
             IdentificacaoRps=servico_consultar_nfse_rps_envio.tcIdentificacaoRps(
                 Numero=rps_numero,
@@ -151,7 +167,7 @@ class Ginfes(NFSe):
         return xml_assinado
 
     def analisa_retorno_consulta(self, processo, number, company_cnpj_cpf,
-                        company_legal_name):
+                                 company_legal_name):
         retorno = ET.fromstring(processo.retorno)
         nsmap = {'consulta': 'http://www.ginfes.com.br/servico_consultar_'
                              'nfse_rps_resposta_v03.xsd',
@@ -190,20 +206,20 @@ class Ginfes(NFSe):
                         ".//tipo:PrestadorServico/tipo:RazaoSocial",
                         namespaces=nsmap)[0].text
 
-                    varibles_error = []
+                    variables_error = []
 
                     if numero_retorno != number:
-                        varibles_error.append('Número')
+                        variables_error.append('Número')
                     if cnpj_prestador_retorno != misc.punctuation_rm(
-                        company_cnpj_cpf):
-                        varibles_error.append('CNPJ do prestador')
+                            company_cnpj_cpf):
+                        variables_error.append('CNPJ do prestador')
                     if razao_social_prestador_retorno != company_legal_name:
-                        varibles_error.append('Razão Social de pestrador')
+                        variables_error.append('Razão Social de prestador')
 
-                    if varibles_error:
+                    if variables_error:
                         mensagem = 'Os seguintes campos não condizem com' \
                                    ' o provedor NFS-e: \n'
-                        mensagem += '\n'.join(varibles_error)
+                        mensagem += '\n'.join(variables_error)
                     else:
                         mensagem = "NFS-e enviada e corresponde com o provedor"
 

@@ -1,42 +1,32 @@
 # coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
-from __future__ import division, print_function, unicode_literals
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-import re
+import collections
 import datetime
 import time
-from lxml import etree
-import collections
 
-from nfelib.v4_00 import leiauteNFe
-from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
-from nfelib.v4_00 import consStatServ
-from nfelib.v4_00 import retConsStatServ
-from nfelib.v4_00 import retDistDFeInt
-from nfelib.v4_00 import consSitNFe
-from nfelib.v4_00 import retConsSitNFe
-from nfelib.v4_00 import enviNFe
-from nfelib.v4_00 import retEnviNFe
-from nfelib.v4_00 import consReciNFe
-from nfelib.v4_00 import retConsReciNFe
-from nfelib.v4_00 import leiauteEvento
-from nfelib.v4_00 import leiauteEventoCancNFe
-from nfelib.v4_00 import leiauteCCe
-from nfelib.v4_00 import retEnvEvento
-from nfelib.v4_00 import leiauteInutNFe
+from lxml import etree
+
 from erpbrasil.edoc.edoc import DocumentoEletronico
 
-from nfelib.v4_00 import distDFeInt
-
-# Manifestação do destinatário
-from nfelib.v4_00 import leiauteConfRecebtoManifestacao as confRecebto
-from nfelib.v4_00 import leiauteConfRecebto as confRecebto2
-
 try:
-    from StringIO import StringIO
+    from nfelib.v4_00 import distDFeInt
+    from nfelib.v4_00 import leiauteCCe
+    from nfelib.v4_00 import leiauteInutNFe
+    from nfelib.v4_00 import retConsReciNFe
+    from nfelib.v4_00 import retConsSitNFe
+    from nfelib.v4_00 import retConsStatServ
+    from nfelib.v4_00 import retDistDFeInt
+    from nfelib.v4_00 import retEnvEvento
+    from nfelib.v4_00 import retEnvEventoCancNFe
+    from nfelib.v4_00 import retEnviNFe
 except ImportError:
-    from io import StringIO
+    pass
+
 
 TEXTO_CARTA_CORRECAO = """A Carta de Correcao e disciplinada pelo paragrafo \
 1o-A do art. 7o do Convenio S/N, de 15 de dezembro de 1970 e \
@@ -151,7 +141,7 @@ SVAN = {
     AMBIENTE_PRODUCAO: {
         'servidor': 'www.sefazvirtual.fazenda.gov.br',
         WS_NFE_INUTILIZACAO: 'NFeInutilizacao4/NFeInutilizacao4.asmx?wsdl',
-        WS_NFE_CONSULTA: 'NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl',   # noqa
+        WS_NFE_CONSULTA: 'NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl',  # noqa
         WS_NFE_SITUACAO: 'NFeStatusServico4/NFeStatusServico4.asmx?wsdl',
         WS_NFE_RECEPCAO_EVENTO: 'NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?wsdl',  # noqa
         WS_NFE_AUTORIZACAO: 'NFeAutorizacao4/NFeAutorizacao4.asmx?wsdl',
@@ -337,7 +327,6 @@ UFCE = {
     }
 }
 
-
 UFGO = {
     AMBIENTE_PRODUCAO: {
         'servidor': 'nfe.sefaz.go.gov.br',
@@ -360,7 +349,6 @@ UFGO = {
         WS_NFE_CADASTRO: 'nfe/services/CadConsultaCadastro4?wsdl',
     }
 }
-
 
 UFMT = {
     NFE_MODELO: {
@@ -554,7 +542,6 @@ UFPE = {
     }
 }
 
-
 UFRS = {
     NFE_MODELO: {
         AMBIENTE_PRODUCAO: {
@@ -572,7 +559,7 @@ UFRS = {
             WS_NFE_INUTILIZACAO: 'ws/nfeinutilizacao/nfeinutilizacao4.asmx?wsdl',  # noqa
             WS_NFE_CONSULTA: 'ws/NfeConsulta/NfeConsulta4.asmx?wsdl',
             WS_NFE_SITUACAO: 'ws/NfeStatusServico/NfeStatusServico4.asmx?wsdl',
-            WS_NFE_RECEPCAO_EVENTO: 'ws/recepcaoevento/recepcaoevento4.asmx?wsdl',  #noqa
+            WS_NFE_RECEPCAO_EVENTO: 'ws/recepcaoevento/recepcaoevento4.asmx?wsdl',  # noqa
             WS_NFE_AUTORIZACAO: 'ws/NfeAutorizacao/NFeAutorizacao4.asmx?wsdl',
             WS_NFE_RET_AUTORIZACAO: 'ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx?wsdl',  # noqa
             WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro4.asmx?wsdl',  # noqa
@@ -584,7 +571,7 @@ UFRS = {
             WS_NFE_RECEPCAO_EVENTO: 'ws/recepcaoevento/recepcaoevento.asmx',
             WS_NFE_AUTORIZACAO: 'ws/NfeAutorizacao/NFeAutorizacao.asmx',
             WS_NFE_RET_AUTORIZACAO: 'ws/NfeRetAutorizacao/NFeRetAutorizacao.asmx',  # noqa
-            WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro2.asmx',   # noqa
+            WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro2.asmx',  # noqa
             WS_NFE_INUTILIZACAO: 'ws/NfeInutilizacao/NfeInutilizacao2.asmx',
             WS_NFE_CONSULTA: 'ws/NfeConsulta/NfeConsulta2.asmx',
             WS_NFE_SITUACAO: 'ws/NfeStatusServico/NfeStatusServico2.asmx',
@@ -595,7 +582,7 @@ UFRS = {
             WS_NFE_RECEPCAO_EVENTO: 'ws/recepcaoevento/recepcaoevento.asmx',
             WS_NFE_AUTORIZACAO: 'ws/NfeAutorizacao/NFeAutorizacao.asmx',
             WS_NFE_RET_AUTORIZACAO: 'ws/NfeRetAutorizacao/NFeRetAutorizacao.asmx',  # noqa
-            WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro2.asmx',   # noqa
+            WS_NFE_CADASTRO: 'ws/cadconsultacadastro/cadconsultacadastro2.asmx',  # noqa
             WS_NFE_INUTILIZACAO: 'ws/NfeInutilizacao/NfeInutilizacao2.asmx',
             WS_NFE_CONSULTA: 'ws/NfeConsulta/NfeConsulta2.asmx',
             WS_NFE_SITUACAO: 'ws/NfeStatusServico/NfeStatusServico2.asmx',
@@ -653,7 +640,6 @@ UFSP = {
     }
 }
 
-
 ESTADO_WS = {
     'AC': SVRS,
     'AL': SVRS,
@@ -685,6 +671,7 @@ ESTADO_WS = {
     'AN': AN,
 }
 
+
 def localizar_url(servico, estado, mod='55', ambiente=2):
     sigla = SIGLA_ESTADO[estado]
     ws = ESTADO_WS[sigla]
@@ -701,13 +688,13 @@ def localizar_url(servico, estado, mod='55', ambiente=2):
 
     if sigla == 'RS' and servico == WS_NFE_CADASTRO:
         dominio = 'cad.sefazrs.rs.gov.br'
-    if sigla in ('AC', 'RN', 'PB', 'SC', 'RJ') and \
-       servico == WS_NFE_CADASTRO:
+    if sigla in ('AC', 'RN', 'PB', 'SC', 'RJ') and servico == WS_NFE_CADASTRO:
         dominio = 'cad.svrs.rs.gov.br'
     if sigla == 'AN' and servico == WS_NFE_RECEPCAO_EVENTO:
         dominio = 'www.nfe.fazenda.gov.br'
 
     return "https://%s/%s" % (dominio, complemento)
+
 
 Metodo = collections.namedtuple('Metodo', ['webservice', 'metodo'])
 
@@ -748,7 +735,7 @@ class NFe(DocumentoEletronico):
         return edoc.infNFe.Id[:3], edoc.infNFe.Id[3:]
 
     def status_servico(self):
-        raiz = consStatServ.TConsStatServ(
+        raiz = retConsStatServ.TConsStatServ(
             versao=self.versao,
             tpAmb=self.ambiente,
             cUF=self.uf,
@@ -765,7 +752,7 @@ class NFe(DocumentoEletronico):
         )
 
     def consulta_documento(self, chave):
-        raiz = consSitNFe.TConsSitNFe(
+        raiz = retConsSitNFe.TConsSitNFe(
             versao=self.versao,
             tpAmb=self.ambiente,
             xServ='CONSULTAR',
@@ -793,7 +780,7 @@ class NFe(DocumentoEletronico):
         """
         xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
 
-        raiz = enviNFe.TEnviNFe(
+        raiz = retEnviNFe.TEnviNFe(
             versao=self.versao,
             idLote=datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
             indSinc='0'
@@ -841,7 +828,7 @@ class NFe(DocumentoEletronico):
         if not numero:
             return
 
-        raiz = consReciNFe.TConsReciNFe(
+        raiz = retConsReciNFe.TConsReciNFe(
             versao=self.versao,
             tpAmb=self.ambiente,
             nRec=numero,
@@ -860,14 +847,14 @@ class NFe(DocumentoEletronico):
         if not numero_lote:
             numero_lote = self._gera_numero_lote()
 
-        raiz = leiauteEvento.TEnvEvento(versao="1.00", idLote=numero_lote)
+        raiz = retEnvEvento.TEnvEvento(versao="1.00", idLote=numero_lote)
         raiz.original_tagname_ = 'envEvento'
         xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
             raiz
         )
 
         for raiz_evento in lista_eventos:
-            evento = leiauteEventoCancNFe.TEvento(
+            evento = retEnvEventoCancNFe.TEvento(
                 versao="1.00", infEvento=raiz_evento,
             )
             evento.original_tagname_ = 'evento'
@@ -886,7 +873,7 @@ class NFe(DocumentoEletronico):
                           data_hora_evento=False):
         tipo_evento = '110111'
         sequencia = '1'
-        raiz = leiauteEventoCancNFe.infEventoType(
+        raiz = retEnvEventoCancNFe.infEventoType(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
             cOrgao=self.uf,
             tpAmb=self.ambiente,
@@ -896,7 +883,7 @@ class NFe(DocumentoEletronico):
             tpEvento='110111',
             nSeqEvento='1',
             verEvento='1.00',
-            detEvento=leiauteEventoCancNFe.detEventoType(
+            detEvento=retEnvEventoCancNFe.detEventoType(
                 versao="1.00",
                 descEvento='Cancelamento',
                 nProt=protocolo_autorizacao,
@@ -952,8 +939,7 @@ class NFe(DocumentoEletronico):
         return raiz
 
     def _verifica_servico_em_operacao(self, proc_servico):
-        if proc_servico.resposta.cStat == \
-                self._edoc_situacao_servico_em_operacao:
+        if proc_servico.resposta.cStat == self._edoc_situacao_servico_em_operacao:
             return True
         return False
 
@@ -1006,9 +992,7 @@ class NFe(DocumentoEletronico):
                 chNFe=chave
             )
 
-        if distNSU and consNSU or \
-            distNSU and consChNFe or \
-            consNSU and consChNFe:
+        if distNSU and consNSU or distNSU and consChNFe or consNSU and consChNFe:
             # TODO: Raise?
             return
 
@@ -1029,160 +1013,4 @@ class NFe(DocumentoEletronico):
                           int(self.ambiente)),
             'nfeDistDFeInteresse',
             retDistDFeInt
-        )
-
-# ----------------------------- MANIFESTAÇÃO DO DESTINATÁRIO -----------------
-
-    def nfe_recepcao_envia_lote_evento(self, lista_eventos, numero_lote=False):
-        """
-        Envia lote de eventos confRecebto.TEvento
-        :param lista_eventos: Lista com os eventos (infEvento)
-        :param numero_lote: Número do lote. Gerado caso None
-        :return: retorna a resposta do _post() de envio do lote
-        """
-
-        if not numero_lote:
-            numero_lote = self._gera_numero_lote()
-
-        eventos = []
-        raiz = leiauteEvento.TEnvEvento(
-            versao="1.00",
-            idLote=numero_lote,
-            evento=eventos
-        )
-        raiz.original_tagname_ = 'envEvento'
-
-        for raiz_evento in lista_eventos:
-            evento = confRecebto.TEvento(
-                versao="1.00", infEvento=raiz_evento,
-            )
-            evento.original_tagname_ = 'evento'
-
-            # Recupera o evento do XML assinado
-            xml_assinado = self.assina_raiz(evento, evento.infEvento.Id)
-
-            # Converte o xml_assinado para um objeto pelo
-            # parser do esquema leiauteConfRecebto
-            xml_object = confRecebto2.parseString(
-                bytearray(xml_assinado, 'utf8'))
-
-            # Adiciona o xml_object na lista de eventos. Desse modo a lista
-            # de eventos terá um evento assinado corretamente
-            eventos.append(xml_object)
-
-        return self._post(
-            raiz,
-            # 'https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl',
-            localizar_url(WS_NFE_RECEPCAO_EVENTO, str(91), self.mod,
-                          int(self.ambiente)),
-            'nfeRecepcaoEventoNF',
-            retEnvEvento
-        )
-
-    def nfe_recepcao_monta_evento(self, chave, cnpj_cpf, tpEvento, descEvento,
-                                  dhEvento=None, xJust=None):
-        """
-        Método para montar o evento(infEvento) da manifestação
-        :param chave: chave do documento
-        :param cnpj_cpf: CPF ou CNPJ
-        :param tpEvento:   Código do Evento
-                                210200 – Confirmação da Operação
-                                210210 – Ciência da Operação
-                                210220 – Desconhecimento da Operação
-                                210240 – Operação não Realizada
-        :param descEvento: Informar a descrição do evento:
-                                Confirmacao da Operacao
-                                Ciencia da Operacao
-                                Desconhecimento da Operacao
-                                Operacao nao Realizada
-        :param dhEvento:   Data/Hora no formato AAAA-MM-DDThh:mm:ssTZD
-        :param xJust:      Este campo deve ser informado somente no
-                                evento de Operação não realizada
-        :return: Um objeto da classe confRecebto.infEventoType preenchido
-        """
-
-        nSeqEvento = '1'
-        raiz = confRecebto.infEventoType(
-            Id='ID{}{}{}'.format(tpEvento, chave, nSeqEvento.zfill(2)),
-            cOrgao=91,
-            tpAmb=self.ambiente,
-            CNPJ=cnpj_cpf if len(cnpj_cpf) > 11 else None,
-            CPF=cnpj_cpf if len(cnpj_cpf) <= 11 else None,
-            chNFe=chave,
-            dhEvento=dhEvento or self._hora_agora(),
-            tpEvento=tpEvento,
-            nSeqEvento=nSeqEvento,
-            verEvento='1.00',
-            detEvento=confRecebto.detEventoType(
-                versao='1.00',
-                descEvento=descEvento,
-                xJust=xJust
-            )
-        )
-
-        raiz.original_tagname_ = 'infEvento'
-
-        return raiz
-
-    def nfe_recepcao_evento(self, chave, cnpj_cpf, tpEvento, descEvento, xJust=None):
-        """
-        Envia a manifestação do destinatário para o WS
-        :param cnpj_cpf:   CPF ou CNPJ
-        :param tpEvento:   Código do Evento
-                             210200 – Confirmação da Operação
-                             210210 – Ciência da Operação
-                             210220 – Desconhecimento da Operação
-                             210240 – Operação não Realizada
-        :param descEvento: Informar a descrição do evento:
-                             Confirmacao da Operacao
-                             Ciencia da Operacao
-                             Desconhecimento da Operacao
-                             Operacao nao Realizada
-        :param xJust:      Este campo deve ser informado somente no
-                             evento de Operação não realizada
-        :return:
-        """
-
-        evento = self.nfe_recepcao_monta_evento(
-            chave, cnpj_cpf, tpEvento, descEvento, xJust=xJust)
-
-        # TODO: Verificar possibilidade de adaptar e utilizar código existente
-        #  em self.enviar_lote_evento(lista_eventos=[evento]).
-        #  A única diferença é a classe utilizada pelo evento
-
-        return self.nfe_recepcao_envia_lote_evento(
-            lista_eventos=[evento], numero_lote='1'
-        )
-
-    def confirmacao_da_operacao(self, chave, cnpj_cpf):
-        return self.nfe_recepcao_evento(
-            chave,
-            cnpj_cpf,
-            confRecebto.tpEventoType._2_10200,
-            confRecebto.descEventoType.CONFIRMACAODA_OPERACAO,
-        )
-
-    def ciencia_da_operacao(self, chave, cnpj_cpf):
-        return self.nfe_recepcao_evento(
-            chave,
-            cnpj_cpf,
-            confRecebto.tpEventoType._2_10210,
-            confRecebto.descEventoType.CIENCIADA_OPERACAO,
-        )
-
-    def desconhecimento_da_operacao(self, chave, cnpj_cpf):
-        return self.nfe_recepcao_evento(
-            chave,
-            cnpj_cpf,
-            confRecebto.tpEventoType._2_10220,
-            confRecebto.descEventoType.DESCONHECIMENTODA_OPERACAO,
-        )
-
-    def operacao_nao_realizada(self, chave, cnpj_cpf):
-        return self.nfe_recepcao_evento(
-            chave,
-            cnpj_cpf,
-            confRecebto.tpEventoType._2_10240,
-            confRecebto.descEventoType.OPERACAONAO_REALIZADA,
-            xJust=''.zfill(15)
         )

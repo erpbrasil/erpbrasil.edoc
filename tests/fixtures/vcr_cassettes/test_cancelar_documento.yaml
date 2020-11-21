@@ -1,0 +1,270 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Zeep/3.4.0 (www.python-zeep.org)
+    method: GET
+    uri: https://nfe.prefeitura.sp.gov.br/ws/lotenfe.asmx?WSDL
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      Cache-Control:
+      - private, max-age=0
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '2051'
+      Content-Type:
+      - text/xml; charset=utf-8
+      Date:
+      - Thu, 29 Oct 2020 13:18:29 GMT
+      Server:
+      - Microsoft-IIS/8.5
+      Vary:
+      - Accept-Encoding
+      X-AspNet-Version:
+      - 4.0.30319
+      X-Powered-By:
+      - ASP.NET
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '<?xml version=''1.0'' encoding=''utf-8''?>
+
+      <soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Body><ns0:CancelamentoNFeRequest
+      xmlns:ns0="http://www.prefeitura.sp.gov.br/nfe"><ns0:VersaoSchema>1</ns0:VersaoSchema><ns0:MensagemXML>&lt;PedidoCancelamentoNFe
+      xmlns="http://www.prefeitura.sp.gov.br/nfe"&gt;&lt;Cabecalho xmlns="" Versao="1"&gt;&lt;CPFCNPJRemetente&gt;&lt;CNPJ&gt;07865699000100&lt;/CNPJ&gt;&lt;/CPFCNPJRemetente&gt;&lt;transacao&gt;true&lt;/transacao&gt;&lt;/Cabecalho&gt;&lt;Detalhe
+      xmlns=""&gt;&lt;ChaveNFe&gt;&lt;InscricaoPrestador&gt;35707410&lt;/InscricaoPrestador&gt;&lt;NumeroNFe&gt;1&lt;/NumeroNFe&gt;&lt;CodigoVerificacao&gt;00000000&lt;/CodigoVerificacao&gt;&lt;/ChaveNFe&gt;&lt;AssinaturaCancelamento&gt;b78i6y5pk+otZLwwzSwmYLG+gTg+CRXteeY2JHNG6Hp3RzSPr7hB5f3ViTFNjq52IR/2ii09P1orlChOF/5xTuDITGk99U/0zrCgCzHJjl5HYApzzWoURcQo6Ao/2FkVUjFD90RR53wa5MsTAFrN0lkj1n5T6bs1GXPtzIs42G5PsdhhJtljKwRdc6Uii/p1u/kmcMvEFUJ7vV2fw1sGjO3L0YkPxT1F2L0qikwFO8/QvU+53FiVMg7buGkGPwT6kqJqe7v1Zn0NfRpqCrCpck9MuE7RnE9ScE3dJibT3xcXd9WTJTFJNKbsxHgW2PftGD6AdF0ZySYb6GINqQH14w==&lt;/AssinaturaCancelamento&gt;&lt;/Detalhe&gt;&lt;Signature
+      xmlns="http://www.w3.org/2000/09/xmldsig#"&gt;
+
+      &lt;SignedInfo&gt;
+
+      &lt;CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/&gt;
+
+      &lt;SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/&gt;
+
+      &lt;Reference URI=""&gt;
+
+      &lt;Transforms&gt;
+
+      &lt;Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/&gt;
+
+      &lt;Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/&gt;
+
+      &lt;/Transforms&gt;
+
+      &lt;DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/&gt;
+
+      &lt;DigestValue&gt;9P3M7yWXbrnmfJ0oBm5ImxdffTc=&lt;/DigestValue&gt;
+
+      &lt;/Reference&gt;
+
+      &lt;/SignedInfo&gt;
+
+      &lt;SignatureValue&gt;QP8GvPxUR/spzoOE6puW4ieWzgiM62nU0jBW5Jp71A0FvHN7jYq5EX2BULa73n9R
+
+      78EYFB+GtO8rKJXFuBbLjXVWK8ZYX79b5bfFbWUFP1lVe6VueJ9EqYxw3lTHCp7C
+
+      orvwMmvvrVEYn3qjExOE0csivEI3j71IZuU1KqMqO40jJjtcnCv61AcB89C/lTDG
+
+      jzU+EHS9MF4EmSWPB6tFjBGhHd7Jl7X5EBYBQL2MirkmpJwKOt8iSwQbnQ76Hp6C
+
+      fXcsvXze690pCf4Pft3njXiUw+hPoQkYlmrhAzPOU8NaJXMM5KeV7Z9ld5ND5X8B
+
+      67c+gemvq9FmKoROxU3FXw==&lt;/SignatureValue&gt;
+
+      &lt;KeyInfo&gt;
+
+      &lt;X509Data&gt;
+
+      &lt;X509Certificate&gt;MIIH5jCCBc6gAwIBAgIISU98baeuQtUwDQYJKoZIhvcNAQELBQAwTDELMAkGA1UE
+
+      BhMCQlIxEzARBgNVBAoMCklDUC1CcmFzaWwxKDAmBgNVBAMMH1NFUkFTQSBDZXJ0
+
+      aWZpY2Fkb3JhIERpZ2l0YWwgdjUwHhcNMTkxMTI1MTU1OTAwWhcNMjAxMTI0MTU1
+
+      OTAwWjCCATUxCzAJBgNVBAYTAkJSMRMwEQYDVQQKDApJQ1AtQnJhc2lsMRQwEgYD
+
+      VQQLDAsoRU0gQlJBTkNPKTEYMBYGA1UECwwPMDAwMDAxMDA5MzgxMTUwMRQwEgYD
+
+      VQQLDAsoRU0gQlJBTkNPKTEUMBIGA1UECwwLKEVNIEJSQU5DTykxKDAmBgNVBAsM
+
+      H1NFUkFTQSBDZXJ0aWZpY2Fkb3JhIERpZ2l0YWwgdjUxFzAVBgNVBAsMDjYyMTcz
+
+      NjIwMDAwMTgwMRQwEgYDVQQLDAsoRU0gQlJBTkNPKTFcMFoGA1UEAwxTQVNUVVNU
+
+      RUMgTUVESUNBTCBURUNOT0xPR1kgQ09NRVJDSU8gRSBBU1NJU1RFTkNJQSBURUNO
+
+      SUNBIEVNIEFQQVJFTEhPUyBNRURJQ09TIExUREEwggEiMA0GCSqGSIb3DQEBAQUA
+
+      A4IBDwAwggEKAoIBAQDC0tI8SjH/sJPfLx6GHFFAIZpapad0lXOY9ZkbCQ8BTN+C
+
+      PgnIL7BdE2YgBJPI5AKsNSbKHPcfw/hbpyojN5pRvbNpQp2wDBJbTHxVGvCCwaug
+
+      uMY3C7hJqpk9r4LY03u/xsJG2UvlABzyqwKqQVTHvPD6mPoXfne4xgSDlKrn3yrI
+
+      dJ1ggZ2LW12amrKafz076f3LVNfDEbLEMc7NMi0DCHA+DYCHdYLgTrW/nuVyF6DP
+
+      sr3orVF6ex9nHdMeB8fISrKOP89Sp3RkBTFBwrzQM31xclyQhy1wRGLNNM3v4BZq
+
+      HNf2ESyX6OHw7HIRKc0ShIs7GIhXvgk0V4GUhdG9AgMBAAGjggLfMIIC2zAfBgNV
+
+      HSMEGDAWgBRWda9Kc7LYCMR9+2woHBHV98GozDCBlwYIKwYBBQUHAQEEgYowgYcw
+
+      RwYIKwYBBQUHMAKGO2h0dHA6Ly93d3cuY2VydGlmaWNhZG9kaWdpdGFsLmNvbS5i
+
+      ci9jYWRlaWFzL3NlcmFzYWNkdjUucDdiMDwGCCsGAQUFBzABhjBodHRwOi8vb2Nz
+
+      cC5jZXJ0aWZpY2Fkb2RpZ2l0YWwuY29tLmJyL3NlcmFzYWNkdjUwgb4GA1UdEQSB
+
+      tjCBs4EcRklOQU5DRUlSTzJAQVNUVVNNRURJQ0FMLkNPTaA+BgVgTAEDBKA1EzMw
+
+      NDA4MTk2NDA2MzI3Mjk3ODM4MDAwMDAwMDAwMDAwMDAwMDAwMTU1NTg5ODNTU1Ag
+
+      U1CgHwYFYEwBAwKgFhMUV0VTTEVJIE1PUkFJUyBCT1JHRVOgGQYFYEwBAwOgEBMO
+
+      MDc4NjU2OTkwMDAxMDCgFwYFYEwBAwegDhMMMDAwMDAwMDAwMDAwMHEGA1UdIARq
+
+      MGgwZgYGYEwBAgEGMFwwWgYIKwYBBQUHAgEWTmh0dHA6Ly9wdWJsaWNhY2FvLmNl
+
+      cnRpZmljYWRvZGlnaXRhbC5jb20uYnIvcmVwb3NpdG9yaW8vZHBjL2RlY2xhcmFj
+
+      YW8tc2NkLnBkZjAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwgZsGA1Ud
+
+      HwSBkzCBkDBJoEegRYZDaHR0cDovL3d3dy5jZXJ0aWZpY2Fkb2RpZ2l0YWwuY29t
+
+      LmJyL3JlcG9zaXRvcmlvL2xjci9zZXJhc2FjZHY1LmNybDBDoEGgP4Y9aHR0cDov
+
+      L2xjci5jZXJ0aWZpY2Fkb3MuY29tLmJyL3JlcG9zaXRvcmlvL2xjci9zZXJhc2Fj
+
+      ZHY1LmNybDAdBgNVHQ4EFgQUXW25t1h4gk4omFG13+bvgX/zbt4wDgYDVR0PAQH/
+
+      BAQDAgXgMA0GCSqGSIb3DQEBCwUAA4ICAQAPn2UzV3a9CFXxcZphaMSbVAXuJUqE
+
+      t6pNoU8DIbE8OZtd6FSw8vpaT7Pzfnc/oYctJIedKvkynWE/b+aYnAnlLc+u3E9h
+
+      Ag0bi1PxeVOKFssx9G6yHD1ALkG/Ty/XzFjuxRJu5DwzVpoEFeeLjE3dMbREfL5S
+
+      CQSNNfi7x9fX9buvM/ogI+3AP6chIeiutSDXi0a5Xta2vufwzAB73mY6TTzxiOFW
+
+      3yL5KlTtFH5K2qU4QaHp1b05ExOaWFWuByu474aSdpb1AUaAytam84ZCXc/H+5Gq
+
+      nBB14FfYAqjc9uNCnaxjilnh7H763ZJFKu//qfor5X8X7u6ZS7GOqyKHyEHBiKrN
+
+      Pux0mPyBmfaCKH5M2GoBEnB84KSj4nw70LKVxSgE/KzJBW33RyTmkgyzNb1Xouk6
+
+      hSY4R+pXgNxqsulYTrvK9UauDnrEYWwbVJfWmkiCzvUn9PQ4CzQU6nKdaV7ISFGU
+
+      ajwAvyx1IHk3ccynyvpUX+jfIYOijbn47H1W5CN2nnAOUuAeE6R89GxIedg3f7Un
+
+      ybLLwjxEMUdhpGBFeC5GWjJKbOawJ19NVipBbNVq2sQy+St4HGdxYO5zfiB4fTU2
+
+      PO+L+Kvn0/jFwrCV/HnMUb+qQr+QlHNOK+wdzR6iC86j2gZjbOvW4XtLf7aCjs69
+
+      L4Tm9zYugaUA+w==&lt;/X509Certificate&gt;
+
+      &lt;/X509Data&gt;
+
+      &lt;/KeyInfo&gt;
+
+      &lt;/Signature&gt;&lt;/PedidoCancelamentoNFe&gt;</ns0:MensagemXML></ns0:CancelamentoNFeRequest></soap-env:Body></soap-env:Envelope>'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '5200'
+      Content-Type:
+      - text/xml; charset=utf-8
+      SOAPAction:
+      - '"http://www.prefeitura.sp.gov.br/nfe/ws/cancelamentoNFe"'
+      User-Agent:
+      - Zeep/3.4.0 (www.python-zeep.org)
+    method: POST
+    uri: https://nfe.prefeitura.sp.gov.br/ws/lotenfe.asmx
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAEAO29B2AcSZYlJi9tynt/SvVK1+B0oQiAYBMk2JBAEOzBiM3mkuwdaUcjKasqgcpl
+        VmVdZhZAzO2dvPfee++999577733ujudTif33/8/XGZkAWz2zkrayZ4hgKrIHz9+fB8/Ih7/Hu8W
+        ZXqZ101RLT/7aHe881GaL6fVrFhefPbRuj3fPvjo9zh63FTZ6tHp8jIvq1We0ivL5hE+++yjeduu
+        Ht2920zn+SJrxvQVPh9X9cVd/HI315fufqSvvWsK+9bV1dX46h433tvZ2b37e3/x/DUD2i6WTZst
+        p7l7a3bzWx8pok+q2fXR4xO8X2aLfNlWL57lr/JmVS0bxT4Atqrz87xo13U2blbji+pyPKnvLs9z
+        gvcqb6t6WVEXR7+wbA83UuurN89ArV940R6irb7aQUO6v+V4bOOvQbLgjcERGmRPskk+zcp5lf4k
+        jS6raHAWjm30ej3Nm6bCn+dZ2eT47K73If9tIZlPTuu66oE6IZpdcJN7e/fxwV33Cf58mjfTuphm
+        /MGXq7zO/tG/8h/9S6t0iX+yNVG2+EE2y9JVVaeLvKjSvMzb+h/925bFlH5fpHX2A7Sc5em6bOts
+        lTVNNqvSKl3RN/RvXi+KtphV4xS93Q26wycn8+wyp+kyf58ttcHLOicyz6oa39y7/2Dnwf7uDlrc
+        jTfBVy/Wi7zG5OODXXxyN/gIn8jwifjFOcEgKPhiRx80UAJ1Wsg3HWTvguTmD/y+gfy793Y+xScK
+        Hh/hz4Agx+mLZ6+38/QXrfOUBGiWN/lPZ+kUzFZmtczJeVWkFzRNNCeXRZZ+N5+kr/P6spjmY8D7
+        /zOF78YlHV8/Nt+RmB49JtkIWhiVRN94ekt+N8r26P8BW01n96IFAAA=
+    headers:
+      Cache-Control:
+      - private, max-age=0
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '668'
+      Content-Type:
+      - text/xml; charset=utf-8
+      Date:
+      - Thu, 29 Oct 2020 13:18:29 GMT
+      Server:
+      - Microsoft-IIS/8.5
+      Vary:
+      - Accept-Encoding
+      X-AspNet-Version:
+      - 4.0.30319
+      X-Powered-By:
+      - ASP.NET
+    status:
+      code: 200
+      message: OK
+version: 1

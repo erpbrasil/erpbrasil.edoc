@@ -1,0 +1,60 @@
+interactions:
+- request:
+    body: '<?xml version=''1.0'' encoding=''utf-8''?>
+
+      <soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"><soap-env:Body><ns0:nfeDadosMsg
+      xmlns:ns0="http://www.portalfiscal.inf.br/nfe/wsdl/NFeRecepcaoEvento4"><envEvento
+      xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00"><idLote>1</idLote><evento
+      versao="1.00"><infEvento Id="ID2102103520030909107600014455001000180740100364234301"><cOrgao>91</cOrgao><tpAmb>1</tpAmb><CNPJ>23765766000162</CNPJ><chNFe>35200309091076000144550010001807401003642343</chNFe><dhEvento>2020-11-20T07:55:59-03:00</dhEvento><tpEvento>210210</tpEvento><nSeqEvento>1</nSeqEvento><verEvento>1.00</verEvento><detEvento
+      versao="1.00"><descEvento>Ciencia da Operacao</descEvento></detEvento></infEvento><Signature
+      xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod
+      Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><SignatureMethod
+      Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI="#ID2102103520030909107600014455001000180740100364234301"><Transforms><Transform
+      Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><Transform
+      Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/></Transforms><DigestMethod
+      Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>ssry1MKF1mBOhCecq3qq35hQvBo=</DigestValue></Reference></SignedInfo><SignatureValue>ck3TXbcgr/XNSyuxMW2qH8BQ0Cr8TydckROI+uUZTit76waa2Sc8e/69nrzQt3q0WQ3Jng+ogViIa5kqzwqbOq85sK6CXONqWGWJWIbLfhA0dBpSyHrBYfXMU9uCwZ4kKNKQypclrM4mRjl5XdwqdBe1lwquW231hs9udzm6FaakjPbM/Ba+9z2XGbhQWpv4Iv71eCWI6iFbQwG33HGmzR8QzzaCPgTkHIHj772OP/a4zbdlW2Gq6npcdpziZCeHM4jLrQzyNRKULKV7vRN2rnFCjBPW1ivOo+NtubmcIxHVftZcdXMRM0tKzrlP0y4I5fOnkHvJdIso33DbgmRvPA==</SignatureValue><KeyInfo><X509Data><X509Certificate>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</X509Certificate></X509Data></KeyInfo></Signature></evento></envEvento></ns0:nfeDadosMsg></soap-env:Body></soap-env:Envelope>'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4640'
+      Content-Type:
+      - text/xml; charset=utf-8
+      SOAPAction:
+      - '"http://www.portalfiscal.inf.br/nfe/wsdl/NFeRecepcaoEvento4/nfeRecepcaoEventoNF"'
+      User-Agent:
+      - Zeep/3.4.0 (www.python-zeep.org)
+    method: POST
+    uri: https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx
+  response:
+    body:
+      string: '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><nfeRecepcaoEventoNFResult
+        xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeRecepcaoEvento4"><retEnvEvento
+        versao="1.00" xmlns="http://www.portalfiscal.inf.br/nfe"><idLote>1</idLote><tpAmb>1</tpAmb><verAplic>AN_1.1.3</verAplic><cOrgao>91</cOrgao><cStat>128</cStat><xMotivo>Lote
+        de evento processado</xMotivo><retEvento versao="1.00"><infEvento><tpAmb>1</tpAmb><verAplic>AN_1.1.3</verAplic><cOrgao>91</cOrgao><cStat>573</cStat><xMotivo>Rejeicao:
+        Duplicidade de evento</xMotivo><chNFe>35200309091076000144550010001807401003642343</chNFe><tpEvento>210210</tpEvento><xEvento>Ciencia
+        da Operacao</xEvento><nSeqEvento>1</nSeqEvento><dhRegEvento>2020-11-20T07:55:59-03:00</dhRegEvento></infEvento></retEvento></retEnvEvento></nfeRecepcaoEventoNFResult></soap:Body></soap:Envelope>'
+    headers:
+      Cache-Control:
+      - private, max-age=0
+      Content-Length:
+      - '992'
+      Content-Type:
+      - text/xml; charset=utf-8
+      Date:
+      - Fri, 20 Nov 2020 10:55:59 GMT
+      Server:
+      - Microsoft-IIS/8.5
+      X-AspNet-Version:
+      - 4.0.30319
+      X-Powered-By:
+      - ASP.NET
+    status:
+      code: 200
+      message: OK
+version: 1
