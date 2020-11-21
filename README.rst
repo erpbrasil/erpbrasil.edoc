@@ -65,9 +65,9 @@ Esta é uma biblioteca criada atravês do esforço de das empresas:
 * Akretion https://akretion.com/pt-BR/
 * KMEE https://www.kmee.com.br
 
-Parte do código foi extraido da localização brasileira do Odoo: https://github.com/oca/l10n-brazil/ favor consultar a lista de contribuidores:
+Favor consultar a lista de contribuidores:
 
-https://github.com/erpbrasil/erpbrasil.base/graphs/contributors
+https://github.com/erpbrasil/erpbrasil.edoc/graphs/contributors
 
 Licença
 ~~~~~~~
