@@ -10,6 +10,9 @@ from datetime import datetime
 
 from erpbrasil.base import misc
 
+from erpbrasil.edoc.nfse import NFSe
+from erpbrasil.edoc.nfse import ServicoNFSe
+
 try:
     from nfselib.issnet.v1_00 import servico_cancelar_nfse_envio
     from nfselib.issnet.v1_00 import servico_consultar_lote_rps_envio
@@ -22,8 +25,6 @@ try:
 except ImportError:
     issnet = False
 
-from erpbrasil.edoc.nfse import NFSe
-from erpbrasil.edoc.nfse import ServicoNFSe
 
 cidade = {
 
