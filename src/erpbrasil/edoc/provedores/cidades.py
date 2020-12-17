@@ -7,8 +7,8 @@ from __future__ import unicode_literals
 
 from erpbrasil.edoc.provedores.dsf import Dsf
 from erpbrasil.edoc.provedores.ginfes import Ginfes
-from erpbrasil.edoc.provedores.paulistana import Paulistana
 from erpbrasil.edoc.provedores.issnet import Issnet
+from erpbrasil.edoc.provedores.paulistana import Paulistana
 
 cidades = {
     1501402: Dsf,  # Belem-PA
