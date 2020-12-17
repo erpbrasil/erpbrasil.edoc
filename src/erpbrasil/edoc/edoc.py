@@ -215,16 +215,11 @@ class DocumentoEletronico(ABC):
             datetime.now(tz=timezone(timedelta(hours=-3))), FORMAT
         ) + str(timezone(timedelta(hours=-3)))[3:]
 
-    def assina_raiz(self, raiz, id, getchildren=False, metodo='nfe'):
+    def assina_raiz(self, raiz, id, getchildren=False):
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
-        if metodo == 'nfe':
-            xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
-                xml_etree, id, getchildren
-            )
-        elif metodo == 'nfse':
-            xml_assinado = Assinatura(self._transmissao.certificado).assina_nfse(
-                xml_etree
-            )
+        xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
+            xml_etree, id, getchildren
+        )
         return xml_assinado
         return xml_assinado.replace('\n', '').replace('\r', '')
 
