@@ -11,7 +11,7 @@ from erpbrasil.edoc.nfse import NFSe
 from erpbrasil.edoc.nfse import ServicoNFSe
 
 try:
-    from erpbrasil.assinatura.assinatura import assina_tag
+    from erpbrasil.assinatura.assinatura import Assinatura
     from nfselib.paulistana.v02 import PedidoCancelamentoNFe
     from nfselib.paulistana.v02 import PedidoConsultaLote
     from nfselib.paulistana.v02 import PedidoConsultaNFe
@@ -70,8 +70,10 @@ class Paulistana(NFSe):
 
     def _prepara_envia_documento(self, edoc):
         for rps in edoc.RPS:
-            rps.Assinatura = assina_tag(self._transmissao, rps.Assinatura)
-        xml_assinado = self.assina_raiz(edoc, '', metodo='nfse')
+            rps.Assinatura = Assinatura(
+                self._transmissao.certificado).assina_tag(
+                rps.Assinatura)
+        xml_assinado = self.assina_raiz(edoc, '')
 
         return xml_assinado
 
@@ -160,8 +162,9 @@ class Paulistana(NFSe):
         )
 
         for detalhe in raiz.Detalhe:
-            detalhe.AssinaturaCancelamento = assina_tag(
-                self._transmissao, detalhe.AssinaturaCancelamento)
+            detalhe.AssinaturaCancelamento = Assinatura(
+                self._transmissao.certificado).assina_tag(
+                detalhe.AssinaturaCancelamento)
 
         xml_assinado = self.assina_raiz(raiz, '', metodo='nfse')
         return xml_assinado
@@ -175,3 +178,11 @@ class Paulistana(NFSe):
                 retorno_mensagem = \
                     str(erro.Codigo) + ' - ' + erro.Descricao + '\n'
         return status, retorno_mensagem
+
+    def assina_raiz(self, raiz, id, getchildren=False):
+        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_assinado = Assinatura(self._transmissao.certificado).assina_nfse(
+            xml_etree
+        )
+        return xml_assinado
+        return xml_assinado.replace('\n', '').replace('\r', '')
