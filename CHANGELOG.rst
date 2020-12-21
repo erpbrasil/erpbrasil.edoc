@@ -38,3 +38,10 @@ Changelog
     * Suporte ao provedor:
         * GINFES:
 * Implementação de testes automatizados;
+
+1.0.1 (2020-12-21)
+~~~~~~~~~~~~~~~~~~
+
+* NFS-E:
+    * Suporte ao provedor:
+        * ISSNET:
