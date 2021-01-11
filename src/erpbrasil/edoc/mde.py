@@ -13,14 +13,13 @@ from erpbrasil.edoc.nfe import localizar_url
 from erpbrasil.edoc.resposta import analisar_retorno_raw
 
 try:
-    from nfelib.v4_00 import leiauteConfRecebto
-    from nfelib.v4_00 import retEnvEvento
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import TEnvEvento as TEnvEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import TEvento as TEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import descEventoType as descEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import detEventoType as detEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import infEventoType as infEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import tpEventoType as eventoManifestacao  # noga
+    from nfelib.v4_00 import retEnvConfRecebto
+    from nfelib.v4_00.retEnvConfRecebto import TEnvEvento as TEnvEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import TEvento as TEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import descEventoType as descEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import detEventoType as detEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import infEventoType as infEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import tpEventoType as eventoManifestacao  # noga
 except ImportError:
     pass
 
@@ -93,7 +92,7 @@ class MDe(NFe):
 
             # Converte o xml_assinado para um objeto pelo
             # parser do esquema leiauteConfRecebto
-            xml_object = leiauteConfRecebto.parseString(xml_assinado)
+            xml_object = retEnvConfRecebto.parseString(xml_assinado)
 
             # Adiciona o xml_object na lista de eventos. Desse modo a lista
             # de eventos terá um evento assinado corretamente
@@ -105,7 +104,7 @@ class MDe(NFe):
             localizar_url(WS_NFE_RECEPCAO_EVENTO, str(91), self.mod,
                           int(self.ambiente)),
             'nfeRecepcaoEventoNF',
-            retEnvEvento
+            retEnvConfRecebto
         )
 
     def nfe_recepcao_monta_evento(self, chave, cnpj_cpf, tpEvento, descEvento,
