@@ -6,11 +6,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from erpbrasil.transmissao import TransmissaoSOAP
+import re
 from lxml import etree
 
 from erpbrasil.edoc.nfe import NFe
 from erpbrasil.edoc.nfe import localizar_url
-from erpbrasil.edoc.resposta import analisar_retorno_raw
+from erpbrasil.edoc.resposta import analisar_retorno_raw, RetornoSoap
 
 try:
     from nfelib.v4_00 import retEnvConfRecebto
@@ -215,6 +216,24 @@ class MDe(NFe):
             xJust=''.zfill(15)
         )
 
+    def analisar_retorno_raw(self, operacao, raiz, xml, retorno, classe):
+        """
+        Semelhante ao metodo generico, mas usando o primeiro filho
+        do XML da resposta.
+        """
+        retorno.raise_for_status()
+        match = re.search('<soap:Body>(.*?)</soap:Body>',
+                        retorno.text.replace('\n', ''))
+        if match:
+            xml_resposta = match.group(1)
+            xml = etree.fromstring(xml_resposta)[0]
+            if "nfeDistDFeInteresseResult" in xml.tag:
+                xml = xml[0]  # unwrapp retDistDFeInt
+            resultado = etree.tostring(xml)
+            classe.Validate_simpletypes_ = False
+            resposta = classe.parseString(resultado, silence=True)
+            return RetornoSoap(operacao, raiz, xml, retorno, resposta)
+
     def _post(self, raiz, url, operacao, classe):
         from .nfe import SIGLA_ESTADO
 
@@ -230,10 +249,9 @@ class MDe(NFe):
             retorno = self._transmissao.enviar(
                 operacao, xml_etree, **kwargs
             )
-            return analisar_retorno_raw(
+            return self.analisar_retorno_raw(
                 operacao, raiz, xml_string, retorno, classe
             )
-
 
 class TransmissaoMDE(TransmissaoSOAP):
     def interpretar_mensagem(self, mensagem, **kwargs):
