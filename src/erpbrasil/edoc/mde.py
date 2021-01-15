@@ -11,7 +11,7 @@ from lxml import etree
 
 from erpbrasil.edoc.nfe import NFe
 from erpbrasil.edoc.nfe import localizar_url
-from erpbrasil.edoc.resposta import analisar_retorno_raw, RetornoSoap
+from erpbrasil.edoc.resposta import RetornoSoap
 
 try:
     from nfelib.v4_00 import retEnvConfRecebto
@@ -223,7 +223,7 @@ class MDe(NFe):
         """
         retorno.raise_for_status()
         match = re.search('<soap:Body>(.*?)</soap:Body>',
-                        retorno.text.replace('\n', ''))
+                          retorno.text.replace('\n', ''))
         if match:
             xml_resposta = match.group(1)
             xml = etree.fromstring(xml_resposta)[0]
@@ -252,6 +252,7 @@ class MDe(NFe):
             return self.analisar_retorno_raw(
                 operacao, raiz, xml_string, retorno, classe
             )
+
 
 class TransmissaoMDE(TransmissaoSOAP):
     def interpretar_mensagem(self, mensagem, **kwargs):

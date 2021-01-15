@@ -16,7 +16,6 @@ from erpbrasil.edoc.edoc import DocumentoEletronico
 try:
     # nfelib imports
     # xsd NFe
-    from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
     from nfelib.v4_00 import retInutNFe
     from nfelib.v4_00 import retConsStatServ
     from nfelib.v4_00 import retConsSitNFe
@@ -35,9 +34,6 @@ try:
 
     # xsd CCe
     from nfelib.v4_00 import retEnvCCe
-
-    # xsd Manifestação do destinatário - TODO checar se precisa de algum override
-    from nfelib.v4_00 import retEnvConfRecebto
 
 except ImportError:
     pass
@@ -818,7 +814,7 @@ class NFe(DocumentoEletronico):
         )
 
     def envia_inutilizacao(self, evento):
-        tinut = leiauteInutNFe.TInutNFe(
+        tinut = retInutNFe.TInutNFe(
             versao=self.versao,
             infInut=evento,
             Signature=None)
@@ -833,7 +829,7 @@ class NFe(DocumentoEletronico):
             localizar_url(WS_NFE_INUTILIZACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeInutilizacaoNF',
-            leiauteInutNFe
+            retInutNFe
         )
 
     def consulta_recibo(self, numero=False, proc_envio=False):
@@ -936,7 +932,7 @@ class NFe(DocumentoEletronico):
                      justificativa):
         ano = str(datetime.date.today().year)[2:]
         uf = str(self.uf)
-        raiz = leiauteInutNFe.infInutType(
+        raiz = retInutNFe.infInutType(
             Id='ID' + uf + ano + cnpj + mod + serie.zfill(3) +
                str(num_ini).zfill(9) + str(num_fin).zfill(9),
             tpAmb=self.ambiente,
