@@ -5,8 +5,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from erpbrasil.transmissao import TransmissaoSOAP
 import re
+
+from erpbrasil.transmissao import TransmissaoSOAP
 from lxml import etree
 
 from erpbrasil.edoc.nfe import NFe
