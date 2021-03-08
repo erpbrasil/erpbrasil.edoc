@@ -46,7 +46,11 @@ if paulistana:
     }
     servicos_hml.update(servicos_base.copy())
 
-    servicos_prod = {}
+    servicos_prod = {
+        'envia_documento': ServicoNFSe(
+            'EnvioLoteRPS',
+            endpoint, RetornoEnvioLoteRPS, True),
+    }
     servicos_prod.update(servicos_base.copy())
 
 
