@@ -134,14 +134,17 @@ class Paulistana(NFSe):
 
     def analisa_retorno_consulta(self, processo):
         retorno_mensagem = ''
+        res = {}
         if processo.resposta.Cabecalho.Sucesso:
             retorno = ET.fromstring(processo.retorno)
-            codigo = retorno.find('.//Codigo').text
-            descricao = retorno.find('.//Descricao').text
-            retorno_mensagem = codigo + ' - ' + descricao
+            res['codigo_verificacao'] = \
+                retorno.find('.//CodigoVerificacao').text
+            res['numero'] = retorno.find('.//NumeroNFe').text
+            res['data_emissao'] = retorno.find('.//DataEmissaoNFe').text
+            return res
         else:
             retorno_mensagem = 'Error communicating with the webservice'
-        return retorno_mensagem
+            return retorno_mensagem
 
     def _prepara_cancelar_nfse_envio(self, doc_numero):
         numero_nfse = doc_numero.get('numero_nfse')
