@@ -20,6 +20,7 @@ cidades = {
     5002704: Dsf,  # Campo Grande - MS
     3550308: Paulistana,  # São Paulo - SP
     3543402: Issnet,    # Ribeirão Preto - SP
+    3301702: Issnet,  # Duque de Caxias - RJ
 }
 
 
