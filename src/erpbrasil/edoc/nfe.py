@@ -14,16 +14,27 @@ from lxml import etree
 from erpbrasil.edoc.edoc import DocumentoEletronico
 
 try:
-    from nfelib.v4_00 import distDFeInt
-    from nfelib.v4_00 import leiauteCCe
-    from nfelib.v4_00 import leiauteInutNFe
-    from nfelib.v4_00 import retConsReciNFe
-    from nfelib.v4_00 import retConsSitNFe
+    # nfelib imports
+    # xsd NFe
+    from nfelib.v4_00 import retInutNFe
     from nfelib.v4_00 import retConsStatServ
-    from nfelib.v4_00 import retDistDFeInt
-    from nfelib.v4_00 import retEnvEvento
-    from nfelib.v4_00 import retEnvEventoCancNFe
+    from nfelib.v4_00 import retConsSitNFe
     from nfelib.v4_00 import retEnviNFe
+    from nfelib.v4_00 import retConsReciNFe
+
+    # xsd Distribuiçao NFe
+    from nfelib.v4_00 import distDFeInt
+    from nfelib.v4_00 import retDistDFeInt
+
+    # xsd Evento Generico
+    from nfelib.v4_00 import retEnvEvento
+
+    # xsd Evento Cancelamento
+    from nfelib.v4_00 import retEnvEventoCancNFe
+
+    # xsd CCe
+    from nfelib.v4_00 import retEnvCCe
+
 except ImportError:
     pass
 
@@ -803,7 +814,7 @@ class NFe(DocumentoEletronico):
         )
 
     def envia_inutilizacao(self, evento):
-        tinut = leiauteInutNFe.TInutNFe(
+        tinut = retInutNFe.TInutNFe(
             versao=self.versao,
             infInut=evento,
             Signature=None)
@@ -818,7 +829,7 @@ class NFe(DocumentoEletronico):
             localizar_url(WS_NFE_INUTILIZACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeInutilizacaoNF',
-            leiauteInutNFe
+            retInutNFe
         )
 
     def consulta_recibo(self, numero=False, proc_envio=False):
@@ -896,7 +907,7 @@ class NFe(DocumentoEletronico):
     def carta_correcao(self, chave, sequencia, justificativa,
                        data_hora_evento=False):
         tipo_evento = '110110'
-        raiz = leiauteCCe.infEventoType(
+        raiz = retEnvCCe.infEventoType(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
             cOrgao=self.uf,
             tpAmb=self.ambiente,
@@ -907,7 +918,7 @@ class NFe(DocumentoEletronico):
             tpEvento=tipo_evento,
             nSeqEvento=sequencia,
             verEvento='1.00',
-            detEvento=leiauteCCe.detEventoType(
+            detEvento=retEnvCCe.detEventoType(
                 versao="1.00",
                 descEvento='Carta de Correcao',
                 xCorrecao=justificativa,
@@ -921,7 +932,7 @@ class NFe(DocumentoEletronico):
                      justificativa):
         ano = str(datetime.date.today().year)[2:]
         uf = str(self.uf)
-        raiz = leiauteInutNFe.infInutType(
+        raiz = retInutNFe.infInutType(
             Id='ID' + uf + ano + cnpj + mod + serie.zfill(3) +
                str(num_ini).zfill(9) + str(num_fin).zfill(9),
             tpAmb=self.ambiente,

@@ -5,22 +5,23 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 from erpbrasil.transmissao import TransmissaoSOAP
 from lxml import etree
 
 from erpbrasil.edoc.nfe import NFe
 from erpbrasil.edoc.nfe import localizar_url
-from erpbrasil.edoc.resposta import analisar_retorno_raw
+from erpbrasil.edoc.resposta import RetornoSoap
 
 try:
-    from nfelib.v4_00 import leiauteConfRecebto
-    from nfelib.v4_00 import retEnvEvento
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import TEnvEvento as TEnvEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import TEvento as TEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import descEventoType as descEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import detEventoType as detEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import infEventoType as infEventoManifestacao  # noga
-    from nfelib.v4_00.leiauteConfRecebtoManifestacao import tpEventoType as eventoManifestacao  # noga
+    from nfelib.v4_00 import retEnvConfRecebto
+    from nfelib.v4_00.retEnvConfRecebto import TEnvEvento as TEnvEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import TEvento as TEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import descEventoType as descEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import detEventoType as detEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import infEventoType as infEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import tpEventoType as eventoManifestacao  # noga
 except ImportError:
     pass
 
@@ -93,7 +94,7 @@ class MDe(NFe):
 
             # Converte o xml_assinado para um objeto pelo
             # parser do esquema leiauteConfRecebto
-            xml_object = leiauteConfRecebto.parseString(xml_assinado)
+            xml_object = retEnvConfRecebto.parseString(xml_assinado)
 
             # Adiciona o xml_object na lista de eventos. Desse modo a lista
             # de eventos terá um evento assinado corretamente
@@ -105,7 +106,7 @@ class MDe(NFe):
             localizar_url(WS_NFE_RECEPCAO_EVENTO, str(91), self.mod,
                           int(self.ambiente)),
             'nfeRecepcaoEventoNF',
-            retEnvEvento
+            retEnvConfRecebto
         )
 
     def nfe_recepcao_monta_evento(self, chave, cnpj_cpf, tpEvento, descEvento,
@@ -216,6 +217,24 @@ class MDe(NFe):
             xJust=''.zfill(15)
         )
 
+    def analisar_retorno_raw(self, operacao, raiz, xml, retorno, classe):
+        """
+        Semelhante ao metodo generico, mas usando o primeiro filho
+        do XML da resposta.
+        """
+        retorno.raise_for_status()
+        match = re.search('<soap:Body>(.*?)</soap:Body>',
+                          retorno.text.replace('\n', ''))
+        if match:
+            xml_resposta = match.group(1)
+            xml = etree.fromstring(xml_resposta)[0]
+            if "nfeDistDFeInteresseResult" in xml.tag:
+                xml = xml[0]  # unwrapp retDistDFeInt
+            resultado = etree.tostring(xml)
+            classe.Validate_simpletypes_ = False
+            resposta = classe.parseString(resultado, silence=True)
+            return RetornoSoap(operacao, raiz, xml, retorno, resposta)
+
     def _post(self, raiz, url, operacao, classe):
         from .nfe import SIGLA_ESTADO
 
@@ -231,7 +250,7 @@ class MDe(NFe):
             retorno = self._transmissao.enviar(
                 operacao, xml_etree, **kwargs
             )
-            return analisar_retorno_raw(
+            return self.analisar_retorno_raw(
                 operacao, raiz, xml_string, retorno, classe
             )
 
