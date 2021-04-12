@@ -38,3 +38,13 @@ Changelog
     * Suporte ao provedor:
         * GINFES:
 * Implementação de testes automatizados;
+
+2.0.0 (2021-04-09)
+~~~~~~~~~~~~~~~~~~
+
+* Refatoração do módulo de NF-e
+
+2.0.1 (2021-04-12)
+~~~~~~~~~~~~~~~~~~
+
+* ISSNET: Inclusão da cidade de Duque de Caxias - RJ
