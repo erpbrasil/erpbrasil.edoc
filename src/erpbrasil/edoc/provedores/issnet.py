@@ -29,6 +29,7 @@ except ImportError:
 cidade = {
 
     3543402: 'ribeiraopreto',  # Ribeirão Preto - SP
+    3301702: 'duquedecaxias',  # Duque de Caxias - RJ
 
 }
 
