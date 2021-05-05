@@ -1025,3 +1025,24 @@ class NFe(DocumentoEletronico):
             'nfeDistDFeInteresse',
             retDistDFeInt
         )
+
+    def monta_processo(self, edoc, proc_envio, proc_recibo):
+        nfe = proc_envio.envio_raiz.find('{' + self._namespace + '}NFe')
+        protocolos = proc_recibo.resposta.protNFe
+        if nfe and protocolos:
+            if type(protocolos) != list:
+                protocolos = [protocolos]
+            for protocolo in protocolos:
+                nfe_proc = retEnviNFe.TNfeProc(
+                    versao=self.versao,
+                    protNFe=protocolo,
+                )
+                nfe_proc.original_tagname_ = 'nfeProc'
+                xml_file, nfe_proc = self._generateds_to_string_etree(nfe_proc)
+                prot_nfe = nfe_proc.find('{' + self._namespace + '}protNFe')
+                prot_nfe.addprevious(nfe)
+                proc_recibo.processo = nfe_proc
+                proc_recibo.processo_xml = \
+                    self._generateds_to_string_etree(nfe_proc)[0]
+                proc_recibo.protocolo = protocolo
+            return True

@@ -182,6 +182,7 @@ class DocumentoEletronico(ABC):
             # Consulta o recibo do lote, para ver o que aconteceu
             #
             proc_recibo = self.consulta_recibo(proc_envio=proc_envio)
+        self.monta_processo(edoc, proc_envio, proc_recibo)
         yield proc_recibo
 
     @abc.abstractmethod
@@ -228,3 +229,6 @@ class DocumentoEletronico(ABC):
 
     def _verifica_documento_ja_enviado(self, proc_consulta):
         return False
+
+    def monta_processo(self, edoc, proc_envio, proc_recibo):
+        return True
