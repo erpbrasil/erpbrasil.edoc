@@ -150,8 +150,8 @@ class Paulistana(NFSe):
         numero_nfse = doc_numero.get('numero_nfse')
         codigo_verificacao = doc_numero.get('codigo_verificacao') or ''
 
-        assinatura = numero_nfse.zfill(8)
-        assinatura += codigo_verificacao.zfill(12)
+        assinatura = self.im_prestador.zfill(8)
+        assinatura += numero_nfse.zfill(12)
 
         raiz = PedidoCancelamentoNFe.PedidoCancelamentoNFe(
             Cabecalho=PedidoCancelamentoNFe.CabecalhoType(
