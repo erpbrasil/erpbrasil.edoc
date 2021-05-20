@@ -35,6 +35,9 @@ try:
     # xsd CCe
     from nfelib.v4_00 import retEnvCCe
 
+    # xsd Consulta Cadastro
+    from nfelib.v4_00 import retConsCad
+
 except ImportError:
     pass
 
@@ -1046,3 +1049,30 @@ class NFe(DocumentoEletronico):
                     self._generateds_to_string_etree(nfe_proc)[0]
                 proc_recibo.protocolo = protocolo
             return True
+
+    def consultar_cadastro(self, uf, cnpj=None, cpf=None, ie=None):
+
+        if not cnpj and not cpf and not ie:
+            return
+
+        infCons = retConsCad.infConsType(
+            xServ='CONS-CAD',
+            UF=uf,
+            IE=ie,
+            CNPJ=cnpj,
+            CPF=cpf,
+        )
+
+        raiz = retConsCad.TConsCad(
+            versao='2.00',
+            infCons=infCons,
+        )
+        raiz.original_tagname_ = 'ConsCad'
+
+        return self._post(
+            raiz,
+            localizar_url(
+                WS_NFE_CADASTRO, str(self.uf), self.mod, int(self.ambiente)),
+            'consultaCadastro',
+            retConsCad
+        )

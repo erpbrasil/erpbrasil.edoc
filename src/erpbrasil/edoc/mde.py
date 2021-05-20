@@ -81,6 +81,7 @@ class MDe(NFe):
             evento=eventos
         )
         raiz.original_tagname_ = 'envEvento'
+        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(raiz)
 
         for raiz_evento in lista_eventos:
             evento = TEventoManifestacao(
@@ -92,17 +93,21 @@ class MDe(NFe):
             xml_assinado = self.assina_raiz(evento, evento.infEvento.Id
                                             ).replace('\n', '').encode()
 
+            xml_envio_etree.append(etree.fromstring(xml_assinado))
+
+            # FIXME: Essa forma de geração foi removida no ultimo refactor
+
             # Converte o xml_assinado para um objeto pelo
             # parser do esquema leiauteConfRecebto
-            xml_object = retEnvConfRecebto.parseString(xml_assinado)
+
+            # xml_object = retEnvConfRecebto.parseString(xml_assinado)
 
             # Adiciona o xml_object na lista de eventos. Desse modo a lista
             # de eventos terá um evento assinado corretamente
-            eventos.append(xml_object)
+            # eventos.append(xml_object)
 
         return self._post(
-            raiz,
-            # 'https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl',
+            xml_envio_etree,
             localizar_url(WS_NFE_RECEPCAO_EVENTO, str(91), self.mod,
                           int(self.ambiente)),
             'nfeRecepcaoEventoNF',
