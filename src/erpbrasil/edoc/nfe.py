@@ -1055,8 +1055,6 @@ class NFe(DocumentoEletronico):
         if not cnpj and not cpf and not ie:
             return
 
-        distNSU = consNSU = consChNFe = None
-
         infCons = retConsCad.infConsType(
             xServ='CONS-CAD',
             UF=uf,
