@@ -100,7 +100,7 @@ class MDe(NFe):
             # Converte o xml_assinado para um objeto pelo
             # parser do esquema leiauteConfRecebto
 
-            #xml_object = retEnvConfRecebto.parseString(xml_assinado)
+            # xml_object = retEnvConfRecebto.parseString(xml_assinado)
 
             # Adiciona o xml_object na lista de eventos. Desse modo a lista
             # de eventos terá um evento assinado corretamente
