@@ -104,7 +104,7 @@ class Paulistana(NFSe):
             )
         )
 
-        xml_assinado = self.assina_raiz(edoc, '', metodo='nfse')
+        xml_assinado = self.assina_raiz(edoc, '')
 
         return xml_assinado
 
@@ -128,7 +128,7 @@ class Paulistana(NFSe):
             )],
         )
 
-        xml_assinado = self.assina_raiz(raiz, '', metodo='nfse')
+        xml_assinado = self.assina_raiz(raiz, '')
 
         return xml_assinado
 
@@ -173,7 +173,7 @@ class Paulistana(NFSe):
                 self._transmissao.certificado).assina_tag(
                 detalhe.AssinaturaCancelamento)
 
-        xml_assinado = self.assina_raiz(raiz, '', metodo='nfse')
+        xml_assinado = self.assina_raiz(raiz, '')
         return xml_assinado
 
     def analisa_retorno_cancelamento_paulistana(self, processo):
