@@ -44,7 +44,14 @@ Changelog
 
 * Refatoração do módulo de NF-e
 
-2.0.1 (2021-04-12)
+2.1.0 (2021-05-01)
 ~~~~~~~~~~~~~~~~~~
 
-* ISSNET: Inclusão da cidade de Duque de Caxias - RJ
+- Manifestação do Destinatário
+- Consulta Cadastro
+
+2.2.0 (2021-05-26)
+~~~~~~~~~~~~~~~~~~
+
+- Nota Paulistana
+
