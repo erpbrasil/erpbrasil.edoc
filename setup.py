@@ -16,7 +16,7 @@ from setuptools import setup
 
 install_requires = [
     "erpbrasil.base>=2.0.0",
-    "erpbrasil.assinatura>=1.0.1",
+    "erpbrasil.assinatura>=1.2.0",
     "erpbrasil.transmissao>=1.0.0",
 ]
 
