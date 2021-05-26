@@ -46,7 +46,11 @@ if paulistana:
     }
     servicos_hml.update(servicos_base.copy())
 
-    servicos_prod = {}
+    servicos_prod = {
+        'envia_documento': ServicoNFSe(
+            'EnvioLoteRPS',
+            endpoint, RetornoEnvioLoteRPS, True),
+    }
     servicos_prod.update(servicos_base.copy())
 
 
@@ -130,21 +134,24 @@ class Paulistana(NFSe):
 
     def analisa_retorno_consulta(self, processo):
         retorno_mensagem = ''
+        res = {}
         if processo.resposta.Cabecalho.Sucesso:
             retorno = ET.fromstring(processo.retorno)
-            codigo = retorno.find('.//Codigo').text
-            descricao = retorno.find('.//Descricao').text
-            retorno_mensagem = codigo + ' - ' + descricao
+            res['codigo_verificacao'] = \
+                retorno.find('.//CodigoVerificacao').text
+            res['numero'] = retorno.find('.//NumeroNFe').text
+            res['data_emissao'] = retorno.find('.//DataEmissaoNFe').text
+            return res
         else:
             retorno_mensagem = 'Error communicating with the webservice'
-        return retorno_mensagem
+            return retorno_mensagem
 
     def _prepara_cancelar_nfse_envio(self, doc_numero):
         numero_nfse = doc_numero.get('numero_nfse')
         codigo_verificacao = doc_numero.get('codigo_verificacao') or ''
 
-        assinatura = numero_nfse.zfill(8)
-        assinatura += codigo_verificacao.zfill(12)
+        assinatura = self.im_prestador.zfill(8)
+        assinatura += numero_nfse.zfill(12)
 
         raiz = PedidoCancelamentoNFe.PedidoCancelamentoNFe(
             Cabecalho=PedidoCancelamentoNFe.CabecalhoType(
