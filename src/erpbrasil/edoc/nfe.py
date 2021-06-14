@@ -784,6 +784,17 @@ class NFe(DocumentoEletronico):
             retConsSitNFe
         )
 
+    def valida_xml(self, edoc):
+        xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
+
+        import nfelib
+        path = os.path.join(nfelib.__path__[0], '..', 'schemas', 'nfe',
+            'v4_00', 'nfe_v4.00.xsd')
+        xmlschema_doc = etree.parse(path)
+        xmlschema = etree.XMLSchema(xmlschema_doc)
+        doc_assinado = etree.parse(StringIO(xml_assinado))
+        return xmlschema.assertValid(doc_assinado)
+
     def envia_documento(self, edoc):
         """
 
@@ -795,14 +806,6 @@ class NFe(DocumentoEletronico):
         :return:
         """
         xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
-
-        import nfelib
-        path = os.path.join(nfelib.__path__[0], '..', 'schemas', 'nfe',
-            'v4_00', 'nfe_v4.00.xsd')
-        xmlschema_doc = etree.parse(path)
-        xmlschema = etree.XMLSchema(xmlschema_doc)
-        doc_assinado = etree.parse(StringIO(xml_assinado))
-        xmlschema.assertValid(doc_assinado)
 
         raiz = retEnviNFe.TEnviNFe(
             versao=self.versao,
@@ -883,8 +886,6 @@ class NFe(DocumentoEletronico):
             )
             evento.original_tagname_ = 'evento'
             xml_assinado = self.assina_raiz(evento, evento.infEvento.Id)
-            print("SSSSSSSSSSSSSSSSSSSS", evento, evento.infEvento.Id)
-            print(xml_assinado)
             xml_envio_etree.append(etree.fromstring(xml_assinado))
 
         return self._post(
@@ -922,10 +923,8 @@ class NFe(DocumentoEletronico):
     def carta_correcao(self, chave, sequencia, justificativa,
                        data_hora_evento=False):
         tipo_evento = '110110'
-        doc_id = 'ID' + tipo_evento + chave + sequencia.zfill(2)
-
         raiz = retEnvCCe.infEventoType(
-            Id=doc_id, #'ID' + tipo_evento + chave + sequencia.zfill(2),
+            Id='ID' + tipo_evento + chave + sequencia.zfill(2),
             cOrgao=self.uf,
             tpAmb=self.ambiente,
             CNPJ=chave[6:20],
@@ -943,7 +942,6 @@ class NFe(DocumentoEletronico):
             ),
         )
         raiz.original_tagname_ = 'infEvento'
-        #self.assina_raiz(raiz, doc_id)
         return raiz
 
     def inutilizacao(self, cnpj, mod, serie, num_ini, num_fin,
