@@ -6,6 +6,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import xml.etree.ElementTree as ET
+from lxml import etree
+
+import os
+from io import StringIO
 
 from erpbrasil.edoc.nfse import NFSe
 from erpbrasil.edoc.nfse import ServicoNFSe
@@ -80,6 +84,20 @@ class Paulistana(NFSe):
         xml_assinado = self.assina_raiz(edoc, '')
 
         return xml_assinado
+
+    def valida_xml(self, edoc):
+        assinatura = edoc.RPS[0].Assinatura
+        xml_assinado = self._prepara_envia_documento(edoc)
+        edoc.RPS[0].Assinatura = assinatura
+
+        import nfselib.paulistana
+        path = os.path.join(nfselib.paulistana.__path__[0], '../..',
+            'schemas', 'nfse', 'PedidoEnvioLoteRPS_v01.xsd'
+        )
+        xmlschema_doc = etree.parse(path)
+        xmlschema = etree.XMLSchema(xmlschema_doc)
+        doc_assinado = etree.parse(StringIO(xml_assinado))
+        return xmlschema.assertValid(doc_assinado)
 
     def _verifica_resposta_envio_sucesso(self, proc_envio):
         return proc_envio.resposta.Cabecalho.Sucesso

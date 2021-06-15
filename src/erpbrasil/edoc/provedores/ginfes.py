@@ -8,6 +8,9 @@ from __future__ import unicode_literals
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
+import os
+from io import StringIO
+
 from erpbrasil.base import misc
 
 from erpbrasil.edoc.nfse import NFSe
@@ -91,6 +94,19 @@ class Ginfes(NFSe):
         # xml_assinado = self.assina_raiz(xml_assinado, edoc.LoteRps.Id)
 
         return xml_assinado
+
+    def valida_xml(self, edoc):
+        xml_assinado = self._prepara_envia_documento(edoc)
+
+        import nfselib.ginfes
+        path = os.path.join(nfselib.ginfes.__path__[0], '../..',
+            'schemas', 'ginfes', 'v3_01',
+            'servico_enviar_lote_rps_envio_v03.xsd'
+        )
+        xmlschema_doc = etree.parse(path)
+        xmlschema = etree.XMLSchema(xmlschema_doc)
+        doc_assinado = etree.parse(StringIO(xml_assinado))
+        return xmlschema.assertValid(doc_assinado)
 
     def _prepara_consulta_recibo(self, proc_envio):
 
