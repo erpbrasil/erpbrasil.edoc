@@ -194,13 +194,14 @@ class Issnet(NFSe):
 
     def analisa_retorno_consulta(self, processo, number, company_cnpj_cpf,
                                  company_legal_name):
+        mensagem = ''
+        res = {}
         retorno = ET.fromstring(processo.retorno)
         nsmap = {'consulta': 'http://www.issnetonline.com.br/webserviceabrasf/vsd/'
                              'servico_consultar_nfse_rps_resposta.xsd',
                  'tc': 'http://www.issnetonline.com.br/webserviceabrasf/vsd/'
                        'tipos_complexos.xsd'}
 
-        mensagem = ''
         if processo.webservice == 'ConsultarNFSePorRPS':
             enviado = retorno.findall(
                 ".//consulta:CompNfse", namespaces=nsmap)
@@ -232,16 +233,21 @@ class Issnet(NFSe):
                     razao_social_prestador_retorno = retorno.findall(
                         ".//tc:PrestadorServico/tc:RazaoSocial",
                         namespaces=nsmap)[0].text
-
+                    verify_code = \
+                        retorno.findall(".//tc:InfNfse/tc:CodigoVerificacao",
+                                        namespaces=nsmap)[0].text
+                    authorization_date = \
+                        retorno.findall(".//tc:InfNfse/tc:DataEmissao",
+                                        namespaces=nsmap)[0].text
                     variables_error = []
 
-                    if numero_retorno != number:
+                    if number and numero_retorno != number:
                         variables_error.append('Número')
                     if cnpj_prestador_retorno != misc.punctuation_rm(
                             company_cnpj_cpf):
                         variables_error.append('CNPJ do prestador')
                     if razao_social_prestador_retorno != company_legal_name:
-                        variables_error.append('Razão Social de pestrador')
+                        variables_error.append('Razão Social de prestador')
 
                     if variables_error:
                         mensagem = 'Os seguintes campos não condizem com' \
@@ -249,6 +255,11 @@ class Issnet(NFSe):
                         mensagem += '\n'.join(variables_error)
                     else:
                         mensagem = "NFS-e enviada e corresponde com o provedor"
+
+                    res['codigo_verificacao'] = verify_code
+                    res['numero'] = numero_retorno
+                    res['data_emissao'] = authorization_date
+                    return mensagem, res
 
             elif nao_encontrado:
                 # NFS-e não foi enviada
