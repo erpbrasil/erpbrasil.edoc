@@ -8,6 +8,8 @@ from __future__ import unicode_literals
 import collections
 import datetime
 import time
+import os
+from io import StringIO
 
 from lxml import etree
 
@@ -782,6 +784,22 @@ class NFe(DocumentoEletronico):
             retConsSitNFe
         )
 
+    def valida_xml(self, edoc):
+        import nfelib
+        xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
+        path = os.path.join(nfelib.__path__[0], '..', 'schemas', 'nfe',
+            'v4_00', 'nfe_v4.00.xsd')
+        xmlschema_doc = etree.parse(path)
+        xmlschema = etree.XMLSchema(xmlschema_doc)
+        doc_assinado = etree.parse(StringIO(xml_assinado))
+        erros = ''
+        xmlschema.validate(doc_assinado)
+        linha = 1
+        for error in xmlschema.error_log:
+            erros += "Erro %s: %s \n\n" % (linha, error.message.encode("utf-8"))
+            linha += 1
+        return erros
+       
     def envia_documento(self, edoc):
         """
 
