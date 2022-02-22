@@ -9,6 +9,8 @@ import collections
 import datetime
 import time
 
+from io import StringIO
+
 from lxml import etree
 
 from erpbrasil.edoc.edoc import DocumentoEletronico
@@ -37,6 +39,9 @@ try:
 
     # xsd Consulta Cadastro
     from nfelib.v4_00 import retConsCad
+
+    # subclass of leiauteNFe
+    from nfelib.v4_00 import leiauteNFe_sub as nfe_sub
 
 except ImportError:
     pass
@@ -781,6 +786,11 @@ class NFe(DocumentoEletronico):
             'nfeConsultaNF',
             retConsSitNFe
         )
+
+    def valida_xml(self, edoc):
+        xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
+        erros = nfe_sub.schema_validation(StringIO(xml_assinado))
+        return erros
 
     def envia_documento(self, edoc):
         """
