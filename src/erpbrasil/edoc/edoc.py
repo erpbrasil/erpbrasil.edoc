@@ -66,6 +66,10 @@ class DocumentoEletronico(ABC):
                 pretty_print=pretty_print,
             )
         contents = output.getvalue()
+        if 'consStatServ' in contents and self.uf == 50:
+            contents = "<soap:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:soap='http://www.w3.org/2003/05/soap-envelope'><soap:Body><nfeDadosMsg xmlns='http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4'>" + contents + "</nfeDadosMsg></soap:Body></soap:Envelope>"
+        if 'consSitNFe' in contents and self.uf == 50:
+            contents = "<soap:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:soap='http://www.w3.org/2003/05/soap-envelope'><soap:Body><nfeDadosMsg xmlns='http://www.portalfiscal.inf.br/nfe/wsdl/NFeConsultaProtocolo4'>" + contents + "</nfeDadosMsg></soap:Body></soap:Envelope>"
         output.close()
         return contents, etree.fromstring(contents)
 
@@ -148,7 +152,7 @@ class DocumentoEletronico(ABC):
         #
         # Deu errado?
         #
-        if not proc_envio.resposta:
+        if not hasattr(proc_envio, 'resposta') or not proc_envio.resposta:
             return
 
         if not self._verifica_resposta_envio_sucesso(proc_envio):
