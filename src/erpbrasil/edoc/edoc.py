@@ -70,6 +70,10 @@ class DocumentoEletronico(ABC):
             contents = "<soap:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:soap='http://www.w3.org/2003/05/soap-envelope'><soap:Body><nfeDadosMsg xmlns='http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4'>" + contents + "</nfeDadosMsg></soap:Body></soap:Envelope>"
         if 'consSitNFe' in contents and self.uf == 50:
             contents = "<soap:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:soap='http://www.w3.org/2003/05/soap-envelope'><soap:Body><nfeDadosMsg xmlns='http://www.portalfiscal.inf.br/nfe/wsdl/NFeConsultaProtocolo4'>" + contents + "</nfeDadosMsg></soap:Body></soap:Envelope>"
+        if 'retConsReciNFe' in contents and self.uf == 50:
+            contents = "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'><S:Body><nfeResultMsg xmlns='http://www.portalfiscal.inf.br/nfe/wsdl/NFeRetAutorizacao4'><retConsReciNFe xmlns='http://www.portalfiscal.inf.br/nfe' versao='4.00'>" + contents + "</retConsReciNFe></nfeResultMsg></S:Body></S:Envelope>"
+        if 'nfeProc' in contents and self.uf == 50:
+            contents = contents[:contents.find("ds:Signature")-1] + "</protNFe></nfeProc>"
         output.close()
         return contents, etree.fromstring(contents)
 
