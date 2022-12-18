@@ -11,6 +11,9 @@ from erpbrasil.assinatura.assinatura import Assinatura
 from lxml import etree
 from lxml.etree import _Element
 
+from xsdata.formats.dataclass.serializers import XmlSerializer
+from xsdata.formats.dataclass.serializers.config import SerializerConfig
+
 from .resposta import analisar_retorno_raw
 
 # Fix Python 2.x.
@@ -32,45 +35,33 @@ class DocumentoEletronico(ABC):
     Classe abstrata responsavel por definir os metodos e logica das classes
     de transmissao com os webservices.
     """
+    _namespace = False
     _consulta_servico_ao_enviar = False
     _consulta_documento_antes_de_enviar = False
 
     def __init__(self, transmissao):
         self._transmissao = transmissao
 
-    def _generateds_to_string_etree(self, ds, pretty_print=False):
+    def render_edoc(self, edoc, pretty_print=False):
+        if isinstance(edoc, _Element):
+            return etree.tostring(edoc), edoc
+        if isinstance(edoc, str):
+            return edoc, etree.fromstring(edoc)
+        serializer = XmlSerializer(config=SerializerConfig(pretty_print=pretty_print))
 
-        if type(ds) == _Element:
-            return etree.tostring(ds), ds
-        if isinstance(ds, str):
-            return ds, etree.fromstring(ds)
-        # if isinstance(ds, unicode):
-        #     return ds, etree.fromstring(ds)
-
-        output = StringIO()
-        namespace = False
         if self._namespace:
-            namespace = 'xmlns="' + self._namespace + '"'
-
-        if namespace:
-            ds.export(
-                output,
-                0,
-                pretty_print=pretty_print,
-                namespacedef_=namespace
-            )
+            ns_map = {None: self._namespace}
         else:
-            ds.export(
-                output,
-                0,
-                pretty_print=pretty_print,
-            )
-        contents = output.getvalue()
-        output.close()
-        return contents, etree.fromstring(contents)
+            ns_map = None
+
+        xml_string = serializer.render(
+            obj=edoc, ns_map=ns_map
+        )
+        return xml_string, etree.fromstring(xml_string.encode())
 
     def _post(self, raiz, url, operacao, classe):
-        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+
+        xml_string, xml_etree = self.render_edoc(raiz)
         with self._transmissao.cliente(url):
             retorno = self._transmissao.enviar(
                 operacao, xml_etree
@@ -217,12 +208,11 @@ class DocumentoEletronico(ABC):
         ) + str(timezone(timedelta(hours=-3)))[3:]
 
     def assina_raiz(self, raiz, id, getchildren=False):
-        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_etree = self.render_edoc(raiz)[1]
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
             xml_etree, id, getchildren
         )
         return xml_assinado
-        return xml_assinado.replace('\n', '').replace('\r', '')
 
     def _verifica_servico_em_operacao(self, proc_servico):
         return True

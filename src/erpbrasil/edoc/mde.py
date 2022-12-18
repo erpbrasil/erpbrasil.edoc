@@ -81,7 +81,7 @@ class MDe(NFe):
             evento=eventos
         )
         raiz.original_tagname_ = 'envEvento'
-        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(raiz)
+        xml_envio_string, xml_envio_etree = self.render_edoc(raiz)
 
         for raiz_evento in lista_eventos:
             evento = TEventoManifestacao(
@@ -243,7 +243,7 @@ class MDe(NFe):
     def _post(self, raiz, url, operacao, classe):
         from .nfe import SIGLA_ESTADO
 
-        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_string, xml_etree = self.render_edoc(raiz)
         with self._transmissao.cliente(url):
             # Recupera a sigla do estado
             uf_list = [uf for nUF, uf in SIGLA_ESTADO.items() if

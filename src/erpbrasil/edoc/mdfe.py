@@ -92,7 +92,7 @@ class MDFe(DocumentoEletronico):
         :param edoc:
         :return:
         """
-        xml_string, xml_etree = self._generateds_to_string_etree(edoc)
+        xml_string, xml_etree = self.render_edoc(edoc)
         xml_assinado = Assinatura(self.certificado).assina_xml2(
             xml_etree, edoc.infMDFe.Id
         )
@@ -102,7 +102,7 @@ class MDFe(DocumentoEletronico):
             idLote=datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
         )
         raiz.original_tagname_ = 'enviMDFe'
-        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
+        xml_envio_string, xml_envio_etree = self.render_edoc(
             raiz
         )
         xml_envio_etree.append(etree.fromstring(xml_assinado))

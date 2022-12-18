@@ -187,7 +187,7 @@ class Paulistana(NFSe):
         return status, retorno_mensagem
 
     def assina_raiz(self, raiz, id, getchildren=False):
-        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_string, xml_etree = self.render_edoc(raiz)
         xml_assinado = Assinatura(self._transmissao.certificado).assina_nfse(
             xml_etree
         )

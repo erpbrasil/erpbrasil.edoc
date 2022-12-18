@@ -44,11 +44,11 @@ class NFSe(DocumentoEletronico):
     def _post(self, body, servico):
         header_string = None
         if self._header:
-            header_string, header_etree = self._generateds_to_string_etree(
+            header_string, header_etree = self.render_edoc(
                 self._header
             )
 
-        body_string, body_etree = self._generateds_to_string_etree(body)
+        body_string, body_etree = self.render_edoc(body)
 
         # TODO: Verificar impacto para outros provedores
         header = body_etree.find("Cabecalho")

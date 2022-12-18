@@ -109,7 +109,7 @@ class Issnet(NFSe):
             Protocolo=proc_envio.resposta.Protocolo
         )
         # xml_assinado = self.assina_raiz(raiz,"")
-        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_string, xml_etree = self.render_edoc(raiz)
         xml_string = '<?xml version="1.0"?>' + xml_string
         return xml_string
 
@@ -125,7 +125,7 @@ class Issnet(NFSe):
             Protocolo=protocolo
         )
         # xml_assinado = self.assina_raiz(raiz, raiz.Id)
-        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_string, xml_etree = self.render_edoc(raiz)
         xml_string = '<?xml version="1.0"?>' + xml_string
         return xml_string
 
@@ -187,7 +187,7 @@ class Issnet(NFSe):
                 InscricaoMunicipal=self.im_prestador
             ),
         )
-        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_string, xml_etree = self.render_edoc(raiz)
         xml_string = '<?xml version="1.0"?>' + xml_string
 
         return xml_string
