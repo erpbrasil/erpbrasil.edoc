@@ -875,11 +875,15 @@ class NFe(DocumentoEletronico):
             xml_assinado = self.assina_raiz(evento, evento.infEvento.Id)
             xml_envio_etree.append(etree.fromstring(xml_assinado))
 
+        operacao_recepcao_evento = 'nfeRecepcaoEvento'
+        if self.uf in [29, 41]:
+            operacao_recepcao_evento = 'nfeRecepcaoEventoNF'
+
         return self._post(
             xml_envio_etree,
             localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), self.mod,
                           int(self.ambiente)),
-            'nfeRecepcaoEvento',
+            operacao_recepcao_evento,
             retEnvEvento
         )
 
