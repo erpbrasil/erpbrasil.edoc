@@ -238,7 +238,7 @@ ESTADO_CONSULTA_NFCE = {
 class NFCe(NFe):
     def __init__(self, transmissao, uf, versao="4.00", ambiente="2", mod="65",
                  qrcode_versao="2", csc_token=None, csc_code=None):
-        super(NFCe, self).__init__(transmissao, uf, versao, ambiente)
+        super().__init__(transmissao, uf, versao, ambiente)
         self.mod = str(mod)
         self.qrcode_versao = str(qrcode_versao)
         self.csc_token = str(csc_token)
@@ -246,13 +246,23 @@ class NFCe(NFe):
 
     def monta_qrcode(self, edoc):
         nfce_chave = edoc.infNFe.Id.replace("NFe", "")
-        pre_qrcode = f"{nfce_chave}|{self.qrcode_versao}|{self.ambiente}|{self.csc_token}"
+        pre_qrcode = self._build_pre_qrcode(nfce_chave)
         pre_qrcode_with_csc = pre_qrcode + f"{self.csc_code}"
-        hash_object = hashlib.sha1(bytes(pre_qrcode_with_csc, "utf-8"))
-        qr_hash = hash_object.hexdigest().upper()
-        qrcode = f"{ESTADO_QRCODE[SIGLA_ESTADO[str(self.uf)]][self.ambiente]}" + pre_qrcode + f"|{qr_hash}"
+        qr_hash = self._compute_qr_hash(pre_qrcode_with_csc)
+        qrcode = self._build_qrcode(pre_qrcode, qr_hash)
         edoc.infNFeSupl = infNFeSuplType(qrCode=qrcode, urlChave=self.consulta_qrcode_url)
+
+    def _build_pre_qrcode(self, nfce_chave):
+        return f"{nfce_chave}|{self.qrcode_versao}|{self.ambiente}|{self.csc_token}"
+
+    def _compute_qr_hash(self, pre_qrcode_with_csc):
+        hash_object = hashlib.sha1(pre_qrcode_with_csc.encode("utf-8"))
+        return hash_object.hexdigest().upper()
+
+    def _build_qrcode(self, pre_qrcode, qr_hash):
+        return f"{ESTADO_QRCODE[SIGLA_ESTADO[str(self.uf)]][self.ambiente]}{pre_qrcode}|{qr_hash}"
 
     @property
     def consulta_qrcode_url(self):
         return ESTADO_CONSULTA_NFCE[SIGLA_ESTADO[str(self.uf)]][self.ambiente]
+
