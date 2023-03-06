@@ -13,29 +13,32 @@ from lxml import etree
 from erpbrasil.edoc.edoc import DocumentoEletronico
 
 try:
-    # nfelib imports
-    # xsd NFe
-    from nfelib.v4_00 import retInutNFe
-    from nfelib.v4_00 import retConsStatServ
-    from nfelib.v4_00 import retConsSitNFe
-    from nfelib.v4_00 import retEnviNFe
-    from nfelib.v4_00 import retConsReciNFe
 
-    # xsd Distribuiçao NFe
-    from nfelib.v4_00 import distDFeInt
-    from nfelib.v4_00 import retDistDFeInt
-
-    # xsd Evento Generico
-    from nfelib.v4_00 import retEnvEvento
-
-    # xsd Evento Cancelamento
-    from nfelib.v4_00 import retEnvEventoCancNFe
-
-    # xsd CCe
-    from nfelib.v4_00 import retEnvCCe
+    from nfelib.bindings.nfe.v4_0.proc_nfe_v4_00 import NfeProc
+    from nfelib.bindings.nfe.v4_0.inut_nfe_v4_00 import InutNfe
+    from nfelib.bindings.nfe.v4_0.ret_inut_nfe_v4_00 import RetInutNfe
+    from nfelib.bindings.nfe.v4_0.cons_stat_serv_v4_00 import ConsStatServ
+    from nfelib.bindings.nfe.v4_0.ret_cons_stat_serv_v4_00 import RetConsStatServ
+    from nfelib.bindings.nfe.v4_0.cons_sit_nfe_v4_00 import ConsSitNfe
+    from nfelib.bindings.nfe.v4_0.ret_cons_sit_nfe_v4_00 import RetConsSitNfe
+    from nfelib.bindings.nfe.v4_0.envi_nfe_v4_00 import EnviNfe
+    from nfelib.bindings.nfe.v4_0.ret_envi_nfe_v4_00 import RetEnviNfe
+    from nfelib.bindings.nfe.v4_0.cons_reci_nfe_v4_00 import ConsReciNfe
+    from nfelib.bindings.nfe.v4_0.ret_cons_reci_nfe_v4_00 import RetConsReciNfe
+    from nfelib.bindings.nfe_dist_dfe.v1_0 import DistDfeInt
+    from nfelib.bindings.nfe_dist_dfe.v1_0 import RetDistDfeInt
+    from nfelib.bindings.nfe_evento_generico.v1_0.env_evento_v1_00 import EnvEvento as EnvEventoGenerico
+    from nfelib.bindings.nfe_evento_generico.v1_0.leiaute_evento_v1_00 import Tevento
+    from nfelib.bindings.nfe_evento_cce.v1_0.leiaute_cce_v1_00 import Tevento as TeventoCCe
+    from nfelib.bindings.nfe_evento_generico.v1_0.ret_env_evento_v1_00 import RetEnvEvento as RetEnvEventoGenerico
+    from nfelib.bindings.nfe_evento_cancel.v1_0.evento_canc_nfe_v1_00 import Evento as EventoCancNfe
+    from nfelib.bindings.nfe_evento_cce.v1_0.cce_v1_00 import Evento as EventoCCe
+    from nfelib.bindings.nfe_evento_cce.v1_0.ret_env_cce_v1_00 import RetEnvEvento as RetEnvEventoCCe
 
     # xsd Consulta Cadastro
-    from nfelib.v4_00 import retConsCad
+    # TODO PROCESSAR OS SCHEMAS NO XSDATA
+    #from nfelib.bindings.nfe_cons.v2_0.cons_sit_nfe_v2_01 import ConsSitNfe
+    #from nfelib.bindings.nfe_cons.v2_0.ret_cons_sit_nfe_v2_01 import RetConsSitNfe
 
 except ImportError:
     pass
@@ -748,37 +751,34 @@ class NFe(DocumentoEletronico):
         return edoc.infNFe.Id[:3], edoc.infNFe.Id[3:]
 
     def status_servico(self):
-        raiz = retConsStatServ.TConsStatServ(
+        raiz = ConsStatServ(
             versao=self.versao,
             tpAmb=self.ambiente,
             cUF=self.uf,
             xServ='STATUS',
         )
-        raiz.original_tagname_ = 'consStatServ'
         return self._post(
             raiz,
-            # 'https://hom.sefazvirtual.fazenda.gov.br/NFeStatusServico4/NFeStatusServico4.asmx?wsdl',
             localizar_url(WS_NFE_SITUACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeStatusServicoNF',
-            retConsStatServ
+            RetConsStatServ
         )
 
     def consulta_documento(self, chave):
-        raiz = retConsSitNFe.TConsSitNFe(
+        raiz = ConsSitNfe(
             versao=self.versao,
             tpAmb=self.ambiente,
             xServ='CONSULTAR',
             chNFe=chave,
         )
-        raiz.original_tagname_ = 'consSitNFe'
         return self._post(
             raiz,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl',
             localizar_url(WS_NFE_CONSULTA, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeConsultaNF',
-            retConsSitNFe
+            RetConsSitNfe
         )
 
     def envia_documento(self, edoc):
@@ -793,18 +793,17 @@ class NFe(DocumentoEletronico):
         """
         xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
 
-        raiz = retEnviNFe.TEnviNFe(
+        raiz = EnviNfe(
             versao=self.versao,
             idLote=datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
             indSinc='0'
         )
-        raiz.original_tagname_ = 'enviNFe'
-        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
+        xml_envio_string, xml_envio_etree = self.render_edoc(
             raiz
         )
         xml_envio_etree.append(etree.fromstring(xml_assinado))
 
-        # teste_string, teste_etree = self._generateds_to_string_etree(xml_envio_etree)
+        # teste_string, teste_etree = self.render_edoc(xml_envio_etree)
 
         return self._post(
             xml_envio_etree,
@@ -812,11 +811,11 @@ class NFe(DocumentoEletronico):
             localizar_url(WS_NFE_AUTORIZACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeAutorizacaoLote',
-            retEnviNFe
+            RetEnviNfe
         )
 
     def envia_inutilizacao(self, evento):
-        tinut = retInutNFe.TInutNFe(
+        tinut = InutNfe(
             versao=self.versao,
             infInut=evento,
             Signature=None)
@@ -831,7 +830,7 @@ class NFe(DocumentoEletronico):
             localizar_url(WS_NFE_INUTILIZACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeInutilizacaoNF',
-            retInutNFe
+            RetInutNfe
         )
 
     def consulta_recibo(self, numero=False, proc_envio=False):
@@ -841,36 +840,38 @@ class NFe(DocumentoEletronico):
         if not numero:
             return
 
-        raiz = retConsReciNFe.TConsReciNFe(
+        raiz = ConsReciNfe(
             versao=self.versao,
             tpAmb=self.ambiente,
             nRec=numero,
         )
-        raiz.original_tagname_ = 'consReciNFe'
         return self._post(
             raiz,
             localizar_url(WS_NFE_RET_AUTORIZACAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             # 'ws/nferetautorizacao4.asmx'
             'nfeRetAutorizacaoLote',
-            retConsReciNFe,
+            RetConsReciNfe,
         )
 
     def enviar_lote_evento(self, lista_eventos, numero_lote=False):
         if not numero_lote:
             numero_lote = self._gera_numero_lote()
 
-        raiz = retEnvEvento.TEnvEvento(versao="1.00", idLote=numero_lote)
-        raiz.original_tagname_ = 'envEvento'
-        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
+        raiz = EnvEventoGenerico(versao="1.00", idLote=numero_lote)
+        xml_envio_string, xml_envio_etree = self.render_edoc(
             raiz
         )
 
-        for raiz_evento in lista_eventos:
-            evento = retEnvEventoCancNFe.TEvento(
-                versao="1.00", infEvento=raiz_evento,
+        for inf_evento in lista_eventos:
+            if isinstance(inf_evento, TeventoCCe.InfEvento):
+                Evento = TeventoCCe
+            if isinstance(inf_evento, EventoCancNfe.InfEvento):
+                Evento = EventoCancNfe
+
+            evento = Evento(
+                versao="1.00", inf_evento=inf_evento,
             )
-            evento.original_tagname_ = 'evento'
             xml_assinado = self.assina_raiz(evento, evento.infEvento.Id)
             xml_envio_etree.append(etree.fromstring(xml_assinado))
 
@@ -879,14 +880,14 @@ class NFe(DocumentoEletronico):
             localizar_url(WS_NFE_RECEPCAO_EVENTO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeRecepcaoEvento',
-            retEnvEvento
+            RetEnvEventoGenerico
         )
 
     def cancela_documento(self, chave, protocolo_autorizacao, justificativa,
                           data_hora_evento=False):
         tipo_evento = '110111'
         sequencia = '1'
-        raiz = retEnvEventoCancNFe.infEventoType(
+        raiz = EventoCancNfe.InfEvento(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
             cOrgao=self.uf,
             tpAmb=self.ambiente,
@@ -896,20 +897,19 @@ class NFe(DocumentoEletronico):
             tpEvento='110111',
             nSeqEvento='1',
             verEvento='1.00',
-            detEvento=retEnvEventoCancNFe.detEventoType(
+            detEvento=EventoCancNfe.InfEvento.DetEvento(
                 versao="1.00",
                 descEvento='Cancelamento',
                 nProt=protocolo_autorizacao,
                 xJust=justificativa
             ),
         )
-        raiz.original_tagname_ = 'infEvento'
         return raiz
 
     def carta_correcao(self, chave, sequencia, justificativa,
                        data_hora_evento=False):
         tipo_evento = '110110'
-        raiz = retEnvCCe.infEventoType(
+        raiz = EventoCCe.InfEvento(
             Id='ID' + tipo_evento + chave + sequencia.zfill(2),
             cOrgao=self.uf,
             tpAmb=self.ambiente,
@@ -920,22 +920,21 @@ class NFe(DocumentoEletronico):
             tpEvento=tipo_evento,
             nSeqEvento=sequencia,
             verEvento='1.00',
-            detEvento=retEnvCCe.detEventoType(
+            detEvento=EventoCCe.InfEvento.DetEvento(
                 versao="1.00",
                 descEvento='Carta de Correcao',
                 xCorrecao=justificativa,
                 xCondUso=TEXTO_CARTA_CORRECAO,
             ),
         )
-        raiz.original_tagname_ = 'infEvento'
         return raiz
 
     def inutilizacao(self, cnpj, mod, serie, num_ini, num_fin,
                      justificativa):
         ano = str(datetime.date.today().year)[2:]
         uf = str(self.uf)
-        raiz = retInutNFe.infInutType(
-            Id='ID' + uf + ano + cnpj + mod + serie.zfill(3) +
+        raiz = InutNfe.InfInut(
+            id='ID' + uf + ano + cnpj + mod + serie.zfill(3) +
                str(num_ini).zfill(9) + str(num_fin).zfill(9),
             tpAmb=self.ambiente,
             xServ='INUTILIZAR',
@@ -948,7 +947,6 @@ class NFe(DocumentoEletronico):
             nNFFin=str(num_fin),
             xJust=justificativa,
         )
-        raiz.original_tagname_ = 'infInut'
         return raiz
 
     def _verifica_servico_em_operacao(self, proc_servico):
@@ -993,15 +991,15 @@ class NFe(DocumentoEletronico):
 
         distNSU = consNSU = consChNFe = None
         if ultimo_nsu:
-            distNSU = distDFeInt.distNSUType(
+            distNSU = DistDfeInt.DistNsu(
                 ultNSU=ultimo_nsu
             )
         if nsu_especifico:
-            consNSU = distDFeInt.consNSUType(
+            consNSU = DistDfeInt.ConsNsu(
                 NSU=nsu_especifico
             )
         if chave:
-            consChNFe = distDFeInt.consChNFeType(
+            consChNFe = DistDfeInt.ConsChNfe(
                 chNFe=chave
             )
 
@@ -1009,7 +1007,7 @@ class NFe(DocumentoEletronico):
             # TODO: Raise?
             return
 
-        raiz = distDFeInt.distDFeInt(
+        raiz = DistDfeInt(
             versao=self.versao,
             tpAmb=self.ambiente,
             cUFAutor=self.uf,
@@ -1025,53 +1023,53 @@ class NFe(DocumentoEletronico):
             localizar_url(WS_DFE_DISTRIBUICAO, str(self.uf), self.mod,
                           int(self.ambiente)),
             'nfeDistDFeInteresse',
-            retDistDFeInt
+            RetDistDfeInt
         )
 
     def monta_processo(self, edoc, proc_envio, proc_recibo):
         nfe = proc_envio.envio_raiz.find('{' + self._namespace + '}NFe')
         protocolos = proc_recibo.resposta.protNFe
         if nfe and protocolos:
-            if type(protocolos) != list:
+            if not isinstance(protocolos, list):
                 protocolos = [protocolos]
             for protocolo in protocolos:
-                nfe_proc = retEnviNFe.TNfeProc(
+                nfe_proc = NfeProc(
                     versao=self.versao,
                     protNFe=protocolo,
                 )
-                nfe_proc.original_tagname_ = 'nfeProc'
-                xml_file, nfe_proc = self._generateds_to_string_etree(nfe_proc)
+                xml_file, nfe_proc = self.render_edoc(nfe_proc)
                 prot_nfe = nfe_proc.find('{' + self._namespace + '}protNFe')
                 prot_nfe.addprevious(nfe)
                 proc_recibo.processo = nfe_proc
                 proc_recibo.processo_xml = \
-                    self._generateds_to_string_etree(nfe_proc)[0]
+                    self.render_edoc(nfe_proc)[0]
                 proc_recibo.protocolo = protocolo
             return True
 
-    def consultar_cadastro(self, uf, cnpj=None, cpf=None, ie=None):
+    # TODO falta por as classes no nfelib verao xsdata
 
-        if not cnpj and not cpf and not ie:
-            return
+    # def consultar_cadastro(self, uf, cnpj=None, cpf=None, ie=None):
 
-        infCons = retConsCad.infConsType(
-            xServ='CONS-CAD',
-            UF=uf,
-            IE=ie,
-            CNPJ=cnpj,
-            CPF=cpf,
-        )
+    #     if not cnpj and not cpf and not ie:
+    #         return
 
-        raiz = retConsCad.TConsCad(
-            versao='2.00',
-            infCons=infCons,
-        )
-        raiz.original_tagname_ = 'ConsCad'
+    #     infCons = ConsSitNfe(
+    #         x_serv='CONS-CAD',
+    #         uf=uf,
+    #         ie=ie,
+    #         cnpj=cnpj,
+    #         cpf=cpf,
+    #     )
 
-        return self._post(
-            raiz,
-            localizar_url(
-                WS_NFE_CADASTRO, str(self.uf), self.mod, int(self.ambiente)),
-            'consultaCadastro',
-            retConsCad
-        )
+    #     raiz = ConsSitNfe(
+    #         versao='2.00',
+    #         inf_cons=infCons,
+    #     )
+
+    #     return self._post(
+    #         raiz,
+    #         localizar_url(
+    #             WS_NFE_CADASTRO, str(self.uf), self.mod, int(self.ambiente)),
+    #         'consultaCadastro',
+    #         RetConsSitNfe
+    #     )
