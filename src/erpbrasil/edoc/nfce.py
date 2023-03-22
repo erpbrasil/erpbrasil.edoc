@@ -1,14 +1,21 @@
 # coding=utf-8
 # Copyright (C) 2023 Ygor de Carvalho - KMEE
 
+import datetime
 import hashlib
+import xml.etree.ElementTree as ET
+import binascii
 
-from erpbrasil.edoc.nfe import SIGLA_ESTADO, NFe
+from lxml import etree
+
+from erpbrasil.edoc.nfe import SIGLA_ESTADO, NFe, localizar_url, WS_NFE_AUTORIZACAO
 
 try:
+    from nfelib.v4_00 import retEnviNFe
     from nfelib.v4_00.retEnviNFe import infNFeSuplType
 except ImportError:
     pass
+
 
 NFCE_AMBIENTE_PRODUCAO = "1"
 NFCE_AMBIENTE_HOMOLOGACAO = "2"
@@ -235,6 +242,11 @@ ESTADO_CONSULTA_NFCE = {
     },
 }
 
+NAMESPACES = {
+    "nfe": "http://www.portalfiscal.inf.br/nfe",
+    "ds": "http://www.w3.org/2000/09/xmldsig#",
+}
+
 
 class NFCe(NFe):
     def __init__(self, transmissao, uf, versao="4.00", ambiente="2", mod="65",
@@ -266,3 +278,56 @@ class NFCe(NFe):
     @property
     def consulta_qrcode_url(self):
         return ESTADO_CONSULTA_NFCE[SIGLA_ESTADO[str(self.uf)]][self.ambiente]
+
+    def _generate_qrcode_contingency(self, edoc, xml_assinado):
+        xml = ET.fromstring(xml_assinado)
+        chave_nfce = edoc.infNFe.Id.replace("NFe", "")
+        data_emissao = edoc.infNFe.ide.dhEmi[8:10]
+        total_nfe = xml.find(".//nfe:total/nfe:ICMSTot/nfe:vNF", namespaces=NAMESPACES).text
+        digest_value = xml.find('.//ds:DigestValue', namespaces=NAMESPACES).text
+        digest_value_hex = binascii.hexlify(digest_value.encode()).decode()
+        pre_qrcode_witouth_csc = f"{chave_nfce}|{self.qrcode_versao}|{self.ambiente}|{data_emissao}|{total_nfe}|{digest_value_hex}|{self.csc_token}"
+        pre_qrcode = f"{chave_nfce}|{self.qrcode_versao}|{self.ambiente}|{data_emissao}|{total_nfe}|{digest_value_hex}|{self.csc_token}{self.csc_code}"
+        qr_hash = self._compute_qr_hash(pre_qrcode)
+        return self._build_qrcode(pre_qrcode_witouth_csc, qr_hash)
+
+    def _update_qrcode_nfce_contingency(self, edoc, xml_assinado):
+        text = self._generate_qrcode_contingency(edoc, xml_assinado)
+        edoc.infNFeSupl.qrCode = text
+
+    def envia_documento(self, edoc):
+        xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
+
+        # If the emission is diff from 1, the NFCe was issued in contingency.
+        #
+        # Therefore, it is necessary that there is a change in the generation
+        #   of QR COde. And, as one of the necessary values is the digestValue,
+        #   calculated during the signature, it is necessary that the edoc
+        #   values be updated and signed again so as not to cause a divergence
+        #   in the signature with Sefaz.
+
+        root = ET.fromstring(xml_assinado)
+        tp_emis = root.find('.//nfe:tpEmis', namespaces=NAMESPACES).text
+
+        if tp_emis != "1":
+            self._update_qrcode_nfce_contingency(edoc, xml_assinado)
+            xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
+
+        raiz = retEnviNFe.TEnviNFe(
+            versao=self.versao,
+            idLote=datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+            indSinc='1'
+        )
+        raiz.original_tagname_ = 'enviNFe'
+        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
+            raiz
+        )
+        xml_envio_etree.append(etree.fromstring(xml_assinado))
+
+        return self._post(
+            xml_envio_etree,
+            localizar_url(WS_NFE_AUTORIZACAO, str(self.uf), self.mod,
+                          int(self.ambiente)),
+            'nfeAutorizacaoLote',
+            retEnviNFe
+        )
