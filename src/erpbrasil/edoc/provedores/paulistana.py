@@ -170,11 +170,12 @@ class Paulistana(NFSe):
             )],
         )
 
+        assinador = Assinatura(self._transmissao.certificado)
         for detalhe in raiz.Detalhe:
-            detalhe.AssinaturaCancelamento = Assinatura(
-                self._transmissao.certificado).sign_pkcs1v15_sha1(
-                detalhe.AssinaturaCancelamento)
-
+            data = detalhe.AssinaturaCancelamento
+            data_bytes = data.encode('ascii')
+            assinatura = assinador.sign_pkcs1v15_sha1(data_bytes)
+            detalhe.AssinaturaCancelamento = b64encode(assinatura).decode()
         xml_assinado = self.assina_raiz(raiz, '')
         return xml_assinado
 
