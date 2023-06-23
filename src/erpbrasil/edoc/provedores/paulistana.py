@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 import xml.etree.ElementTree as ET
 
+from base64 import b64encode
 from erpbrasil.edoc.nfse import NFSe
 from erpbrasil.edoc.nfse import ServicoNFSe
 
@@ -73,12 +74,13 @@ class Paulistana(NFSe):
             transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)
 
     def _prepara_envia_documento(self, edoc):
+        assinador = Assinatura(self._transmissao.certificado)
         for rps in edoc.RPS:
-            rps.Assinatura = Assinatura(
-                self._transmissao.certificado).assina_tag(
-                rps.Assinatura)
+            data = rps.Assinatura
+            data_bytes = data.encode('ascii')
+            assinatura = assinador.sign_pkcs1v15_sha1(data_bytes)
+            rps.Assinatura = b64encode(assinatura).decode()
         xml_assinado = self.assina_raiz(edoc, '')
-
         return xml_assinado
 
     def _verifica_resposta_envio_sucesso(self, proc_envio):
@@ -168,11 +170,12 @@ class Paulistana(NFSe):
             )],
         )
 
+        assinador = Assinatura(self._transmissao.certificado)
         for detalhe in raiz.Detalhe:
-            detalhe.AssinaturaCancelamento = Assinatura(
-                self._transmissao.certificado).assina_tag(
-                detalhe.AssinaturaCancelamento)
-
+            data = detalhe.AssinaturaCancelamento
+            data_bytes = data.encode('ascii')
+            assinatura = assinador.sign_pkcs1v15_sha1(data_bytes)
+            detalhe.AssinaturaCancelamento = b64encode(assinatura).decode()
         xml_assinado = self.assina_raiz(raiz, '')
         return xml_assinado
 
@@ -192,4 +195,3 @@ class Paulistana(NFSe):
             xml_etree
         )
         return xml_assinado
-        return xml_assinado.replace('\n', '').replace('\r', '')
