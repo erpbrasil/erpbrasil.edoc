@@ -168,10 +168,10 @@ class CTe(DocumentoEletronico):
     def __init__(self, config, xml):
         self.config = config
         self._xml = xml
-        self._ambiente = 2
-        self._uf = "SP"
+        self._ambiente = self.config  #tpAmb
+        self._uf = self.config  #uf
         self._versao = 4.00
-        self._chaveCte = 123456789
+        self._chaveCte = self._gerar_chave(self.config)
         self.assinatura = Assinatura(self.config)  # self.config.certificado
         self.transmissao = TransmissaoSOAP(self.config)  # self.config.certificado
         super(CTe, self).__init__(self.transmissao)
