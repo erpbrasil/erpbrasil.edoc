@@ -3,6 +3,7 @@ from erpbrasil.transmissao import TransmissaoSOAP
 from erpbrasil.edoc.edoc import DocumentoEletronico
 from erpbrasil.assinatura.assinatura import Assinatura
 from erpbrasil.base.fiscal.edoc import ChaveEdoc
+from .resposta import analisar_retorno_raw
 
 try:
     from nfelib.cte.bindings.v4_0 import TconsStatServ
@@ -13,6 +14,7 @@ try:
     from nfelib.cte.bindings.v4_0 import RetCte
     from nfelib.cte.bindings.v4_0 import EvCancCte
     from nfelib.cte.bindings.v4_0 import RetEventoCte
+    from nfelib.cte.bindings.v4_0 import Cte
 except:
     pass
 
@@ -206,9 +208,8 @@ class CTe(DocumentoEletronico):
             infCte=edoc,
             signature=self.assinatura
         )
-        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
-            raiz
-        )
+        xml_envio_string = raiz.to_xml()
+        xml_envio_etree = xml_envio_string.from_xml()
         xml_envio_etree.append(etree.fromstring(xml_assinado))
         return self._post(
             raiz=xml_envio_etree,
@@ -230,24 +231,25 @@ class CTe(DocumentoEletronico):
             classe=RetEventoCte
         )
     
-    def _gerar_chave(self):
+    def _gerar_chave(self, edoc):
         """
                 0  2    6             20  22  25        34 35      43  --> índice
                 |  |    |              |  |   |         | |        |
                 |  |    |              |  |   |         | |        |
             CTe  32 1712 32438772000104 57 001 000199075 1 39868226 3
         """
+        cte = Cte(edoc)
         chave = ChaveEdoc()
-        chave.codigo_uf = "Código da UF do emitente do Documento Fiscal"
-        chave.cUF = "Código da UF do emitente do Documento Fiscal"
-        chave.AAMM = "Ano e Mês de emissão do CTe"
-        chave.CNPJ = "CNPJ do emitente"
-        chave.mod = "Modelo do Documento Fiscal"
-        chave.serie = "Série do Documento Fiscal"
-        chave.nCT = "Número do Documento Fiscal"
-        chave.tpEmis = "forma de emissão do CTe"
-        chave.cCT = "Código Numérico que compõe a Chave de Acesso"
-        chave.cDV = "Dígito Verificador da Chave de Acesso"
+        chave.cUF = cte.InfCte.Ide.cUF
+        dhEmi = cte.InfCte.Ide.dhEmi
+        chave.AAMM = dhEmi[2:4] + dhEmi[5:7]
+        chave.CNPJ = cte.InfCte.Emit.CNPJ
+        chave.mod =  cte.InfCte.Ide.mod
+        chave.serie = cte.InfCte.Ide.serie
+        chave.nCT = cte.InfCte.Ide.nCT
+        chave.tpEmis = cte.InfCte.Ide.tpEmis
+        chave.cCT = cte.InfCte.Ide.cCT
+        chave.cDV = cte.InfCte.Ide.cDV
         return chave
 
     def _search_url(self, service):
@@ -284,3 +286,14 @@ class CTe(DocumentoEletronico):
 
     def consulta_recibo(self):
         pass
+
+    def _post(self, raiz, url, operacao, classe):
+        xml_string = raiz.to_xml()
+        xml_etree = xml_string.from_xml()
+        with self._transmissao.cliente(url):
+            retorno = self._transmissao.enviar(
+                operacao, xml_etree
+            )
+            return analisar_retorno_raw(
+                operacao, raiz, xml_string, retorno, classe
+            )
