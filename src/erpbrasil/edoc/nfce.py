@@ -257,13 +257,11 @@ class NFCe(NFe):
         self.csc_token = str(csc_token)
         self.csc_code = str(csc_code)
 
-    def monta_qrcode(self, edoc):
-        nfce_chave = edoc.infNFe.Id.replace("NFe", "")
-        pre_qrcode = self._build_pre_qrcode(nfce_chave)
+    def monta_qrcode(self, chave):
+        pre_qrcode = self._build_pre_qrcode(chave)
         pre_qrcode_with_csc = pre_qrcode + f"{self.csc_code}"
         qr_hash = self._compute_qr_hash(pre_qrcode_with_csc)
-        qrcode = self._build_qrcode(pre_qrcode, qr_hash)
-        edoc.infNFeSupl = infNFeSuplType(qrCode=qrcode, urlChave=self.consulta_qrcode_url)
+        return self._build_qrcode(pre_qrcode, qr_hash)
 
     def _build_pre_qrcode(self, nfce_chave):
         return f"{nfce_chave}|{self.qrcode_versao}|{self.ambiente}|{self.csc_token}"
