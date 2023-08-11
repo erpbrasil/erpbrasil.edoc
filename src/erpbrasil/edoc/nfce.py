@@ -5,6 +5,7 @@ import datetime
 import hashlib
 import xml.etree.ElementTree as ET
 import binascii
+import time
 
 from lxml import etree
 
@@ -249,6 +250,9 @@ NAMESPACES = {
 
 
 class NFCe(NFe):
+    _edoc_situacao_arquivo_recebido_com_sucesso = '104'
+    _tempo_medio = 1
+
     def __init__(self, transmissao, uf, versao="4.00", ambiente="2", mod="65",
                  qrcode_versao="2", csc_token=None, csc_code=None):
         super().__init__(transmissao, uf, versao, ambiente)
@@ -329,3 +333,11 @@ class NFCe(NFe):
             'nfeAutorizacaoLote',
             retEnviNFe
         )
+
+    def _aguarda_tempo_medio(self, proc_envio):
+        time.sleep(self._tempo_medio)
+
+    def consulta_recibo(self, proc_envio):
+        # Since NFCe is synchronous it is not necessary to consult the receipt,
+        # therefore, the result is the same.
+        return proc_envio
