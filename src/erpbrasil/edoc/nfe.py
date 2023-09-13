@@ -1032,7 +1032,7 @@ class NFe(DocumentoEletronico):
     def monta_processo(self, edoc, proc_envio, proc_recibo):
         nfe = proc_envio.envio_raiz.find('{' + self._namespace + '}NFe')
         protocolos = proc_recibo.resposta.protNFe
-        if nfe and protocolos:
+        if len(nfe) and protocolos:
             if type(protocolos) != list:
                 protocolos = [protocolos]
             for protocolo in protocolos:
