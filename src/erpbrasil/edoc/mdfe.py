@@ -16,15 +16,34 @@ from lxml import etree
 from erpbrasil.edoc.edoc import DocumentoEletronico
 
 try:
-    from mdfelib.v3_00 import retConsMDFeNaoEnc
-    from mdfelib.v3_00 import retConsReciMDFe
-    from mdfelib.v3_00 import retConsSitMDFe
-    from mdfelib.v3_00 import retConsStatServMDFe
-    from mdfelib.v3_00 import retEnviMDFe
-    from mdfelib.v3_00 import procMDFe
-    from mdfelib.v3_00 import retEventoMDFe
-    from mdfelib.v3_00 import evCancMDFe
-    from mdfelib.v3_00 import evEncMDFe
+    # Consulta Status
+    from nfelib.mdfe.bindings.v3_0.cons_stat_serv_mdfe_v3_00 import ConsStatServMdfe
+    from nfelib.mdfe.bindings.v3_0.ret_cons_stat_serv_mdfe_v3_00 import RetConsStatServMdfe
+
+    # Consulta Documento
+    from nfelib.mdfe.bindings.v3_0.cons_sit_mdfe_v3_00 import ConsSitMdfe
+    from nfelib.mdfe.bindings.v3_0.ret_cons_sit_mdfe_v3_00 import RetConsSitMdfe
+
+    # Consulta Não Encerrados
+    from nfelib.mdfe.bindings.v3_0.cons_mdfe_nao_enc_v3_00 import ConsMdfeNaoEnc
+    from nfelib.mdfe.bindings.v3_0.ret_cons_mdfe_nao_enc_v3_00 import RetConsMdfeNaoEnc
+
+    # Envio
+    from nfelib.mdfe.bindings.v3_0.envi_mdfe_v3_00 import EnviMdfe
+    from nfelib.mdfe.bindings.v3_0.ret_envi_mdfe_v3_00 import RetEnviMdfe
+
+    # Consulta Recibo
+    from nfelib.mdfe.bindings.v3_0.cons_reci_mdfe_v3_00 import ConsReciMdfe
+    from nfelib.mdfe.bindings.v3_0.ret_cons_reci_mdfe_v3_00 import RetConsReciMdfe
+
+    # Processamento
+    from nfelib.mdfe.bindings.v3_0.proc_mdfe_v3_00 import MdfeProc
+
+    # Eventos
+    from nfelib.mdfe.bindings.v3_0.evento_mdfe_v3_00 import EventoMdfe
+    from nfelib.mdfe.bindings.v3_0.ret_evento_mdfe_v3_00 import RetEventoMdfe
+    from nfelib.mdfe.bindings.v3_0.ev_canc_mdfe_v3_00 import EvCancMdfe
+    from nfelib.mdfe.bindings.v3_0.ev_enc_mdfe_v3_00 import EvEncMdfe
 except ImportError:
     pass
 
@@ -104,6 +123,9 @@ class MDFe(DocumentoEletronico):
         return proc_envio.resposta.cStat == \
             self._edoc_situacao_arquivo_recebido_com_sucesso
 
+    def _verifica_servico_em_operacao(self, proc_servico):
+        return proc_servico.resposta.cStat == self._edoc_situacao_servico_em_operacao
+
     def _aguarda_tempo_medio(self, proc_envio):
         time.sleep(float(proc_envio.resposta.infRec.tMed) * 1.3)
 
@@ -126,49 +148,37 @@ class MDFe(DocumentoEletronico):
         return f"{self.monta_qrcode(chave)}&sign={digest_value_hex}"
 
     def status_servico(self):
-        raiz = retConsStatServMDFe.TConsStatServ(
-            versao=self.versao,
-            tpAmb=self.ambiente,
-            cUF=self.uf,
-            xServ="STATUS",
-        )
-        raiz.original_tagname_ = "consStatServMDFe"
         return self._post(
-            raiz,
+            ConsStatServMdfe(tpAmb=self.ambiente, versao=self.versao),
             localizar_url(WS_MDFE_SITUACAO, int(self.ambiente)),
             "mdfeStatusServicoMDF" ,
-            retConsStatServMDFe
+            RetConsStatServMdfe
         )
 
     def consulta_documento(self, chave):
-        raiz = retConsSitMDFe.TConsSitMDFe(
+        raiz = ConsSitMdfe(
             versao=self.versao,
             tpAmb=self.ambiente,
-            xServ="CONSULTAR",
             chMDFe=chave,
         )
-        raiz.original_tagname_ = "consSitMDFe"
         return self._post(
             raiz,
             localizar_url(WS_MDFE_CONSULTA, int(self.ambiente)),
             "mdfeConsultaMDF",
-            retConsSitMDFe
+            RetConsSitMdfe
         )
 
     def consulta_nao_encerrados(self, cnpj):
-        raiz = retConsMDFeNaoEnc.TConsMDFeNaoEnc(
+        raiz = ConsMdfeNaoEnc(
             versao=self.versao,
             tpAmb=self.ambiente,
-            xServ="CONSULTAR NÃO ENCERRADOS",
             CNPJ=cnpj,
         )
-        raiz.original_tagname_ = "consMDFeNaoEnc"
-
         return self._post(
             raiz,
             localizar_url(WS_MDFE_CONSULTA_NAO_ENCERRADOS, int(self.ambiente)),
             "mdfeConsNaoEnc",
-            retConsMDFeNaoEnc,
+            RetConsMdfeNaoEnc,
         )
 
     def envia_documento(self, edoc):
@@ -181,23 +191,17 @@ class MDFe(DocumentoEletronico):
         :param edoc:
         :return:
         """
-        xml_assinado = self.assina_raiz(edoc, edoc.infMDFe.Id)
-
-        raiz = retEnviMDFe.TEnviMDFe(
+        raiz = EnviMdfe(
             versao=self.versao,
             idLote=datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
+            MDFe=edoc
         )
-        raiz.original_tagname_ = "enviMDFe"
-        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
-            raiz
-        )
-        xml_envio_etree.append(etree.fromstring(xml_assinado))
-
+        xml_assinado = self.assina_raiz(raiz, edoc.infMDFe.Id)
         return self._post(
-            xml_envio_etree,
+            xml_assinado,
             localizar_url(WS_MDFE_RECEPCAO, int(self.ambiente)),
             "mdfeRecepcaoLote",
-            retEnviMDFe
+            RetEnviMdfe
         )
 
     def consulta_recibo(self, numero=False, proc_envio=False):
@@ -207,17 +211,16 @@ class MDFe(DocumentoEletronico):
         if not numero:
             return
 
-        raiz = retConsReciMDFe.TConsReciMDFe(
+        raiz = ConsReciMdfe(
             versao=self.versao,
             tpAmb=self.ambiente,
             nRec=numero,
         )
-        raiz.original_tagname_ = "consReciMDFe"
         return self._post(
             raiz,
             localizar_url(WS_MDFE_RET_RECEPCAO, int(self.ambiente)),
             "mdfeRetRecepcao",
-            retConsReciMDFe,
+            RetConsReciMdfe,
         )
 
     def monta_processo(self, edoc, proc_envio, proc_recibo):
@@ -227,87 +230,62 @@ class MDFe(DocumentoEletronico):
             if type(protocolos) != list:
                 protocolos = [protocolos]
             for protocolo in protocolos:
-                mdfe_proc = procMDFe.mdfeProc(
-                    versao=self.versao,
-                    protMDFe=protocolo,
-                )
-                mdfe_proc.original_tagname_ = 'mdfeProc'
-                xml_file, mdfe_proc = self._generateds_to_string_etree(mdfe_proc)
+                mdfe_proc = MdfeProc(versao=self.versao, protMDFe=protocolo)
                 proc_recibo.processo = mdfe_proc
-                proc_recibo.processo_xml = \
-                    self._generateds_to_string_etree(mdfe_proc)[0]
+                proc_recibo.processo_xml = mdfe_proc.to_xml()
                 proc_recibo.protocolo = protocolo
 
-    def send_event(self, evento):
-        raiz = retEventoMDFe.TEvento(versao="3.00", infEvento=evento)
-        raiz.original_tagname_ = "eventoMDFe"
+    def envia_evento(self, evento, tipo, chave, sequencia="001", data_hora=False):
+        inf_evento = EventoMdfe.InfEvento(
+            Id="ID" + tipo + chave + sequencia.zfill(2),
+            cOrgao=self.uf,
+            tpAmb=self.ambiente,
+            CNPJ=chave[6:20],
+            chMDFe=chave,
+            dhEvento=data_hora or self._hora_agora(),
+            tpEvento=tipo,
+            nSeqEvento=sequencia,
+            detEvento=EventoMdfe.InfEvento.DetEvento(
+                versaoEvento="3.00",
+                any_element=evento
+            ),
+        )
+        raiz = EventoMdfe(versao="3.00", infEvento=inf_evento)
         xml_assinado = etree.fromstring(self.assina_raiz(raiz, raiz.infEvento.Id))
 
         return self._post(
             xml_assinado,
             localizar_url(WS_MDFE_RECEPCAO_EVENTO, int(self.ambiente)),
             "mdfeRecepcaoEvento",
-            retEventoMDFe
+            RetEventoMdfe
         )
 
     def cancela_documento(self, chave, protocolo_autorizacao, justificativa,
                           data_hora_evento=False):
-        tipo = "110111"
-        sequencia = "1"
-        data_hora_evento = data_hora_evento or self._hora_agora()
-
-        cancelamento = evCancMDFe.evCancMDFe(
+        evento_canc = EvCancMdfe(
             descEvento="Cancelamento",
             nProt=protocolo_autorizacao,
             xJust=justificativa
         )
-        cancelamento_string, _ = self._generateds_to_string_etree(cancelamento)
-
-        raiz = evCancMDFe.infEventoType(
-            Id="ID" + tipo + chave + sequencia.zfill(2),
-            cOrgao=self.uf,
-            tpAmb=self.ambiente,
-            CNPJ=chave[6:20],
-            chMDFe=chave,
-            dhEvento=data_hora_evento,
-            tpEvento=tipo,
-            nSeqEvento=sequencia,
-            detEvento=evCancMDFe.detEventoType(
-                versaoEvento="3.00",
-                anytypeobjs_=cancelamento_string
-            ),
+        return self.envia_evento(
+            evento=evento_canc,
+            tipo="110111",
+            chave=chave,
+            data_hora=data_hora_evento
         )
-        raiz.original_tagname_ = "infEvento"
-        return self.send_event(raiz)
 
     def encerra_documento(self, chave, protocolo_autorizacao, estado, municipio,
                           data_hora_evento=False):
-        tipo = "110112"
-        sequencia = "1"
-        data_hora_evento = data_hora_evento or self._hora_agora()
-
-        encerramento = evEncMDFe.evEncMDFe(
+        encerramento = EvEncMdfe(
             descEvento="Encerramento",
             dtEnc=self._data_hoje(),
             nProt=protocolo_autorizacao,
             cUF=estado,
             cMun=municipio
         )
-        encerramento_string, _ = self._generateds_to_string_etree(encerramento)
-
-        raiz = evEncMDFe.infEventoType(
-            Id="ID" + tipo + chave + sequencia.zfill(2),
-            cOrgao=self.uf,
-            tpAmb=self.ambiente,
-            CNPJ=chave[6:20],
-            chMDFe=chave,
-            dhEvento=data_hora_evento,
-            tpEvento=tipo,
-            nSeqEvento=sequencia,
-            detEvento=evEncMDFe.detEventoType(
-                versaoEvento="3.00",
-                anytypeobjs_=encerramento_string
-            ),
+        return self.envia_evento(
+            evento=encerramento,
+            tipo="110112",
+            chave=chave,
+            data_hora=data_hora_evento
         )
-        raiz.original_tagname_ = "infEvento"
-        return self.send_event(raiz)
