@@ -53,7 +53,7 @@ def read(*names, **kwargs):
 
 setup(
     name='erpbrasil.edoc',
-    version='2.6.1',
+    version='2.7.0',
     license='MIT',
     description='Emissão de documentos fiscais e outras obrigações (NF-E, NFS-E, MDF-E, CT-E, REINF, E-SOCIAL)',
     long_description='%s\n%s' % (
