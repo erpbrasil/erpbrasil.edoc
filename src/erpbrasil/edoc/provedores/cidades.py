@@ -9,6 +9,7 @@ from erpbrasil.edoc.provedores.dsf import Dsf
 from erpbrasil.edoc.provedores.ginfes import Ginfes
 from erpbrasil.edoc.provedores.issnet import Issnet
 from erpbrasil.edoc.provedores.paulistana import Paulistana
+from erpbrasil.edoc.provedores.barueri import Barueri
 
 cidades = {
     1501402: Dsf,  # Belem-PA
@@ -22,6 +23,7 @@ cidades = {
     3550308: Paulistana,  # São Paulo - SP
     3543402: Issnet,    # Ribeirão Preto - SP
     3301702: Issnet,  # Duque de Caxias - RJ
+    3505708: Barueri # Barueri - SP
 }
 
 
