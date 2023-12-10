@@ -218,7 +218,7 @@ AN = {
         WS_NFE_RECEPCAO_EVENTO: 'NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?wsdl',  # noqa
     },
     AMBIENTE_HOMOLOGACAO: {
-        'servidor': 'hom.nfe.fazenda.gov.br',
+        'servidor': 'hom1.nfe.fazenda.gov.br',
         WS_DFE_DISTRIBUICAO: 'NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl',
         WS_DOWNLOAD_NFE: 'NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl',
         WS_NFE_RECEPCAO_EVENTO: 'NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?Wsdl',  # noqa
@@ -668,10 +668,10 @@ ESTADO_WS = {
     'MG': UFMG,
     'MS': UFMS,
     'MT': UFMT,
-    'PA': SVAN,
+    'PA': SVRS,
     'PB': SVRS,
     'PE': UFPE,
-    'PI': SVAN,
+    'PI': SVRS,
     'PR': UFPR,
     'RJ': SVRS,
     'RN': SVRS,
@@ -1032,7 +1032,7 @@ class NFe(DocumentoEletronico):
     def monta_processo(self, edoc, proc_envio, proc_recibo):
         nfe = proc_envio.envio_raiz.find('{' + self._namespace + '}NFe')
         protocolos = proc_recibo.resposta.protNFe
-        if nfe and protocolos:
+        if len(nfe) and protocolos:
             if type(protocolos) != list:
                 protocolos = [protocolos]
             for protocolo in protocolos:

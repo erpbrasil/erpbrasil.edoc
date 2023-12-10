@@ -31,7 +31,18 @@ def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
                       retorno.text.replace('\n', ''))
     if match:
         xml_resposta = match.group(1)
-        resultado = etree.tostring(etree.fromstring(xml_resposta)[0])
+        xml_etree = etree.fromstring(xml_resposta)
+        resultado = xml_etree[0]
+
+        nome_classe = classe.__name__.split(".")[-1]
+        xml_classe_tags = list(filter(
+            lambda children: nome_classe in children.tag,
+            xml_etree.findall(".//")
+        ))
+        if xml_classe_tags:
+            resultado = xml_classe_tags[0]
+
+        resultado = etree.tostring(resultado)
         classe.Validate_simpletypes_ = False
         resposta = classe.parseString(resultado, silence=True)
         return RetornoSoap(operacao, raiz, xml, retorno, resposta)
