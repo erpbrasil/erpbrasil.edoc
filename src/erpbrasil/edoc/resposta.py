@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2018 - TODAY Luis Felipe Mileo - KMEE INFORMATICA LTDA
 # License MIT
 
 import re
-
+from xsdata.formats.dataclass.context import XmlContext
+from xsdata.formats.dataclass.parsers import XmlParser
 from lxml import etree
 
 
@@ -39,6 +39,17 @@ def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
         resposta = classe.parseString(resultado, silence=True)
         return RetornoSoap(operacao, raiz, xml, retorno, resposta)
 
+def analisar_retorno_raw_xsdata(operacao, raiz, xml, retorno, classe):
+    retorno.raise_for_status()
+    match = re.search('<soap:Body>(.*?)</soap:Body>',
+                      retorno.text.replace('\n', ''))
+    if match:
+        xml_resposta = match.group(1)
+        # pega a resposta de dentro do envelope
+        resultado = etree.tostring(etree.fromstring(xml_resposta)[0])
+        parser = XmlParser(context=XmlContext())
+        resposta = parser.from_string(resultado.decode(), classe)
+        return RetornoSoap(operacao, raiz, xml, retorno, resposta)
 
 def analisar_retorno(operacao, raiz, xml, retorno, classe):
     resposta = False

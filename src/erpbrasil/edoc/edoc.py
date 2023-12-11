@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2018 - TODAY Luis Felipe Mileo - KMEE INFORMATICA LTDA
 # License MIT
 
@@ -10,6 +9,9 @@ from datetime import timezone
 from erpbrasil.assinatura.assinatura import Assinatura
 from lxml import etree
 from lxml.etree import _Element
+
+from xsdata.formats.dataclass.serializers import XmlSerializer
+from xsdata.formats.dataclass.serializers.config import SerializerConfig
 
 from .resposta import analisar_retorno_raw
 
@@ -32,6 +34,7 @@ class DocumentoEletronico(ABC):
     Classe abstrata responsavel por definir os metodos e logica das classes
     de transmissao com os webservices.
     """
+    _namespace = False
     _consulta_servico_ao_enviar = False
     _consulta_documento_antes_de_enviar = False
 
@@ -69,6 +72,26 @@ class DocumentoEletronico(ABC):
         output.close()
         return contents, etree.fromstring(contents)
 
+    def render_edoc(self, edoc, pretty_print=False):
+        """
+        Same as _generateds_to_string_etree but for xsdata bindings.
+        """
+        if isinstance(edoc, _Element):
+            return etree.tostring(edoc), edoc
+        if isinstance(edoc, str):
+            return edoc, etree.fromstring(edoc)
+        serializer = XmlSerializer(config=SerializerConfig(pretty_print=pretty_print))
+
+        if self._namespace:
+            ns_map = {None: self._namespace}
+        else:
+            ns_map = None
+
+        xml_string = serializer.render(
+            obj=edoc, ns_map=ns_map
+        )
+        return xml_string, etree.fromstring(xml_string.encode())
+
     def _post(self, raiz, url, operacao, classe):
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         with self._transmissao.cliente(url):
@@ -76,6 +99,16 @@ class DocumentoEletronico(ABC):
                 operacao, xml_etree
             )
             return analisar_retorno_raw(
+                operacao, raiz, xml_string, retorno, classe
+            )
+
+    def _post_xsdata(self, raiz, url, operacao, classe):
+        xml_string, xml_etree = self.render_edoc(raiz)
+        with self._transmissao.cliente(url):
+            retorno = self._transmissao.enviar(
+                operacao, xml_etree
+            )
+            return analisar_retorno_raw_xsdata(
                 operacao, raiz, xml_string, retorno, classe
             )
 
@@ -226,6 +259,13 @@ class DocumentoEletronico(ABC):
         )
         return xml_assinado
         return xml_assinado.replace('\n', '').replace('\r', '')
+
+    def assina_raiz_xsdata(self, raiz, id, getchildren=False):
+        xml_etree = self.render_edoc(raiz)[1]
+        xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
+            xml_etree, id, getchildren
+        )
+        return xml_assinado
 
     def _verifica_servico_em_operacao(self, proc_servico):
         return True
