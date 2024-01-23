@@ -1,3 +1,4 @@
--e git://github.com/akretion/nfelib.git@master_gen_v4_00#egg=nfelib
+-e git+https://github.com/akretion/nfelib.git@master#egg=nfelib
 nfselib.ginfes
 nfselib.issnet
+lxml

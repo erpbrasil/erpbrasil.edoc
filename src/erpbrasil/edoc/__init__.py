@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # See http://peak.telecommunity.com/DevCenter/setuptools#namespace-packages
 # Trecho duplicado para permitir a importação do erpbrasil.edoc.pdf e o
 # erpbrasil.edoc.gen
@@ -8,11 +7,11 @@ except ImportError:
     from pkgutil import extend_path
 
     __path__ = extend_path(__path__, __name__)
-__version__ = '2.7.1'
+__version__ = "2.7.1"
 
 import abc
 
-ABC = abc.ABCMeta('ABC', (object,), {})
+ABC = abc.ABCMeta("ABC", (object,), {})
 
 
 def importar_documento(xml):
