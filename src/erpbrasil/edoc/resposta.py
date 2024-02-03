@@ -21,6 +21,12 @@ def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
     retorno.raise_for_status()
     match = re.search('<soap:Body>(.*?)</soap:Body>',
                       retorno.text.replace('\n', ''))
+
+    # Solução de contorno para estados que não se adequam ao padrão acima.
+    if not match:
+        match = re.search("<env:Body xmlns:env='http://www.w3.org/2003/05/soap-envelope'>(.*?)</env:Body>",
+                          retorno.text.replace('\n', ''))
+
     if match:
         xml_resposta = match.group(1)
         xml_etree = etree.fromstring(xml_resposta)

@@ -70,6 +70,13 @@ class DocumentoEletronico(ABC):
         return contents, etree.fromstring(contents)
 
     def _post(self, raiz, url, operacao, classe):
+
+        # Estado do Paraná é obrigatório que o namespace seja definido tbm na tag NFE
+        if operacao == 'nfeAutorizacaoLote':
+            namespaceNFe = raiz.find(".//{http://www.portalfiscal.inf.br/nfe}NFe")
+            if namespaceNFe is not None:
+                namespaceNFe.set('xmlns', 'http://www.portalfiscal.inf.br/nfe')
+
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         with self._transmissao.cliente(url):
             retorno = self._transmissao.enviar(
