@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from lxml import etree
 from datetime import datetime
 
 from erpbrasil.base import misc
@@ -19,8 +20,6 @@ try:
     from nfselib.barueri import NFeLoteEnviarArquivo
     from nfselib.barueri import NFeLoteStatusArquivo
     from nfselib.barueri import ConsultarNFeRecebidaNumero
-    from nfselib.barueri import exportador
-    from nfselib.barueri import rps
     barueri = True
 except ImportError:
     barueri = False
@@ -67,16 +66,15 @@ class Barueri(NFSe):
     def get_documento_id(self, edoc):
         # edoc.LoteRps.ListaRps.Rps[0].InfRps.Id
         return edoc.LoteRps.Id, edoc.LoteRps.NumeroLote
-    
+        
     def _prepara_envia_documento(self, edoc):
         numero_lote = self._gera_numero_lote()
-        
-        root = ET.Element("NFeLoteEnviarArquivo", xmlns="http://www.barueri.sp.gov.br/nfe")
-        versao_schema = ET.SubElement(root, "VersaoSchema")
+        xml_string, xml_etree = self._generateds_to_string_etree(edoc)
+        root = etree.Element("NFeLoteEnviarArquivo", xmlns="http://www.barueri.sp.gov.br/nfe")
+        versao_schema = etree.SubElement(root, "VersaoSchema")
         versao_schema.text = "1"
-        mensagem_xml = ET.SubElement(root, "MensagemXML")
-        mensagem_xml.text = ET.CDATA(edoc)
-
+        mensagem_xml = etree.SubElement(root, "MensagemXML")
+        mensagem_xml.text = etree.CDATA(xml_string)
         edoc.ApenasValidaArq = 'lote' + numero_lote
         return root
 
