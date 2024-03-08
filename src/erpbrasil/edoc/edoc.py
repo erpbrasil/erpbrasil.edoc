@@ -3,13 +3,16 @@
 # License MIT
 
 import abc
+import warnings
+from dataclasses import is_dataclass
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
-
-from erpbrasil.assinatura.assinatura import Assinatura
 from lxml import etree
 from lxml.etree import _Element
+
+from xsdata.formats.dataclass.serializers import XmlSerializer
+from xsdata.formats.dataclass.serializers.config import SerializerConfig
 
 from .resposta import analisar_retorno_raw
 
@@ -39,13 +42,37 @@ class DocumentoEletronico(ABC):
         self._transmissao = transmissao
 
     def _generateds_to_string_etree(self, ds, pretty_print=False):
+        warnings.warn(
+            "A função `_generateds_to_string_etree` está obsoleta e "
+            "será removida em versões futuras. "
+            "Por favor, substitua o uso desta função por `_render_edoc()`. ",
+            DeprecationWarning
+        )
+        return self._render_edoc(ds, pretty_print)
 
-        if type(ds) == _Element:
-            return etree.tostring(ds), ds
-        if isinstance(ds, str):
-            return ds, etree.fromstring(ds)
-        # if isinstance(ds, unicode):
-        #     return ds, etree.fromstring(ds)
+    def _render_edoc(self, edoc, pretty_print=False):
+
+        if type(edoc) == _Element:
+            return etree.tostring(edoc), edoc
+        if isinstance(edoc, str):
+            return edoc, etree.fromstring(edoc)
+        # if isinstance(edoc, unicode):
+        #     return edoc, etree.fromstring(edoc)
+
+        # XSDATA
+        if is_dataclass(edoc):
+            serializer = XmlSerializer(config=SerializerConfig(pretty_print=pretty_print))
+            if self._namespace:
+                ns_map = {None: self._namespace}
+            else:
+                ns_map = None
+            xml_string = serializer.render(obj=edoc, ns_map=ns_map)
+            return xml_string, etree.fromstring(xml_string.encode('utf-8'))
+
+        # GenereteDS
+        # ======= Aviso de Obsolescência =======
+        # Este bloco de código será removido em uma versão futura.
+        # Certifique-se de atualizar para as alternativas recomendadas.
 
         output = StringIO()
         namespace = False
@@ -53,14 +80,14 @@ class DocumentoEletronico(ABC):
             namespace = 'xmlns="' + self._namespace + '"'
 
         if namespace:
-            ds.export(
+            edoc.export(
                 output,
                 0,
                 pretty_print=pretty_print,
                 namespacedef_=namespace
             )
         else:
-            ds.export(
+            edoc.export(
                 output,
                 0,
                 pretty_print=pretty_print,
@@ -220,7 +247,7 @@ class DocumentoEletronico(ABC):
         return datetime.strftime(datetime.now(), "%Y-%m-%d")
 
     def assina_raiz(self, raiz, id, getchildren=False):
-        xml_string, xml_etree = self._generateds_to_string_etree(raiz)
+        xml_string, xml_etree = self._render_edoc(raiz)
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
             xml_etree, id, getchildren
         )
