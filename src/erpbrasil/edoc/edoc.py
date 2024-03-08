@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2018 - TODAY Luis Felipe Mileo - KMEE INFORMATICA LTDA
 # License MIT
 
 import abc
-from datetime import datetime
-from datetime import timedelta
-from datetime import timezone
+from datetime import datetime, timedelta, timezone
 
-from erpbrasil.assinatura.assinatura import Assinatura
 from lxml import etree
 from lxml.etree import _Element
+
+from erpbrasil.assinatura.assinatura import Assinatura
 
 from .resposta import analisar_retorno_raw
 
@@ -24,7 +22,7 @@ try:
 except ImportError:
     from io import StringIO
 
-ABC = abc.ABCMeta('ABC', (object,), {})
+ABC = abc.ABCMeta("ABC", (object,), {})
 
 
 class DocumentoEletronico(ABC):
@@ -32,15 +30,16 @@ class DocumentoEletronico(ABC):
     Classe abstrata responsavel por definir os metodos e logica das classes
     de transmissao com os webservices.
     """
+
     _consulta_servico_ao_enviar = False
     _consulta_documento_antes_de_enviar = False
 
-    def __init__(self, transmissao):
+    def __init__(self, transmissao, envio_sincrono=False):
         self._transmissao = transmissao
+        self.envio_sincrono = bool(envio_sincrono)
 
     def _generateds_to_string_etree(self, ds, pretty_print=False):
-
-        if type(ds) == _Element:
+        if isinstance(ds, _Element):
             return etree.tostring(ds), ds
         if isinstance(ds, str):
             return ds, etree.fromstring(ds)
@@ -53,12 +52,7 @@ class DocumentoEletronico(ABC):
             namespace = 'xmlns="' + self._namespace + '"'
 
         if namespace:
-            ds.export(
-                output,
-                0,
-                pretty_print=pretty_print,
-                namespacedef_=namespace
-            )
+            ds.export(output, 0, pretty_print=pretty_print, namespacedef_=namespace)
         else:
             ds.export(
                 output,
@@ -72,15 +66,11 @@ class DocumentoEletronico(ABC):
     def _post(self, raiz, url, operacao, classe):
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         with self._transmissao.cliente(url):
-            retorno = self._transmissao.enviar(
-                operacao, xml_etree
-            )
-            return analisar_retorno_raw(
-                operacao, raiz, xml_string, retorno, classe
-            )
+            retorno = self._transmissao.enviar(operacao, xml_etree)
+            return analisar_retorno_raw(operacao, raiz, xml_string, retorno, classe)
 
-    def processar_documento(self, edoc):
-        """ Processar documento executa o envio do documento fiscal de forma
+    def processar_documento(self, edoc, envio_sincrono=False):
+        """Processar documento executa o envio do documento fiscal de forma
         completa ao serviço relacionado, esta é um método padrão que
         segue o seguinte workflow:
 
@@ -143,18 +133,19 @@ class DocumentoEletronico(ABC):
         #
 
         proc_envio = self.envia_documento(edoc)
+        if self.envio_sincrono:
+            self.monta_processo(edoc, proc_envio)
         yield proc_envio
 
-        #
-        # Deu errado?
-        #
-        if not proc_envio.resposta:
-            return
-
-        if not self._verifica_resposta_envio_sucesso(proc_envio):
-            #
-            # Interrompe o processo
-            #
+        # Retorna imediatamente se alguma das condições abaixo for verdadeira:
+        # 1. A resposta do processo de envio é falsa.
+        # 2. A resposta do envio não indica sucesso.
+        # 3. O envio é síncrono (não é necessário consultar o recibo).
+        if (
+            not proc_envio.resposta
+            or not self._verifica_resposta_envio_sucesso(proc_envio)
+            or self.envio_sincrono
+        ):
             return
 
         #
@@ -174,8 +165,10 @@ class DocumentoEletronico(ABC):
         # esteja em processamento
         #
         tentativa = 0
-        while (self._edoc_situacao_em_processamento(proc_recibo) and
-               tentativa < self._maximo_tentativas_consulta_recibo):
+        while (
+            self._edoc_situacao_em_processamento(proc_recibo)
+            and tentativa < self._maximo_tentativas_consulta_recibo
+        ):
             self._aguarda_tempo_medio(proc_envio)
             tentativa += 1
             #
@@ -207,14 +200,15 @@ class DocumentoEletronico(ABC):
         pass
 
     def _gera_numero_lote(self):
-        return datetime.now().strftime('%Y%m%d%H%M%S')
+        return datetime.now().strftime("%Y%m%d%H%M%S")
 
     def _hora_agora(self):
-        FORMAT = '%Y-%m-%dT%H:%M:%S'
+        FORMAT = "%Y-%m-%dT%H:%M:%S"
         # return datetime.today().strftime(FORMAT) + '-00:00'
-        return datetime.strftime(
-            datetime.now(tz=timezone(timedelta(hours=-3))), FORMAT
-        ) + str(timezone(timedelta(hours=-3)))[3:]
+        return (
+            datetime.strftime(datetime.now(tz=timezone(timedelta(hours=-3))), FORMAT)
+            + str(timezone(timedelta(hours=-3)))[3:]
+        )
 
     def _data_hoje(self):
         return datetime.strftime(datetime.now(), "%Y-%m-%d")
@@ -224,7 +218,7 @@ class DocumentoEletronico(ABC):
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
             xml_etree, id, getchildren
         )
-        return xml_assinado.replace('\n', '').replace('\r', '')
+        return xml_assinado.replace("\n", "").replace("\r", "")
 
     def _verifica_servico_em_operacao(self, proc_servico):
         return True

@@ -1,9 +1,5 @@
-# coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import collections
 import time
@@ -18,7 +14,7 @@ except ImportError:
 
 
 ServicoNFSe = collections.namedtuple(
-    'ServicoNFSe', ['operacao', 'endpoint', 'classe_retorno', 'assinar']
+    "ServicoNFSe", ["operacao", "endpoint", "classe_retorno", "assinar"]
 )
 
 
@@ -33,20 +29,19 @@ class NFSe(DocumentoEletronico):
     _edoc_situacao_em_processamento = "TODO"
     _edoc_situacao_servico_em_operacao = "TODO"
 
-    def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador,
-                 im_prestador):
+    def __init__(
+        self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
+    ):
         self.ambiente = ambiente
         self.cidade = cidade_ibge
         self.cnpj_prestador = cnpj_prestador
         self.im_prestador = im_prestador
-        super(NFSe, self).__init__(transmissao)
+        super().__init__(transmissao)
 
     def _post(self, body, servico):
         header_string = None
         if self._header:
-            header_string, header_etree = self._generateds_to_string_etree(
-                self._header
-            )
+            header_string, header_etree = self._generateds_to_string_etree(self._header)
 
         body_string, body_etree = self._generateds_to_string_etree(body)
 
@@ -54,28 +49,26 @@ class NFSe(DocumentoEletronico):
         header = body_etree.find("Cabecalho")
 
         if header and header.attrib:
-            header_string = header.attrib.get('Versao')
+            header_string = header.attrib.get("Versao")
 
         if header_string:
             with self._transmissao.cliente(
-                    urljoin(self._url, servico.endpoint)) as cliente:
+                urljoin(self._url, servico.endpoint)
+            ) as cliente:
                 resposta = cliente.service[servico.operacao](
                     header_string,
                     body_string,
                 )
         else:
             with self._transmissao.cliente(
-                    urljoin(self._url, servico.endpoint)) as cliente:
+                urljoin(self._url, servico.endpoint)
+            ) as cliente:
                 resposta = cliente.service[servico.operacao](
                     body_string,
                 )
 
         return analisar_retorno(
-            servico.operacao,
-            body,
-            body_string,
-            resposta,
-            servico.classe_retorno
+            servico.operacao, body, body_string, resposta, servico.classe_retorno
         )
 
     def _aguarda_tempo_medio(self, proc_envio):
@@ -84,7 +77,7 @@ class NFSe(DocumentoEletronico):
     def envia_documento(self, edoc):
         return self._post(
             body=self._prepara_envia_documento(edoc),
-            servico=self._servicos[self.envia_documento.__name__]
+            servico=self._servicos[self.envia_documento.__name__],
         )
 
     def consulta_recibo(self, proc_envio):

@@ -8,23 +8,14 @@ Overview
     :stub-columns: 1
 
     * - tests
-      - | |travis| |appveyor|
         | |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
 
-.. |travis| image:: https://api.travis-ci.org/erpbrasil/erpbrasil.edoc.svg?branch=master
-    :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/erpbrasil/erpbrasil.edoc
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/erpbrasil/erpbrasil.edoc?branch=master&svg=true
-    :alt: AppVeyor Build Status
-    :target: https://ci.appveyor.com/project/erpbrasil/erpbrasil.edoc
-
 .. |codecov| image:: https://codecov.io/github/erpbrasil/erpbrasil.edoc/coverage.svg?branch=master
     :alt: Coverage Status
-    :target: https://codecov.io/github/erpbrasil/erpbrasil.edoc
+    :target: https://app.codecov.io/github/erpbrasil/erpbrasil.edoc
 
 .. |version| image:: https://img.shields.io/pypi/v/erpbrasil.edoc.svg
     :alt: PyPI Package latest release
@@ -81,6 +72,7 @@ Para permitir que a instalação do seu ERP cresça somente com a necessidade do
 é possível instalar as dependências da biblioteca de forma opcional:
 
 ::
+
     pip install erpbrasil.edoc
 
     # Documentos do Sefaz
