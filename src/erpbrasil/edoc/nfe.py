@@ -717,6 +717,7 @@ METODO_WS = {
 class NFe(DocumentoEletronico):
     _namespace = "http://www.portalfiscal.inf.br/nfe"
     _edoc_situacao_arquivo_recebido_com_sucesso = "103"
+    _edoc_situacao_arquivo_processado_com_sucesso = "104"
     _edoc_situacao_servico_em_operacao = "107"
 
     # Desativado por padrão para evitar 'consumo indevido'
@@ -725,8 +726,16 @@ class NFe(DocumentoEletronico):
 
     _maximo_tentativas_consulta_recibo = 5
 
-    def __init__(self, transmissao, uf, versao="4.00", ambiente="2", mod="55"):
-        super().__init__(transmissao)
+    def __init__(
+        self,
+        transmissao,
+        uf,
+        versao="4.00",
+        ambiente="2",
+        mod="55",
+        envio_sincrono=False,
+    ):
+        super().__init__(transmissao, envio_sincrono)
         self.versao = str(versao)
         self.ambiente = str(ambiente)
         self.uf = int(uf)
@@ -757,6 +766,7 @@ class NFe(DocumentoEletronico):
         )
 
     def consulta_documento(self, chave):
+        # NfeConsultaProtocolo
         raiz = retConsSitNFe.TConsSitNFe(
             versao=self.versao,
             tpAmb=self.ambiente,
@@ -787,14 +797,11 @@ class NFe(DocumentoEletronico):
         raiz = retEnviNFe.TEnviNFe(
             versao=self.versao,
             idLote=datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
-            indSinc="0",
+            indSinc="1" if self.envio_sincrono else "0",
         )
         raiz.original_tagname_ = "enviNFe"
         xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(raiz)
         xml_envio_etree.append(etree.fromstring(xml_assinado))
-
-        # teste_string, teste_etree = self._generateds_to_string_etree(xml_envio_etree)
-
         return self._post(
             xml_envio_etree,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeAutorizacao4/NFeAutorizacao4.asmx?wsdl',
@@ -956,15 +963,18 @@ class NFe(DocumentoEletronico):
         return False
 
     def _verifica_resposta_envio_sucesso(self, proc_envio):
-        if (
-            proc_envio.resposta.cStat
-            == self._edoc_situacao_arquivo_recebido_com_sucesso
-        ):
-            return True
-        return False
+        """
+        Verifica se a resposta do envio indica sucesso:
+        - cStat "103" = "Lote recebido com sucesso" (assíncrono)
+        - cStat "104" = "Lote processado com sucesso" (síncrono)
+        """
+        return proc_envio.resposta.cStat in [
+            self._edoc_situacao_arquivo_recebido_com_sucesso,
+            self._edoc_situacao_arquivo_processado_com_sucesso,
+        ]
 
     def _aguarda_tempo_medio(self, proc_envio):
-        time.sleep(float(proc_envio.resposta.infRec.tMed) * 1.3)
+        time.sleep(float(proc_envio.resposta.infRec.tMed))
 
     def _edoc_situacao_em_processamento(self, proc_recibo):
         if proc_recibo.resposta.cStat == "105":
@@ -1020,9 +1030,14 @@ class NFe(DocumentoEletronico):
             retDistDFeInt,
         )
 
-    def monta_processo(self, edoc, proc_envio, proc_recibo):
+    def monta_processo(self, edoc, proc_envio, proc_recibo=None):
         nfe = proc_envio.envio_raiz.find("{" + self._namespace + "}NFe")
-        protocolos = proc_recibo.resposta.protNFe
+        if proc_recibo:
+            protocolos = proc_recibo.resposta.protNFe
+        else:
+            # A falta do recibo indica envio no modo síncrono
+            # o protocolo é recuperado diretamente da resposta do envio.
+            protocolos = proc_envio.resposta.protNFe
         if len(nfe) and protocolos:
             if not isinstance(protocolos, list):
                 protocolos = [protocolos]
@@ -1035,9 +1050,11 @@ class NFe(DocumentoEletronico):
                 xml_file, nfe_proc = self._generateds_to_string_etree(nfe_proc)
                 prot_nfe = nfe_proc.find("{" + self._namespace + "}protNFe")
                 prot_nfe.addprevious(nfe)
-                proc_recibo.processo = nfe_proc
-                proc_recibo.processo_xml = self._generateds_to_string_etree(nfe_proc)[0]
-                proc_recibo.protocolo = protocolo
+
+                proc = proc_recibo if proc_recibo else proc_envio
+                proc.processo = nfe_proc
+                proc.processo_xml = self._generateds_to_string_etree(nfe_proc)[0]
+                proc.protocolo = protocolo
             return True
 
     def monta_nfe_proc(self, nfe, prot_nfe):

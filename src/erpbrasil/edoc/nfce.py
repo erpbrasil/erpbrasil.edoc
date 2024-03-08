@@ -258,9 +258,9 @@ class NFCe(NFe):
         qrcode_versao="2",
         csc_token=None,
         csc_code=None,
+        envio_sincrono=True,
     ):
-        super().__init__(transmissao, uf, versao, ambiente)
-        self.mod = str(mod)
+        super().__init__(transmissao, uf, versao, ambiente, mod, envio_sincrono)
         self.qrcode_versao = str(qrcode_versao)
         self.csc_token = str(csc_token)
         self.csc_code = str(csc_code)
@@ -333,7 +333,7 @@ class NFCe(NFe):
         raiz = retEnviNFe.TEnviNFe(
             versao=self.versao,
             idLote=datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
-            indSinc="1",
+            indSinc="1" if self.envio_sincrono else "0",
         )
         raiz.original_tagname_ = "enviNFe"
         xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(raiz)
