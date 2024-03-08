@@ -1037,6 +1037,20 @@ class NFe(DocumentoEletronico):
                 proc_recibo.protocolo = protocolo
             return True
 
+    def monta_nfe_proc(self, nfe, prot_nfe):
+        """
+        Constrói e retorna o XML do processo da NF-e,
+        incorporando a NF-e com o seu protocolo de autorização.
+        """
+        nfe_proc = etree.Element(
+            f"{{{self._namespace}}}nfeProc",
+            versao=self.versao,
+            nsmap={None: self._namespace},
+        )
+        nfe_proc.append(nfe)
+        nfe_proc.append(prot_nfe)
+        return etree.tostring(nfe_proc)
+
     def consultar_cadastro(self, uf, cnpj=None, cpf=None, ie=None):
         if not cnpj and not cpf and not ie:
             return
