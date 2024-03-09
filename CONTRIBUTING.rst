@@ -11,7 +11,8 @@ Bug reports
 When `reporting a bug <https://github.com/erpbrasil/erpbrasil.edoc/issues>`_ please include:
 
     * Your operating system name and version.
-    * Any details about your local setup that might be helpful in troubleshooting.
+    * Any details about your local setup that might be helpful
+      in troubleshooting.
     * Detailed steps to reproduce the bug.
 
 Documentation improvements
@@ -30,7 +31,8 @@ If you are proposing a feature:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that code contributions are welcome :)
+* Remember that this is a volunteer-driven project, and that code contributions
+  are welcome :)
 
 Development
 ===========
@@ -64,7 +66,8 @@ To set up `erpbrasil.edoc` for local development:
 Pull Request Guidelines
 -----------------------
 
-If you need some code review or feedback while you're developing the code just make the pull request.
+If you need some code review or feedback while you're developing the code just
+make the pull request.
 
 For merging, you should:
 

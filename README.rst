@@ -49,7 +49,8 @@ Overview
 
 .. end-badges
 
-Emissão de documentos fiscais e outras obrigações (NF-E, NFS-E, MDF-E, CT-E, REINF, E-SOCIAL)
+Emissão de documentos fiscais e outras obrigações
+(NF-E, NFS-E, MDF-E, CT-E, REINF, E-SOCIAL)
 
 
 Documentação
@@ -77,8 +78,8 @@ Licença
 Instalação
 ==========
 
-Para permitir que a instalação do seu ERP cresça somente com a necessidade do cliente
-é possível instalar as dependências da biblioteca de forma opcional:
+Para permitir que a instalação do seu ERP cresça somente com a necessidade
+do cliente é possível instalar as dependências da biblioteca de forma opcional:
 
 ::
     pip install erpbrasil.edoc
