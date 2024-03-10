@@ -1,9 +1,7 @@
-import os
 from contextlib import suppress
 from unittest import TestCase
 
 import vcr
-from erpbrasil.assinatura.certificado import Certificado
 from erpbrasil.base import misc
 from erpbrasil.edoc.provedores.cidades import NFSeFactory
 from erpbrasil.transmissao import TransmissaoSOAP
@@ -26,20 +24,16 @@ with suppress(ImportError):
         tcValores,
     )
 
+from .test_certificate_mixin import TestCertificateMixin
 
-class Tests(TestCase):
+
+class Tests(TestCertificateMixin, TestCase):
     def setUp(self):
-        certificado_nfe_caminho = os.environ.get(
-            "CERTIFICADO_NFE_CAMINHO", "test/fixtures/dummy_cert.pfx"
-        )
-        certificado_nfe_senha = os.environ.get(
-            "CERTIFICADO_NFE_SENHA", "dummy_password"
-        )
-        self.certificado = Certificado(certificado_nfe_caminho, certificado_nfe_senha)
+        super().setUp()
         session = Session()
         session.verify = False
 
-        transmissao = TransmissaoSOAP(self.certificado, session)
+        transmissao = TransmissaoSOAP(self.certificate, session)
 
         self.nfse = NFSeFactory(
             transmissao=transmissao,

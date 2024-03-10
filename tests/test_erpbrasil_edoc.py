@@ -3,9 +3,10 @@ import os
 from unittest import TestCase
 
 import vcr
-from erpbrasil.assinatura.certificado import Certificado
 from erpbrasil.edoc.mde import MDe, TransmissaoMDE
 from requests import Session
+
+from .test_certificate_mixin import TestCertificateMixin
 
 logging.config.dictConfig(
     {
@@ -31,42 +32,38 @@ logging.config.dictConfig(
 VALID_CSTAT_LIST = ["137", "138"]
 
 
-class Tests(TestCase):
+class Tests(TestCertificateMixin, TestCase):
     """Rodar este teste muitas vezes pode bloquear o seu IP"""
 
     def setUp(self):
-        certificado_nfe_caminho = os.environ.get(
-            "CERTIFICADO_NFE_CAMINHO", "test/fixtures/dummy_cert.pfx"
-        )
-        certificado_nfe_senha = os.environ.get(
-            "CERTIFICADO_NFE_SENHA", "dummy_password"
-        )
-        self.certificado = Certificado(certificado_nfe_caminho, certificado_nfe_senha)
-
+        super().setUp()
         self.chave = os.environ.get(
-            "CHNFE", "35200309091076000144550010001807401003642343"
+            "CHAVE_NFE", "35200309091076000144550010001807401003642343"
         )
-
         session = Session()
         session.verify = False
 
-        transmissao = TransmissaoMDE(self.certificado, session)
+        transmissao = TransmissaoMDE(self.certificate, session)
         self.mde = MDe(transmissao, "35", versao="1.01", ambiente="1")
 
-    @vcr.use_cassette("tests/fixtures/vcr_cassettes/test_ultimo_nsu.yaml")
-    def test_ultimo_nsu(self):
+    @vcr.use_cassette(
+        "tests/fixtures/vcr_cassettes/test_nsu_especifico.yaml",
+    )
+    def test_nsu_especifico(self):
         ret = self.mde.consultar_distribuicao(
-            cnpj_cpf=self.certificado.cnpj_cpf,
-            ultimo_nsu="1".zfill(15),
+            cnpj_cpf=self.certificate.cnpj_cpf,
+            nsu_especifico="16172".zfill(15),
         )
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
-    @vcr.use_cassette("tests/fixtures/vcr_cassettes/test_nsu_especifico.yaml")
-    def test_nsu_especifico(self):
+    @vcr.use_cassette(
+        "tests/fixtures/vcr_cassettes/test_ultimo_nsu.yaml",
+    )
+    def test_ultimo_nsu(self):
         ret = self.mde.consultar_distribuicao(
-            cnpj_cpf=self.certificado.cnpj_cpf,
-            nsu_especifico="1".zfill(15),
+            cnpj_cpf=self.certificate.cnpj_cpf,
+            ultimo_nsu="0".zfill(15),
         )
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
@@ -74,14 +71,7 @@ class Tests(TestCase):
     @vcr.use_cassette("tests/fixtures/vcr_cassettes/test_chave.yaml")
     def test_chave(self):
         ret = self.mde.consultar_distribuicao(
-            cnpj_cpf=self.certificado.cnpj_cpf, chave=self.chave
+            cnpj_cpf=self.certificate.cnpj_cpf, chave=self.chave
         )
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
-
-
-t = Tests()
-t.setUp()
-t.test_ultimo_nsu()
-t.test_nsu_especifico()
-t.test_chave()
