@@ -8,19 +8,10 @@ Overview
     :stub-columns: 1
 
     * - tests
-      - | |travis| |appveyor|
-        | |codecov|
+      - |codecov|
     * - package
-      - | |version| |wheel| |supported-versions| |supported-implementations|
-        | |commits-since|
-
-.. |travis| image:: https://api.travis-ci.org/erpbrasil/erpbrasil.edoc.svg?branch=master
-    :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/erpbrasil/erpbrasil.edoc
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/erpbrasil/erpbrasil.edoc?branch=master&svg=true
-    :alt: AppVeyor Build Status
-    :target: https://ci.appveyor.com/project/erpbrasil/erpbrasil.edoc
+      - |version| |wheel| |supported-versions| |supported-implementations|
+        |commits-since|
 
 .. |codecov| image:: https://codecov.io/github/erpbrasil/erpbrasil.edoc/coverage.svg?branch=master
     :alt: Coverage Status
@@ -61,7 +52,7 @@ https://erpbrasil.github.io/
 Créditos
 ========
 
-Esta é uma biblioteca criada atravês do esforço de das empresas:
+Esta é uma biblioteca criada através do esforço das empresas:
 
 * Akretion https://akretion.com/pt-BR/
 * KMEE https://www.kmee.com.br
@@ -82,6 +73,7 @@ Para permitir que a instalação do seu ERP cresça somente com a necessidade
 do cliente é possível instalar as dependências da biblioteca de forma opcional:
 
 ::
+
     pip install erpbrasil.edoc
 
     # Documentos do Sefaz
