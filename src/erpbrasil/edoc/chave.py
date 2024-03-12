@@ -1,9 +1,8 @@
-# coding=utf-8
 # Copyright (C) 2019  Luis Felipe Mileo - mileo at kmee com br
 
 # Python 3 compatibility hack
 try:
-    unicode('')
+    unicode("")
 except NameError:
     unicode = str
 
@@ -11,7 +10,7 @@ import datetime
 import hashlib
 
 
-class ChaveNFSeDSF(object):
+class ChaveNFSeDSF:
     """Representa a **chave de acesso** da NFS-e-DSF conforme descrito na
     Especificação da Assinatura, pagina 9. Os campos são definidos assim:
     .. sourcecode:: text                     39
@@ -29,7 +28,7 @@ class ChaveNFSeDSF(object):
         |         |     Número RPS
         |         Serie RPS
         Inscrição Municipal
-    """
+    """  # noqa: E501
 
     IM = slice(0, 11)
 
@@ -62,13 +61,13 @@ class ChaveNFSeDSF(object):
             self.chave = chave
 
     def __repr__(self):
-        return '{:s}({!r})'.format(self.__class__.__name__, str(self))
+        return f"{self.__class__.__name__:s}({str(self)!r})"
 
     def __unicode__(self):
         return self._campos
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
+        return unicode(self).encode("utf-8")
 
     @property
     def inscricao_municipal(self):
@@ -96,12 +95,12 @@ class ChaveNFSeDSF(object):
 
     @property
     def data(self):
-        return self._data.strftime('%Y%m%d')
+        return self._data.strftime("%Y%m%d")
 
     @data.setter
     def data(self, value):
-        if isinstance(value, str) or isinstance(value, unicode):
-            self._data = datetime.datetime.strptime(value, '%Y%m%d')
+        if isinstance(value, str):
+            self._data = datetime.datetime.strptime(value, "%Y%m%d")
         elif isinstance(value, datetime.datetime):
             self._data = value
 
@@ -139,17 +138,17 @@ class ChaveNFSeDSF(object):
 
     @valor_servico.setter
     def valor_servico(self, value):
-        if isinstance(value, str) or isinstance(value, unicode):
+        if isinstance(value, str):
             self._valor_servico = value
         elif isinstance(value, float):
-            self._valor_servico = str(value).replace('.', '')
+            self._valor_servico = str(value).replace(".", "")
 
     @valor_deducao.setter
     def valor_deducao(self, value):
-        if isinstance(value, str) or isinstance(value, unicode):
+        if isinstance(value, str):
             self._valor_deducao = value
-        elif isinstance(value, float) or isinstance(value, int):
-            self._valor_deducao = str(value).replace('.', '')
+        elif isinstance(value, (float, int)):
+            self._valor_deducao = str(value).replace(".", "")
 
     @property
     def codigo_atividade(self):
@@ -170,17 +169,17 @@ class ChaveNFSeDSF(object):
     @property
     def chave(self):
         chave = (
-            self.inscricao_municipal +
-            self.serie +
-            self.numero +
-            self.data +
-            self.tributacao +
-            self.situacao +
-            self.tipo_recolhimento +
-            self.valor_servico +
-            self.valor_deducao +
-            self.codigo_atividade +
-            self.cpf_cnpj
+            self.inscricao_municipal
+            + self.serie
+            + self.numero
+            + self.data
+            + self.tributacao
+            + self.situacao
+            + self.tipo_recolhimento
+            + self.valor_servico
+            + self.valor_deducao
+            + self.codigo_atividade
+            + self.cpf_cnpj
         )
         return chave
 

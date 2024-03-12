@@ -54,4 +54,3 @@ Changelog
 ~~~~~~~~~~~~~~~~~~
 
 - Nota Paulistana
-

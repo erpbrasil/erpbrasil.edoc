@@ -1,66 +1,60 @@
-# coding=utf-8
 # Copyright (C) 2020 - KMEE
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import re
 
-from erpbrasil.transmissao import TransmissaoSOAP
 from lxml import etree
 
-from erpbrasil.edoc.nfe import NFe
-from erpbrasil.edoc.nfe import localizar_url
+from erpbrasil.edoc.nfe import NFe, localizar_url
 from erpbrasil.edoc.resposta import RetornoSoap
+from erpbrasil.transmissao import TransmissaoSOAP
 
 try:
     from nfelib.v4_00 import retEnvConfRecebto
-    from nfelib.v4_00.retEnvConfRecebto import TEnvEvento as TEnvEventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import TEnvEvento as TEnvEventoManifestacao
     from nfelib.v4_00.retEnvConfRecebto import TEvento as TEventoManifestacao  # noga
-    from nfelib.v4_00.retEnvConfRecebto import descEventoType as descEventoManifestacao  # noga
-    from nfelib.v4_00.retEnvConfRecebto import detEventoType as detEventoManifestacao  # noga
-    from nfelib.v4_00.retEnvConfRecebto import infEventoType as infEventoManifestacao  # noga
-    from nfelib.v4_00.retEnvConfRecebto import tpEventoType as eventoManifestacao  # noga
+    from nfelib.v4_00.retEnvConfRecebto import descEventoType as descEventoManifestacao
+    from nfelib.v4_00.retEnvConfRecebto import detEventoType as detEventoManifestacao
+    from nfelib.v4_00.retEnvConfRecebto import infEventoType as infEventoManifestacao
+    from nfelib.v4_00.retEnvConfRecebto import tpEventoType as eventoManifestacao
 except ImportError:
     pass
 
-WS_NFE_RECEPCAO_EVENTO = 'RecepcaoEvento'
+WS_NFE_RECEPCAO_EVENTO = "RecepcaoEvento"
 
 SIGLA_ESTADO = {
-    '12': 'AC',
-    '27': 'AL',
-    '13': 'AM',
-    '16': 'AP',
-    '29': 'BA',
-    '23': 'CE',
-    '53': 'DF',
-    '32': 'ES',
-    '52': 'GO',
-    '21': 'MA',
-    '31': 'MG',
-    '50': 'MS',
-    '51': 'MT',
-    '15': 'PA',
-    '25': 'PB',
-    '26': 'PE',
-    '22': 'PI',
-    '41': 'PR',
-    '33': 'RJ',
-    '24': 'RN',
-    '11': 'RO',
-    '14': 'RR',
-    '43': 'RS',
-    '42': 'SC',
-    '28': 'SE',
-    '35': 'SP',
-    '17': 'TO',
-    '91': 'AN'
+    "12": "AC",
+    "27": "AL",
+    "13": "AM",
+    "16": "AP",
+    "29": "BA",
+    "23": "CE",
+    "53": "DF",
+    "32": "ES",
+    "52": "GO",
+    "21": "MA",
+    "31": "MG",
+    "50": "MS",
+    "51": "MT",
+    "15": "PA",
+    "25": "PB",
+    "26": "PE",
+    "22": "PI",
+    "41": "PR",
+    "33": "RJ",
+    "24": "RN",
+    "11": "RO",
+    "14": "RR",
+    "43": "RS",
+    "42": "SC",
+    "28": "SE",
+    "35": "SP",
+    "17": "TO",
+    "91": "AN",
 }
 
 
 class MDe(NFe):
-
     # ----------------------------- MANIFESTAÇÃO DO DESTINATÁRIO -----------------
 
     def nfe_recepcao_envia_lote_evento(self, lista_eventos, numero_lote=False):
@@ -75,23 +69,21 @@ class MDe(NFe):
             numero_lote = self._gera_numero_lote()
 
         eventos = []
-        raiz = TEnvEventoManifestacao(
-            versao="1.00",
-            idLote=numero_lote,
-            evento=eventos
-        )
-        raiz.original_tagname_ = 'envEvento'
+        raiz = TEnvEventoManifestacao(versao="1.00", idLote=numero_lote, evento=eventos)
+        raiz.original_tagname_ = "envEvento"
         xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(raiz)
 
         for raiz_evento in lista_eventos:
             evento = TEventoManifestacao(
-                versao="1.00", infEvento=raiz_evento,
+                versao="1.00",
+                infEvento=raiz_evento,
             )
-            evento.original_tagname_ = 'evento'
+            evento.original_tagname_ = "evento"
 
             # Recupera o evento do XML assinado
-            xml_assinado = self.assina_raiz(evento, evento.infEvento.Id
-                                            ).replace('\n', '').encode()
+            xml_assinado = (
+                self.assina_raiz(evento, evento.infEvento.Id).replace("\n", "").encode()
+            )
 
             xml_envio_etree.append(etree.fromstring(xml_assinado))
 
@@ -108,14 +100,16 @@ class MDe(NFe):
 
         return self._post(
             xml_envio_etree,
-            localizar_url(WS_NFE_RECEPCAO_EVENTO, str(91), self.mod,
-                          int(self.ambiente)),
-            'nfeRecepcaoEventoNF',
-            retEnvConfRecebto
+            localizar_url(
+                WS_NFE_RECEPCAO_EVENTO, str(91), self.mod, int(self.ambiente)
+            ),
+            "nfeRecepcaoEventoNF",
+            retEnvConfRecebto,
         )
 
-    def nfe_recepcao_monta_evento(self, chave, cnpj_cpf, tpEvento, descEvento,
-                                  dhEvento=None, xJust=None):
+    def nfe_recepcao_monta_evento(
+        self, chave, cnpj_cpf, tpEvento, descEvento, dhEvento=None, xJust=None
+    ):
         """
         Método para montar o evento(infEvento) da manifestação
         :param chave: chave do documento
@@ -136,9 +130,9 @@ class MDe(NFe):
         :return: Um objeto da classe confRecebto.infEventoType preenchido
         """
 
-        nSeqEvento = '1'
+        nSeqEvento = "1"
         raiz = infEventoManifestacao(
-            Id='ID{}{}{}'.format(tpEvento, chave, nSeqEvento.zfill(2)),
+            Id=f"ID{tpEvento}{chave}{nSeqEvento.zfill(2)}",
             cOrgao=91,
             tpAmb=self.ambiente,
             CNPJ=cnpj_cpf if len(cnpj_cpf) > 11 else None,
@@ -147,15 +141,13 @@ class MDe(NFe):
             dhEvento=dhEvento or self._hora_agora(),
             tpEvento=tpEvento,
             nSeqEvento=nSeqEvento,
-            verEvento='1.00',
+            verEvento="1.00",
             detEvento=detEventoManifestacao(
-                versao='1.00',
-                descEvento=descEvento,
-                xJust=xJust
-            )
+                versao="1.00", descEvento=descEvento, xJust=xJust
+            ),
         )
 
-        raiz.original_tagname_ = 'infEvento'
+        raiz.original_tagname_ = "infEvento"
 
         return raiz
 
@@ -179,14 +171,15 @@ class MDe(NFe):
         """
 
         evento = self.nfe_recepcao_monta_evento(
-            chave, cnpj_cpf, tpEvento, descEvento, xJust=xJust)
+            chave, cnpj_cpf, tpEvento, descEvento, xJust=xJust
+        )
 
         # TODO: Verificar possibilidade de adaptar e utilizar código existente
         #  em self.enviar_lote_evento(lista_eventos=[evento]).
         #  A única diferença é a classe utilizada pelo evento
 
         return self.nfe_recepcao_envia_lote_evento(
-            lista_eventos=[evento], numero_lote='1'
+            lista_eventos=[evento], numero_lote="1"
         )
 
     def confirmacao_da_operacao(self, chave, cnpj_cpf):
@@ -219,7 +212,7 @@ class MDe(NFe):
             cnpj_cpf,
             eventoManifestacao._2_10240,
             descEventoManifestacao.OPERACAONAO_REALIZADA,
-            xJust=''.zfill(15)
+            xJust="".zfill(15),
         )
 
     def analisar_retorno_raw(self, operacao, raiz, xml, retorno, classe):
@@ -228,8 +221,9 @@ class MDe(NFe):
         do XML da resposta.
         """
         retorno.raise_for_status()
-        match = re.search('<soap:Body>(.*?)</soap:Body>',
-                          retorno.text.replace('\n', ''))
+        match = re.search(
+            "<soap:Body>(.*?)</soap:Body>", retorno.text.replace("\n", "")
+        )
         if match:
             xml_resposta = match.group(1)
             xml = etree.fromstring(xml_resposta)[0]
@@ -246,15 +240,13 @@ class MDe(NFe):
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         with self._transmissao.cliente(url):
             # Recupera a sigla do estado
-            uf_list = [uf for nUF, uf in SIGLA_ESTADO.items() if
-                       nUF == str(getattr(raiz, 'cUFAutor', ''))]
-            if uf_list:
-                kwargs = dict(uf=uf_list and uf_list[0])
-            else:
-                kwargs = {}
-            retorno = self._transmissao.enviar(
-                operacao, xml_etree, **kwargs
-            )
+            uf_list = [
+                uf
+                for nUF, uf in SIGLA_ESTADO.items()
+                if nUF == str(getattr(raiz, "cUFAutor", ""))
+            ]
+            kwargs = {"uf": uf_list[0]} if uf_list else {}
+            retorno = self._transmissao.enviar(operacao, xml_etree, **kwargs)
             return self.analisar_retorno_raw(
                 operacao, raiz, xml_string, retorno, classe
             )
@@ -263,57 +255,51 @@ class MDe(NFe):
 class TransmissaoMDE(TransmissaoSOAP):
     def interpretar_mensagem(self, mensagem, **kwargs):
         # TODO: Finalizar refatoração
-        if type(mensagem) == str:
-            return etree.fromstring(mensagem, parser=etree.XMLParser(
-                remove_blank_text=True
-            ))
+        if isinstance(mensagem, str):
+            return etree.fromstring(
+                mensagem, parser=etree.XMLParser(remove_blank_text=True)
+            )
 
-        operacao = kwargs.get('operacao', '')
-        uf = kwargs.get('uf', '')
+        operacao = kwargs.get("operacao", "")
+        uf = kwargs.get("uf", "")
 
         if operacao and uf:
             _soapheaders = []
-            xmlns = 'http://www.portalfiscal.inf.br/nfe/wsdl/'
+            xmlns = "http://www.portalfiscal.inf.br/nfe/wsdl/"
 
-            if 'distDFeInt' in mensagem.tag:
-                mensagem = dict(nfeDadosMsg=mensagem)
-            elif 'TEnvEvento' in mensagem.tag:
-                xmlns += 'NFeRecepcaoEvento4'
-                mensagem = dict(nfeCabecMsg=mensagem)
-            elif operacao == 'nfeRecepcaoEvento' and 'consStatServ' in mensagem.tag:
-                xmlns += 'RecepcaoEvento'
-                mensagem = dict(mensagem=mensagem)
+            if "distDFeInt" in mensagem.tag:
+                mensagem = {"nfeDadosMsg": mensagem}
+            elif "TEnvEvento" in mensagem.tag:
+                xmlns += "NFeRecepcaoEvento4"
+                mensagem = {"nfeCabecMsg": mensagem}
+            elif operacao == "nfeRecepcaoEvento" and "consStatServ" in mensagem.tag:
+                xmlns += "RecepcaoEvento"
+                mensagem = {"mensagem": mensagem}
 
             if isinstance(mensagem, dict):
-                header_str = \
-                    '<nfeCabecMsg xmlns="{}">' \
-                    '<cUF>{}</cUF>' \
-                    '<versaoDados>{}</versaoDados>' \
-                    '</nfeCabecMsg>'.format(
-                        xmlns, uf, mensagem.get('versao', '1.00'))
+                header_str = (
+                    '<nfeCabecMsg xmlns="{}">'
+                    "<cUF>{}</cUF>"
+                    "<versaoDados>{}</versaoDados>"
+                    "</nfeCabecMsg>".format(xmlns, uf, mensagem.get("versao", "1.00"))
+                )
 
                 _soapheaders.append(etree.fromstring(header_str))
-                mensagem['_soapheaders'] = _soapheaders
+                mensagem["_soapheaders"] = _soapheaders
 
         return mensagem
 
     def enviar(self, operacao, mensagem, **kwargs):
-
-        kwargs['operacao'] = operacao
+        kwargs["operacao"] = operacao
         mensagem = self.interpretar_mensagem(mensagem, **kwargs)
         with self._cliente.settings(raw_response=self.raw_response):
             if isinstance(mensagem, dict):
                 # TODO: Remover necessidade desse IF
-                if operacao == 'nfeRecepcaoEvento' and 'consStatServ' in mensagem.tag:
+                if operacao == "nfeRecepcaoEvento" and "consStatServ" in mensagem.tag:
                     return self._cliente.service[operacao](
-                        mensagem,
-                        _soapheaders=mensagem.get('_soapheaders')
+                        mensagem, _soapheaders=mensagem.get("_soapheaders")
                     )
 
                 # TODO: Juntar dois retornos em um
-                return self._cliente.service[operacao](
-                    **mensagem
-                )
-            return self._cliente.service[operacao](
-                mensagem
-            )
+                return self._cliente.service[operacao](**mensagem)
+            return self._cliente.service[operacao](mensagem)

@@ -1,20 +1,17 @@
-# coding=utf-8
 # Copyright (C) 2023 Ygor de Carvalho - KMEE
 
+import binascii
 import datetime
 import hashlib
 import xml.etree.ElementTree as ET
-import binascii
+from contextlib import suppress
 
 from lxml import etree
 
-from erpbrasil.edoc.nfe import SIGLA_ESTADO, NFe, localizar_url, WS_NFE_AUTORIZACAO
+from erpbrasil.edoc.nfe import SIGLA_ESTADO, WS_NFE_AUTORIZACAO, NFe, localizar_url
 
-try:
+with suppress(ImportError):
     from nfelib.v4_00 import retEnviNFe
-    from nfelib.v4_00.retEnviNFe import infNFeSuplType
-except ImportError:
-    pass
 
 
 NFCE_AMBIENTE_PRODUCAO = "1"
@@ -249,10 +246,19 @@ NAMESPACES = {
 
 
 class NFCe(NFe):
-    _edoc_situacao_arquivo_recebido_com_sucesso = '104'
+    _edoc_situacao_arquivo_recebido_com_sucesso = "104"
 
-    def __init__(self, transmissao, uf, versao="4.00", ambiente="2", mod="65",
-                 qrcode_versao="2", csc_token=None, csc_code=None):
+    def __init__(
+        self,
+        transmissao,
+        uf,
+        versao="4.00",
+        ambiente="2",
+        mod="65",
+        qrcode_versao="2",
+        csc_token=None,
+        csc_code=None,
+    ):
         super().__init__(transmissao, uf, versao, ambiente)
         self.mod = str(mod)
         self.qrcode_versao = str(qrcode_versao)
@@ -273,7 +279,10 @@ class NFCe(NFe):
         return hash_object.hexdigest().upper()
 
     def _build_qrcode(self, pre_qrcode, qr_hash):
-        return f"{ESTADO_QRCODE[SIGLA_ESTADO[str(self.uf)]][self.ambiente]}{pre_qrcode}|{qr_hash}"
+        return (
+            f"{ESTADO_QRCODE[SIGLA_ESTADO[str(self.uf)]][self.ambiente]}"
+            f"{pre_qrcode}|{qr_hash}"
+        )
 
     @property
     def consulta_qrcode_url(self):
@@ -283,11 +292,19 @@ class NFCe(NFe):
         xml = ET.fromstring(xml_assinado)
         chave_nfce = edoc.infNFe.Id.replace("NFe", "")
         data_emissao = edoc.infNFe.ide.dhEmi[8:10]
-        total_nfe = xml.find(".//nfe:total/nfe:ICMSTot/nfe:vNF", namespaces=NAMESPACES).text
-        digest_value = xml.find('.//ds:DigestValue', namespaces=NAMESPACES).text
+        total_nfe = xml.find(
+            ".//nfe:total/nfe:ICMSTot/nfe:vNF", namespaces=NAMESPACES
+        ).text
+        digest_value = xml.find(".//ds:DigestValue", namespaces=NAMESPACES).text
         digest_value_hex = binascii.hexlify(digest_value.encode()).decode()
-        pre_qrcode_witouth_csc = f"{chave_nfce}|{self.qrcode_versao}|{self.ambiente}|{data_emissao}|{total_nfe}|{digest_value_hex}|{self.csc_token}"
-        pre_qrcode = f"{chave_nfce}|{self.qrcode_versao}|{self.ambiente}|{data_emissao}|{total_nfe}|{digest_value_hex}|{self.csc_token}{self.csc_code}"
+        pre_qrcode_witouth_csc = (
+            f"{chave_nfce}|{self.qrcode_versao}|{self.ambiente}|{data_emissao}"
+            f"|{total_nfe}|{digest_value_hex}|{self.csc_token}"
+        )
+        pre_qrcode = (
+            f"{chave_nfce}|{self.qrcode_versao}|{self.ambiente}|{data_emissao}"
+            f"|{total_nfe}|{digest_value_hex}|{self.csc_token}{self.csc_code}"
+        )
         qr_hash = self._compute_qr_hash(pre_qrcode)
         return self._build_qrcode(pre_qrcode_witouth_csc, qr_hash)
 
@@ -307,7 +324,7 @@ class NFCe(NFe):
         #   in the signature with Sefaz.
 
         root = ET.fromstring(xml_assinado)
-        tp_emis = root.find('.//nfe:tpEmis', namespaces=NAMESPACES).text
+        tp_emis = root.find(".//nfe:tpEmis", namespaces=NAMESPACES).text
 
         if tp_emis != "1":
             self._update_qrcode_nfce_contingency(edoc, xml_assinado)
@@ -315,21 +332,20 @@ class NFCe(NFe):
 
         raiz = retEnviNFe.TEnviNFe(
             versao=self.versao,
-            idLote=datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
-            indSinc='1'
+            idLote=datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
+            indSinc="1",
         )
-        raiz.original_tagname_ = 'enviNFe'
-        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(
-            raiz
-        )
+        raiz.original_tagname_ = "enviNFe"
+        xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(raiz)
         xml_envio_etree.append(etree.fromstring(xml_assinado))
 
         return self._post(
             xml_envio_etree,
-            localizar_url(WS_NFE_AUTORIZACAO, str(self.uf), self.mod,
-                          int(self.ambiente)),
-            'nfeAutorizacaoLote',
-            retEnviNFe
+            localizar_url(
+                WS_NFE_AUTORIZACAO, str(self.uf), self.mod, int(self.ambiente)
+            ),
+            "nfeAutorizacaoLote",
+            retEnviNFe,
         )
 
     def _aguarda_tempo_medio(self, proc_envio):
