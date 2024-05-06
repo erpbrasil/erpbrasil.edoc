@@ -166,6 +166,7 @@ SVAN = {
 SVC_AN = {
     AMBIENTE_PRODUCAO: {
         "servidor": "www.svc.fazenda.gov.br",
+        WS_NFE_INUTILIZACAO: "NFeInutilizacao4/NFeInutilizacao4.asmx?wsdl",
         WS_NFE_CONSULTA: "NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl",  # noqa
         WS_NFE_SITUACAO: "NFeStatusServico4/NFeStatusServico4.asmx?wsdl",
         WS_NFE_RECEPCAO_EVENTO: "NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?wsdl",  # noqa
@@ -173,7 +174,8 @@ SVC_AN = {
         WS_NFE_RET_AUTORIZACAO: "NFeRetAutorizacao4/NFeRetAutorizacao4.asmx?wsdl",  # noqa
     },
     AMBIENTE_HOMOLOGACAO: {
-        "servidor": "hom.svc.fazenda.gov.br",
+        "servidor": "hom.sefazvirtual.fazenda.gov.br",
+        WS_NFE_INUTILIZACAO: "NFeInutilizacao4/NFeInutilizacao4.asmx?wsdl",
         WS_NFE_CONSULTA: "NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl",  # noqa
         WS_NFE_SITUACAO: "NFeStatusServico4/NFeStatusServico4.asmx?wsdl",
         WS_NFE_RECEPCAO_EVENTO: "NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?wsdl",  # noqa
@@ -644,41 +646,49 @@ UFSP = {
     },
 }
 
+
+# Dicionário `ESTADO_WS` mapeia unidade federativa (UF) para uma tupla contendo
+# o serviço de webservices (WS) normal e o serviço de contingência.
+# Cada chave é uma sigla de UF e cada valor é uma tupla (servico_normal,
+# servico_contingencia). Exceção para a chave `AN` que representa o órgão de
+# Ambiente Nacional e não uma UF.
 ESTADO_WS = {
-    "AC": SVRS,
-    "AL": SVRS,
-    "AM": UFAM,
-    "AP": SVRS,
-    "BA": UFBA,
-    "CE": UFCE,
-    "DF": SVRS,
-    "ES": SVRS,
-    "GO": UFGO,
-    "MA": SVAN,
-    "MG": UFMG,
-    "MS": UFMS,
-    "MT": UFMT,
-    "PA": SVRS,
-    "PB": SVRS,
-    "PE": UFPE,
-    "PI": SVRS,
-    "PR": UFPR,
-    "RJ": SVRS,
-    "RN": SVRS,
-    "RO": SVRS,
-    "RR": SVRS,
-    "RS": UFRS,
-    "SC": SVRS,
-    "SE": SVRS,
-    "SP": UFSP,
-    "TO": SVRS,
-    "AN": AN,
+    "AC": (SVRS, SVC_AN),
+    "AL": (SVRS, SVC_AN),
+    "AM": (UFAM, SVC_RS),
+    "AP": (SVRS, SVC_AN),
+    "BA": (UFBA, SVC_RS),
+    "CE": (UFCE, SVC_AN),
+    "DF": (SVRS, SVC_AN),
+    "ES": (SVRS, SVC_AN),
+    "GO": (UFGO, SVC_RS),
+    "MA": (SVAN, SVC_RS),
+    "MG": (UFMG, SVC_AN),
+    "MS": (UFMS, SVC_RS),
+    "MT": (UFMT, SVC_RS),
+    "PA": (SVRS, SVC_AN),
+    "PB": (SVRS, SVC_AN),
+    "PE": (UFPE, SVC_RS),
+    "PI": (SVRS, SVC_RS),
+    "PR": (UFPR, SVC_RS),
+    "RJ": (SVRS, SVC_AN),
+    "RN": (SVRS, SVC_AN),
+    "RO": (SVRS, SVC_AN),
+    "RR": (SVRS, SVC_AN),
+    "RS": (UFRS, SVC_AN),
+    "SC": (SVRS, SVC_AN),
+    "SE": (SVRS, SVC_AN),
+    "SP": (UFSP, SVC_AN),
+    "TO": (SVRS, SVC_AN),
+    "AN": (AN, AN),
 }
 
 
-def localizar_url(servico, estado, mod="55", ambiente=2):
+def localizar_url(servico, estado, mod="55", ambiente=2, contingencia=False):
     sigla = SIGLA_ESTADO[estado]
-    ws = ESTADO_WS[sigla]
+
+    ws_normal, ws_contingencia = ESTADO_WS[sigla]
+    ws = ws_contingencia if contingencia else ws_normal
 
     if servico in (WS_DFE_DISTRIBUICAO, WS_DOWNLOAD_NFE):
         ws = AN
@@ -734,17 +744,36 @@ class NFe(DocumentoEletronico):
         ambiente="2",
         mod="55",
         envio_sincrono=False,
+        contingencia=False,
     ):
         super().__init__(transmissao, envio_sincrono)
         self.versao = str(versao)
         self.ambiente = str(ambiente)
         self.uf = int(uf)
         self.mod = str(mod)
+        self.contingencia = contingencia
 
     def _edoc_situacao_ja_enviado(self, proc_consulta):
         if proc_consulta.resposta.cStat in ("100", "110", "150", "301", "302"):
             return True
         return False
+
+    def _get_ws_endpoint(self, service):
+        """
+        Obtém o endpoint de um webservice específico.
+
+        Esta função localiza a URL do endpoint para um dado serviço,
+        utilizando atributos da instância como a unidade federativa (UF),
+        o modelo (mod), o ambiente e a contingência.
+        """
+        endpoint = localizar_url(
+            service,
+            str(self.uf),
+            self.mod,
+            int(self.ambiente),
+            self.contingencia,
+        )
+        return endpoint
 
     def get_documento_id(self, edoc):
         return edoc.infNFe.Id[:3], edoc.infNFe.Id[3:]
@@ -760,7 +789,7 @@ class NFe(DocumentoEletronico):
         return self._post(
             raiz,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeStatusServico4/NFeStatusServico4.asmx?wsdl',
-            localizar_url(WS_NFE_SITUACAO, str(self.uf), self.mod, int(self.ambiente)),
+            self._get_ws_endpoint(WS_NFE_SITUACAO),
             "nfeStatusServicoNF",
             retConsStatServ,
         )
@@ -777,7 +806,7 @@ class NFe(DocumentoEletronico):
         return self._post(
             raiz,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx?wsdl',
-            localizar_url(WS_NFE_CONSULTA, str(self.uf), self.mod, int(self.ambiente)),
+            self._get_ws_endpoint(WS_NFE_CONSULTA),
             "nfeConsultaNF",
             retConsSitNFe,
         )
@@ -805,9 +834,7 @@ class NFe(DocumentoEletronico):
         return self._post(
             xml_envio_etree,
             # 'https://hom.sefazvirtual.fazenda.gov.br/NFeAutorizacao4/NFeAutorizacao4.asmx?wsdl',
-            localizar_url(
-                WS_NFE_AUTORIZACAO, str(self.uf), self.mod, int(self.ambiente)
-            ),
+            self._get_ws_endpoint(WS_NFE_AUTORIZACAO),
             "nfeAutorizacaoLote",
             retEnviNFe,
         )
@@ -822,9 +849,7 @@ class NFe(DocumentoEletronico):
 
         return self._post(
             xml_envio_etree,
-            localizar_url(
-                WS_NFE_INUTILIZACAO, str(self.uf), self.mod, int(self.ambiente)
-            ),
+            self._get_ws_endpoint(WS_NFE_INUTILIZACAO),
             "nfeInutilizacaoNF",
             retInutNFe,
         )
@@ -844,9 +869,7 @@ class NFe(DocumentoEletronico):
         raiz.original_tagname_ = "consReciNFe"
         return self._post(
             raiz,
-            localizar_url(
-                WS_NFE_RET_AUTORIZACAO, str(self.uf), self.mod, int(self.ambiente)
-            ),
+            self._get_ws_endpoint(WS_NFE_RET_AUTORIZACAO),
             # 'ws/nferetautorizacao4.asmx'
             "nfeRetAutorizacaoLote",
             retConsReciNFe,
@@ -871,9 +894,7 @@ class NFe(DocumentoEletronico):
 
         return self._post(
             xml_envio_etree,
-            localizar_url(
-                WS_NFE_RECEPCAO_EVENTO, str(self.uf), self.mod, int(self.ambiente)
-            ),
+            self._get_ws_endpoint(WS_NFE_RECEPCAO_EVENTO),
             "nfeRecepcaoEvento",
             retEnvEvento,
         )
@@ -1023,9 +1044,7 @@ class NFe(DocumentoEletronico):
 
         return self._post(
             raiz,
-            localizar_url(
-                WS_DFE_DISTRIBUICAO, str(self.uf), self.mod, int(self.ambiente)
-            ),
+            self._get_ws_endpoint(WS_DFE_DISTRIBUICAO),
             "nfeDistDFeInteresse",
             retDistDFeInt,
         )
@@ -1091,7 +1110,7 @@ class NFe(DocumentoEletronico):
 
         return self._post(
             raiz,
-            localizar_url(WS_NFE_CADASTRO, str(self.uf), self.mod, int(self.ambiente)),
+            self._get_ws_endpoint(WS_NFE_CADASTRO),
             "consultaCadastro",
             retConsCad,
         )
