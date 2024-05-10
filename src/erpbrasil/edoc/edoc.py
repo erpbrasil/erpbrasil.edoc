@@ -34,8 +34,9 @@ class DocumentoEletronico(ABC):
     _consulta_servico_ao_enviar = False
     _consulta_documento_antes_de_enviar = False
 
-    def __init__(self, transmissao):
+    def __init__(self, transmissao, envio_sincrono=False):
         self._transmissao = transmissao
+        self.envio_sincrono = bool(envio_sincrono)
 
     def _generateds_to_string_etree(self, ds, pretty_print=False):
         if type(ds) == _Element:
@@ -68,7 +69,7 @@ class DocumentoEletronico(ABC):
             retorno = self._transmissao.enviar(operacao, xml_etree)
             return analisar_retorno_raw(operacao, raiz, xml_string, retorno, classe)
 
-    def processar_documento(self, edoc):
+    def processar_documento(self, edoc, envio_sincrono=False):
         """Processar documento executa o envio do documento fiscal de forma
         completa ao serviço relacionado, esta é um método padrão que
         segue o seguinte workflow:
@@ -132,18 +133,19 @@ class DocumentoEletronico(ABC):
         #
 
         proc_envio = self.envia_documento(edoc)
+        if self.envio_sincrono:
+            self.monta_processo(edoc, proc_envio)
         yield proc_envio
 
-        #
-        # Deu errado?
-        #
-        if not proc_envio.resposta:
-            return
-
-        if not self._verifica_resposta_envio_sucesso(proc_envio):
-            #
-            # Interrompe o processo
-            #
+        # Retorna imediatamente se alguma das condições abaixo for verdadeira:
+        # 1. A resposta do processo de envio é falsa.
+        # 2. A resposta do envio não indica sucesso.
+        # 3. O envio é síncrono (não é necessário consultar o recibo).
+        if (
+            not proc_envio.resposta
+            or not self._verifica_resposta_envio_sucesso(proc_envio)
+            or self.envio_sincrono
+        ):
             return
 
         #
