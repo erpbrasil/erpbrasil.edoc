@@ -54,3 +54,8 @@ Changelog
 ~~~~~~~~~~~~~~~~~~
 
 - Nota Paulistana
+
+2.9.0 (2024-05-15)
+~~~~~~~~~~~~~~~~~~
+
+- Suporte para emissão de NF-e utilizando as Sefaz autorizadoras de contingência.
