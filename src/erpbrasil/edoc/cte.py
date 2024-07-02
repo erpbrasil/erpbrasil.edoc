@@ -2,10 +2,7 @@ from contextlib import suppress
 
 from lxml import etree
 
-from erpbrasil.assinatura.assinatura import Assinatura
-from erpbrasil.base.fiscal.edoc import ChaveEdoc
 from erpbrasil.edoc.edoc import DocumentoEletronico
-from erpbrasil.transmissao import TransmissaoSOAP
 
 from .resposta import analisar_retorno_raw
 
@@ -191,20 +188,22 @@ class CTe(DocumentoEletronico):
     _consulta_documento_antes_de_enviar = True
     _maximo_tentativas_consulta_recibo = 5
 
-    def __init__(self, config, xml):
-        self.config = config
-        self._xml = xml
-        self._ambiente = self.config  # tpAmb
-        self._uf = self.config  # uf
-        self._versao = 4.00
-        self._chaveCte = self._gerar_chave(self.config)
-        self.assinatura = Assinatura(self.config)  # self.config.certificado
-        self.transmissao = TransmissaoSOAP(self.config)  # self.config.certificado
-        super().__init__(self.transmissao)
+    def __init__(self, transmissao, uf, versao="4.00", ambiente="1", mod="57"):
+        super().__init__(transmissao)
+        self.versao = str(versao)
+        self.ambiente = str(ambiente)
+        self.uf = int(uf)
+        self.mod = str(mod)
+
+    def _verifica_resposta_envio_sucesso(self, proc_envio):
+        return (
+            proc_envio.resposta.cStat
+            == self._edoc_situacao_arquivo_recebido_com_sucesso
+        )
 
     def status_servico(self):
         raiz = TconsStatServ(
-            tpAmb=self._ambiente, cUF=SIGLA_ESTADO[self._uf], versao=self._versao
+            tpAmb=self.ambiente, cUF=self.uf, versao=self.versao
         )
         return self._post(
             raiz=raiz,
@@ -214,7 +213,7 @@ class CTe(DocumentoEletronico):
         )
 
     def consulta_documento(self, chave):
-        raiz = TconsSitCte(tpAmb=self._ambiente, chCTe=chave, versao=self._versao)
+        raiz = TconsSitCte(tpAmb=self.ambiente, chCTe=chave, versao=self.versao)
         return self._post(
             raiz=raiz,
             url=self._search_url("CTeConsultaV4"),
@@ -223,10 +222,11 @@ class CTe(DocumentoEletronico):
         )
 
     def envia_documento(self, edoc):
-        xml_assinado = self.assina_raiz(edoc, edoc.infCTe.Id)
-        raiz = Tcte(infCte=edoc, signature=self.assinatura)
+        xml_assinado = self.assina_raiz(edoc, edoc.infCte.Id)
+        raiz = Tcte(infCte=edoc, signature=None)
         xml_envio_string = raiz.to_xml()
-        xml_envio_etree = xml_envio_string.from_xml()
+        xml_envio_bytes = xml_envio_string.encode('utf-8')
+        xml_envio_etree = etree.fromstring(xml_envio_bytes)
         xml_envio_etree.append(etree.fromstring(xml_assinado))
         return self._post(
             raiz=xml_envio_etree,
@@ -246,55 +246,39 @@ class CTe(DocumentoEletronico):
             classe=RetEventoCte,
         )
 
-    def _gerar_chave(self, edoc):
-        """
-            0  2    6             20  22  25        34 35      43  --> índice
-            |  |    |              |  |   |         | |        |
-            |  |    |              |  |   |         | |        |
-        CTe  32 1712 32438772000104 57 001 000199075 1 39868226 3
-        """
-        cte = Cte(edoc)
-        chave = ChaveEdoc()
-        chave.cUF = cte.InfCte.Ide.cUF
-        dhEmi = cte.InfCte.Ide.dhEmi
-        chave.AAMM = dhEmi[2:4] + dhEmi[5:7]
-        chave.CNPJ = cte.InfCte.Emit.CNPJ
-        chave.mod = cte.InfCte.Ide.mod
-        chave.serie = cte.InfCte.Ide.serie
-        chave.nCT = cte.InfCte.Ide.nCT
-        chave.tpEmis = cte.InfCte.Ide.tpEmis
-        chave.cCT = cte.InfCte.Ide.cCT
-        chave.cDV = cte.InfCte.Ide.cDV
-        return chave
-
     def _search_url(self, service):
-        if self._uf == "MG":
-            if self._ambiente == 1:
+        sigla = ""
+        for uf_code, ibge_code in SIGLA_ESTADO.items():
+            if ibge_code == self.uf:
+                sigla = uf_code
+
+        if sigla == "MG":
+            if self.ambiente == 1:
                 return MG_PRODUCAO[service]
             else:
                 return MG_HOMOLOGACAO[service]
-        elif self._uf == "MS":
-            if self._ambiente == 1:
+        elif sigla == "MS":
+            if self.ambiente == 1:
                 return MS_PRODUCAO[service]
             else:
                 return MS_HOMOLOGACAO[service]
-        elif self._uf == "MT":
-            if self._ambiente == 1:
+        elif sigla == "MT":
+            if self.ambiente == 1:
                 return MT_PRODUCAO[service]
             else:
                 return MT_HOMOLOGACAO[service]
-        elif self._uf == "PR":
-            if self._ambiente == 1:
+        elif sigla == "PR":
+            if self.ambiente == 1:
                 return PR_PRODUCAO[service]
             else:
                 return PR_HOMOLOGACAO[service]
-        elif self._uf == "SVSP":
-            if self._ambiente == 1:
+        elif sigla in SVSP:
+            if self.ambiente == 1:
                 return SVSP_PRODUCAO[service]
             else:
                 return SVSP_HOMOLOGACAO[service]
-        elif self._uf == "SVRS":
-            if self._ambiente == 1:
+        elif sigla in SVRS:
+            if self.ambiente == 1:
                 return SVRS_PRODUCAO[service]
             else:
                 return SVRS_HOMOLOGACAO[service]
@@ -308,3 +292,6 @@ class CTe(DocumentoEletronico):
         with self._transmissao.cliente(url):
             retorno = self._transmissao.enviar(operacao, xml_etree)
             return analisar_retorno_raw(operacao, raiz, xml_string, retorno, classe)
+
+    def get_documento_id(self, edoc):
+        return edoc.infCte.Id[:3], edoc.infCte.Id[3:]
