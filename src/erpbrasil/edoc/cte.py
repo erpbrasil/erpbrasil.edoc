@@ -14,9 +14,9 @@ with suppress(ImportError):
         RetConsStatServCte,
         RetCte,
         RetEventoCte,
-        TconsSitCte,
-        TconsStatServ,
+        ConsSitCte,
         Tcte,
+        ConsStatServCte
     )
 
 
@@ -202,7 +202,7 @@ class CTe(DocumentoEletronico):
         )
 
     def status_servico(self):
-        raiz = TconsStatServ(
+        raiz = ConsStatServCte(
             tpAmb=self.ambiente, cUF=self.uf, versao=self.versao
         )
         return self._post(
@@ -213,7 +213,7 @@ class CTe(DocumentoEletronico):
         )
 
     def consulta_documento(self, chave):
-        raiz = TconsSitCte(tpAmb=self.ambiente, chCTe=chave, versao=self.versao)
+        raiz = ConsSitCte(tpAmb=self.ambiente, chCTe=chave, versao=self.versao)
         return self._post(
             raiz=raiz,
             url=self._search_url("CTeConsultaV4"),
