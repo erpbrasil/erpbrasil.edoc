@@ -15,8 +15,8 @@ with suppress(ImportError):
         RetCte,
         RetEventoCte,
         TconsSitCte,
-        TconsStatServ,
         Tcte,
+        ConsStatServCte
     )
 
 
@@ -202,7 +202,7 @@ class CTe(DocumentoEletronico):
         )
 
     def status_servico(self):
-        raiz = TconsStatServ(
+        raiz = ConsStatServCte(
             tpAmb=self.ambiente, cUF=self.uf, versao=self.versao
         )
         return self._post(
