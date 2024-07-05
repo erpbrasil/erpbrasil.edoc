@@ -1,8 +1,11 @@
 from contextlib import suppress
 
 from lxml import etree
+import gzip
+import base64
 
 from erpbrasil.edoc.edoc import DocumentoEletronico
+from erpbrasil.transmissao import TransmissaoSOAP
 
 from .resposta import analisar_retorno_raw
 
@@ -223,13 +226,15 @@ class CTe(DocumentoEletronico):
 
     def envia_documento(self, edoc):
         xml_assinado = self.assina_raiz(edoc, edoc.infCte.Id)
-        raiz = Tcte(infCte=edoc, signature=None)
-        xml_envio_string = raiz.to_xml()
-        xml_envio_bytes = xml_envio_string.encode('utf-8')
-        xml_envio_etree = etree.fromstring(xml_envio_bytes)
-        xml_envio_etree.append(etree.fromstring(xml_assinado))
+
+        # Compactar o XML assinado com GZip
+        gzipped_xml = gzip.compress(xml_assinado.encode('utf-8'))
+
+        # Codificar o XML compactado em Base64
+        base64_gzipped_xml = base64.b64encode(gzipped_xml).decode('utf-8')
+
         return self._post(
-            raiz=xml_envio_etree,
+            raiz=base64_gzipped_xml,
             url=self._search_url("CTeRecepcaoSincV4"),
             operacao="cteRecepcao",
             classe=RetCte,
@@ -286,12 +291,19 @@ class CTe(DocumentoEletronico):
     def consulta_recibo(self):
         pass
 
-    def _post(self, raiz, url, operacao, classe):
-        xml_string = raiz.to_xml()
-        xml_etree = xml_string.from_xml()
-        with self._transmissao.cliente(url):
-            retorno = self._transmissao.enviar(operacao, xml_etree)
-            return analisar_retorno_raw(operacao, raiz, xml_string, retorno, classe)
-
     def get_documento_id(self, edoc):
         return edoc.infCte.Id[:3], edoc.infCte.Id[3:]
+
+
+class TransmissaoCTE(TransmissaoSOAP):
+
+    def interpretar_mensagem(self, mensagem, **kwargs):
+        if isinstance(mensagem, str):
+            try:
+                return etree.fromstring(mensagem, parser=etree.XMLParser(
+                    remove_blank_text=True
+                ))
+            except (etree.XMLSyntaxError, ValueError):
+                # Retorna a string original se houver um erro na conversão
+                return mensagem
+        return mensagem
