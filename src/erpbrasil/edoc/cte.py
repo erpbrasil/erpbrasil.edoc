@@ -22,6 +22,16 @@ with suppress(ImportError):
         ConsStatServCte
     )
 
+AMBIENTE_PRODUCAO = "producao"
+AMBIENTE_HOMOLOGACAO = "homologacao"
+
+WS_CTE_CONSULTA = "CTeConsultaV4"
+WS_CTE_RECEPCAO_EVENTO = "CTeRecepcaoEventoV4"
+WS_CTE_RECEPCAO_GT = "CTeRecepcaoGTVeV4"
+WS_CTE_RECEPCAO_OS = "CTeRecepcaoOSV4"
+WS_CTE_RECEPCAO_SINC = "CTeRecepcaoSincV4"
+WS_CTE_STATUS_SERVICO = "CTeStatusServicoV4"
+QR_CODE_URL = "QRCode"
 
 SIGLA_ESTADO = {
     "AC": 12,
@@ -54,8 +64,8 @@ SIGLA_ESTADO = {
     "AN": 91,
 }
 
-SVSP = ["AP", "PE", "RR", "SP"]
-SVRS = [
+SVSP_STATES = ["AP", "PE", "RR", "SP"]
+SVRS_STATES = [
     "AC",
     "AL",
     "AM",
@@ -76,113 +86,163 @@ SVRS = [
     "TO",
 ]
 
-SVSP_PRODUCAO = {
-    "CTeConsultaV4": "https://nfe.fazenda.sp.gov.br/CTeWS/WS/CTeConsultaV4.asmx?wsdl",
-    "CTeRecepcaoEventoV4": "https://nfe.fazenda.sp.gov.br/CTeWS/WS/CTeRecepcaoEventoV4.asmx?wsdl",
-    "CTeRecepcaoGTVeV4": "https://nfe.fazenda.sp.gov.br/CTeWS/WS/CTeRecepcaoGTVeV4.asmx?wsdl",
-    "CTeRecepcaoOSV4": "https://nfe.fazenda.sp.gov.br/CTeWS/WS/CTeRecepcaoOSV4.asmx?wsdl",
-    "CTeRecepcaoSincV4": "https://nfe.fazenda.sp.gov.br/CTeWS/WS/CTeRecepcaoSincV4.asmx?wsdl",
-    "CTeStatusServicoV4": "https://nfe.fazenda.sp.gov.br/CTeWS/WS/CTeStatusServicoV4.asmx?wsdl",
+SVSP = {
+    AMBIENTE_PRODUCAO: {
+        "servidor": "nfe.fazenda.sp.gov.br",
+        WS_CTE_CONSULTA: "CTeWS/WS/CTeConsultaV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "CTeWS/WS/CTeRecepcaoEventoV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_GT: "CTeWS/WS/CTeRecepcaoGTVeV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_OS: "CTeWS/WS/CTeRecepcaoOSV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_SINC: "CTeWS/WS/CTeRecepcaoSincV4.asmx?wsdl",
+        WS_CTE_STATUS_SERVICO: "CTeWS/WS/CTeStatusServicoV4.asmx?wsdl",
+        QR_CODE_URL: "https://nfe.fazenda.sp.gov.br/CTeConsulta/qrCode",
+    },
+    AMBIENTE_HOMOLOGACAO: {
+        "servidor": "homologacao.nfe.fazenda.sp.gov.br",
+        WS_CTE_CONSULTA: "CTeWS/WS/CTeConsultaV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "CTeWS/WS/CTeRecepcaoEventoV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_GT: "CTeWS/WS/CTeRecepcaoGTVeV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_OS: "CTeWS/WS/CTeRecepcaoOSV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_SINC: "CTeWS/WS/CTeRecepcaoSincV4.asmx?wsdl",
+        WS_CTE_STATUS_SERVICO: "CTeWS/WS/CTeStatusServicoV4.asmx?wsdl",
+        QR_CODE_URL: "https://homologacao.nfe.fazenda.sp.gov.br/CTeConsulta/qrCode",
+    }
 }
 
-SVSP_HOMOLOGACAO = {
-    "CTeConsultaV4": "https://homologacao.nfe.fazenda.sp.gov.br/CTeWS/WS/CTeConsultaV4.asmx?wsdl",
-    "CTeRecepcaoEventoV4": "https://homologacao.nfe.fazenda.sp.gov.br/CTeWS/WS/CTeRecepcaoEventoV4.asmx?wsdl",
-    "CTeRecepcaoGTVeV4": "https://homologacao.nfe.fazenda.sp.gov.br/CTeWS/WS/CTeRecepcaoGTVeV4.asmx?wsdl",
-    "CTeRecepcaoOSV4": "https://homologacao.nfe.fazenda.sp.gov.br/CTeWS/WS/CTeRecepcaoOSV4.asmx?wsdl",
-    "CTeRecepcaoSincV4": "https://homologacao.nfe.fazenda.sp.gov.br/CTeWS/WS/CTeRecepcaoSincV4.asmx?wsdl",
-    "CTeStatusServicoV4": "https://homologacao.nfe.fazenda.sp.gov.br/CTeWS/WS/CTeStatusServicoV4.asmx?wsdl",
+SVRS = {
+    AMBIENTE_PRODUCAO: {
+        "servidor": "cte.svrs.rs.gov.br",
+        WS_CTE_CONSULTA: "ws/CTeConsultaV4/CTeConsultaV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "ws/CTeRecepcaoEventoV4/CTeRecepcaoEventoV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_GT: "ws/CTeRecepcaoGTVeV4/CTeRecepcaoGTVeV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_OS: "ws/CTeRecepcaoOSV4/CTeRecepcaoOSV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_SINC: "ws/CTeRecepcaoSincV4/CTeRecepcaoSincV4.asmx?wsdl",
+        WS_CTE_STATUS_SERVICO: "ws/CTeStatusServicoV4/CTeStatusServicoV4.asmx?wsdl",
+        QR_CODE_URL: "https://dfe-portal.svrs.rs.gov.br/cte/qrCode",
+    },
+    AMBIENTE_HOMOLOGACAO: {
+        "servidor": "cte-homologacao.svrs.rs.gov.br",
+        WS_CTE_CONSULTA: "ws/CTeConsultaV4/CTeConsultaV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "ws/CTeRecepcaoEventoV4/CTeRecepcaoEventoV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_GT: "ws/CTeRecepcaoGTVeV4/CTeRecepcaoGTVeV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_OS: "ws/CTeRecepcaoOSV4/CTeRecepcaoOSV4.asmx?wsdl",
+        WS_CTE_RECEPCAO_SINC: "ws/CTeRecepcaoSincV4/CTeRecepcaoSincV4.asmx?wsdl",
+        WS_CTE_STATUS_SERVICO: "ws/CTeStatusServicoV4/CTeStatusServicoV4.asmx?wsdl",
+        QR_CODE_URL: "https://dfe-portal.svrs.rs.gov.br/cte/qrCode",
+    }
 }
 
-SVRS_PRODUCAO = {
-    "CTeStatusServicoV4": "https://cte.svrs.rs.gov.br/ws/CTeStatusServicoV4/CTeStatusServicoV4.asmx?wsdl",
-    "CTeConsultaV4": "https://cte.svrs.rs.gov.br/ws/CTeConsultaV4/CTeConsultaV4.asmx?wsdl",
-    "CTeRecepcaoSincV4": "https://cte.svrs.rs.gov.br/ws/CTeRecepcaoSincV4/CTeRecepcaoSincV4.asmx?wsdl",
-    "CTeRecepcaoOSV4": "https://cte.svrs.rs.gov.br/ws/CTeRecepcaoOSV4/CTeRecepcaoOSV4.asmx?wsdl",
-    "CTeRecepcaoGTVeV4": "https://cte.svrs.rs.gov.br/ws/CTeRecepcaoGTVeV4/CTeRecepcaoGTVeV4.asmx?wsdl",
-    "CTeRecepcaoEventoV4": "https://cte.svrs.rs.gov.br/ws/CTeRecepcaoEventoV4/CTeRecepcaoEventoV4.asmx?wsdl",
+MT = {
+    AMBIENTE_PRODUCAO: {
+        "servidor": "cte.sefaz.mt.gov.br",
+        WS_CTE_CONSULTA: "ctews2/services/CTeConsultaV4?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "ctews2/services/CTeRecepcaoEventoV4?wsdl",
+        WS_CTE_RECEPCAO_GT: "ctews2/services/CTeRecepcaoGTVeV4?wsdl",
+        WS_CTE_RECEPCAO_OS: "ctews/services/CTeRecepcaoOSV4?wsdl",
+        WS_CTE_RECEPCAO_SINC: "ctews2/services/CTeRecepcaoSincV4?wsdl",
+        WS_CTE_STATUS_SERVICO: "ctews2/services/CTeStatusServicoV4?wsdl",
+        QR_CODE_URL: "https://www.sefaz.mt.gov.br/cte/qrcode",
+    },
+    AMBIENTE_HOMOLOGACAO: {
+        "servidor": "homologacao.sefaz.mt.gov.br",
+        WS_CTE_CONSULTA: "ctews2/services/CTeConsultaV4?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "ctews2/services/CTeRecepcaoEventoV4?wsdl",
+        WS_CTE_RECEPCAO_GT: "ctews2/services/CTeRecepcaoGTVeV4?wsdl",
+        WS_CTE_RECEPCAO_OS: "ctews/services/CTeRecepcaoOSV4?wsdl",
+        WS_CTE_RECEPCAO_SINC: "ctews2/services/CTeRecepcaoSincV4?wsdl",
+        WS_CTE_STATUS_SERVICO: "ctews2/services/CTeStatusServicoV4?wsdl",
+        QR_CODE_URL: "https://homologacao.sefaz.mt.gov.br/cte/qrcode",
+    }
 }
 
-SVRS_HOMOLOGACAO = {
-    "CTeStatusServicoV4": "https://cte-homologacao.svrs.rs.gov.br/ws/CTeStatusServicoV4/CTeStatusServicoV4.asmx?wsdl",
-    "CTeConsultaV4": "https://cte-homologacao.svrs.rs.gov.br/ws/CTeConsultaV4/CTeConsultaV4.asmx?wsdl",
-    "CTeRecepcaoSincV4": "https://cte-homologacao.svrs.rs.gov.br/ws/CTeRecepcaoSincV4/CTeRecepcaoSincV4.asmx?wsdl",
-    "CTeRecepcaoOSV4": "https://cte-homologacao.svrs.rs.gov.br/ws/CTeRecepcaoOSV4/CTeRecepcaoOSV4.asmx?wsdl",
-    "CTeRecepcaoGTVeV4": "https://cte-homologacao.svrs.rs.gov.br/ws/CTeRecepcaoGTVeV4/CTeRecepcaoGTVeV4.asmx?wsdl",
-    "CTeRecepcaoEventoV4": "https://cte-homologacao.svrs.rs.gov.br/ws/CTeRecepcaoEventoV4/CTeRecepcaoEventoV4.asmx?wsdl",
+MS = {
+    AMBIENTE_PRODUCAO: {
+        "servidor": "producao.cte.ms.gov.br",
+        WS_CTE_CONSULTA: "ws/CTeConsultaV4?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "ws/CTeRecepcaoEventoV4?wsdl",
+        WS_CTE_RECEPCAO_GT: "ws/CTeRecepcaoGTVeV4?wsdl",
+        WS_CTE_RECEPCAO_OS: "ws/CTeRecepcaoOSV4?wsdl",
+        WS_CTE_RECEPCAO_SINC: "ws/CTeRecepcaoSincV4?wsdl",
+        WS_CTE_STATUS_SERVICO: "ws/CTeStatusServicoV4?wsdl",
+        QR_CODE_URL: "http://www.dfe.ms.gov.br/cte/qrcode",
+    },
+    AMBIENTE_HOMOLOGACAO: {
+        "servidor": "homologacao.cte.ms.gov.br",
+        WS_CTE_CONSULTA: "ws/CTeConsultaV4?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "ws/CTeRecepcaoEventoV4?wsdl",
+        WS_CTE_RECEPCAO_GT: "ws/CTeRecepcaoGTVeV4?wsdl",
+        WS_CTE_RECEPCAO_OS: "ws/CTeRecepcaoOSV4?wsdl",
+        WS_CTE_RECEPCAO_SINC: "ws/CTeRecepcaoSincV4?wsdl",
+        WS_CTE_STATUS_SERVICO: "ws/CTeStatusServicoV4?wsdl",
+        QR_CODE_URL: "http://www.dfe.ms.gov.br/cte/qrcode",
+    }
 }
 
-MT_PRODUCAO = {
-    "CTeConsultaV4": "https://cte.sefaz.mt.gov.br/ctews2/services/CTeConsultaV4?wsdl",
-    "CTeRecepcaoEventoV4": "https://cte.sefaz.mt.gov.br/ctews2/services/CTeRecepcaoEventoV4?wsdl",
-    "CTeStatusServicoV4": "https://cte.sefaz.mt.gov.br/ctews2/services/CTeStatusServicoV4?wsdl",
-    "CTeRecepcaoSincV4": "https://cte.sefaz.mt.gov.br/ctews2/services/CTeRecepcaoSincV4?wsdl",
-    "CTeRecepcaoGTVeV4": "https://cte.sefaz.mt.gov.br/ctews2/services/CTeRecepcaoGTVeV4?wsdl",
-    "CTeRecepcaoOSV4": "https://cte.sefaz.mt.gov.br/ctews/services/CTeRecepcaoOSV4?wsdl",
+MG = {
+    AMBIENTE_PRODUCAO: {
+        "servidor": "cte.fazenda.mg.gov.br",
+        WS_CTE_CONSULTA: "cte/services/CTeConsultaV4?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "cte/services/CTeRecepcaoEventoV4?wsdl",
+        WS_CTE_RECEPCAO_GT: "cte/services/CTeRecepcaoGTVeV4?wsdl",
+        WS_CTE_RECEPCAO_OS: "cte/services/CTeRecepcaoOSV4?wsdl",
+        WS_CTE_RECEPCAO_SINC: "cte/services/CTeRecepcaoSincV4?wsdl",
+        WS_CTE_STATUS_SERVICO: "cte/services/CTeStatusServicoV4?wsdl",
+        QR_CODE_URL: "https://cte.fazenda.mg.gov.br/portalcte/sistema/qrcode.xhtml",
+    },
+    AMBIENTE_HOMOLOGACAO: {
+        "servidor": "hcte.fazenda.mg.gov.br",
+        WS_CTE_CONSULTA: "cte/services/CTeConsultaV4?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "cte/services/CTeRecepcaoEventoV4?wsdl",
+        WS_CTE_RECEPCAO_GT: "cte/services/CTeRecepcaoGTVeV4?wsdl",
+        WS_CTE_RECEPCAO_OS: "cte/services/CTeRecepcaoOSV4?wsdl",
+        WS_CTE_RECEPCAO_SINC: "cte/services/CTeRecepcaoSincV4?wsdl",
+        WS_CTE_STATUS_SERVICO: "cte/services/CTeStatusServicoV4?wsdl",
+        QR_CODE_URL: "https://cte.fazenda.mg.gov.br/portalcte/sistema/qrcode.xhtml",
+    }
 }
 
-MT_HOMOLOGACAO = {
-    "CTeStatusServicoV4": "https://homologacao.sefaz.mt.gov.br/ctews2/services/CTeStatusServicoV4?wsdl",
-    "CTeConsultaV4": "https://homologacao.sefaz.mt.gov.br/ctews2/services/CTeConsultaV4?wsdl",
-    "CTeRecepcaoSincV4": "https://homologacao.sefaz.mt.gov.br/ctews2/services/CTeRecepcaoSincV4?wsdl",
-    "CTeRecepcaoGTVeV4": "https://homologacao.sefaz.mt.gov.br/ctews2/services/CTeRecepcaoGTVeV4?wsdl",
-    "CTeRecepcaoEventoV4": "https://homologacao.sefaz.mt.gov.br/ctews2/services/CTeRecepcaoEventoV4?wsdl",
-    "CTeRecepcaoOSV4": "https://homologacao.sefaz.mt.gov.br/ctews/services/CTeRecepcaoOSV4?wsdl",
+PR = {
+    AMBIENTE_PRODUCAO: {
+        "servidor": "cte.fazenda.pr.gov.br",
+        WS_CTE_CONSULTA: "cte4/CTeConsultaV4?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "cte4/CTeRecepcaoEventoV4?wsdl",
+        WS_CTE_RECEPCAO_GT: "cte4/CTeRecepcaoGTVeV4?wsdl",
+        WS_CTE_RECEPCAO_OS: "cte4/CTeRecepcaoOSV4?wsdl",
+        WS_CTE_RECEPCAO_SINC: "cte4/CTeRecepcaoSincV4?wsdl",
+        WS_CTE_STATUS_SERVICO: "cte4/CTeStatusServicoV4?wsdl",
+        QR_CODE_URL: "http://www.fazenda.pr.gov.br/cte/qrcode",
+    },
+    AMBIENTE_HOMOLOGACAO: {
+        "servidor": "homologacao.cte.fazenda.pr.gov.br",
+        WS_CTE_CONSULTA: "cte4/CTeConsultaV4?wsdl",
+        WS_CTE_RECEPCAO_EVENTO: "cte4/CTeRecepcaoEventoV4?wsdl",
+        WS_CTE_RECEPCAO_GT: "cte4/CTeRecepcaoGTVeV4?wsdl",
+        WS_CTE_RECEPCAO_OS: "cte4/CTeRecepcaoOSV4?wsdl",
+        WS_CTE_RECEPCAO_SINC: "cte4/CTeRecepcaoSincV4?wsdl",
+        WS_CTE_STATUS_SERVICO: "cte4/CTeStatusServicoV4?wsdl",
+        QR_CODE_URL: "http://www.fazenda.pr.gov.br/cte/qrcode",
+    }
 }
 
-MS_PRODUCAO = {
-    "CTeRecepcaoSincV4": "https://producao.cte.ms.gov.br/ws/CTeRecepcaoSincV4?wsdl",
-    "CTeStatusServicoV4": "https://producao.cte.ms.gov.br/ws/CTeStatusServicoV4?wsdl",
-    "CTeConsultaV4": "https://producao.cte.ms.gov.br/ws/CTeConsultaV4?wsdl",
-    "CTeRecepcaoEventoV4": "https://producao.cte.ms.gov.br/ws/CTeRecepcaoEventoV4?wsdl",
-    "CTeRecepcaoOSV4": "https://producao.cte.ms.gov.br/ws/CTeRecepcaoOSV4?wsdl",
-    "CTeRecepcaoGTVeV4": "https://producao.cte.ms.gov.br/ws/CTeRecepcaoGTVeV4?wsdl",
-}
 
-MS_HOMOLOGACAO = {
-    "CTeStatusServicoV4": "https://homologacao.cte.ms.gov.br/ws/CTeStatusServicoV4?wsdl",
-    "CTeRecepcaoEventoV4": "https://homologacao.cte.ms.gov.br/ws/CTeRecepcaoEventoV4?wsdl",
-    "CTeConsultaV4": "https://homologacao.cte.ms.gov.br/ws/CTeConsultaV4?wsdl",
-    "CTeRecepcaoSincV4": "https://homologacao.cte.ms.gov.br/ws/CTeRecepcaoSincV4?wsdl",
-}
+def get_service_url(sigla_estado, service, ambiente):
+    if sigla_estado in SVSP_STATES:
+        state_config = SVSP
+    elif sigla_estado in SVRS_STATES:
+        state_config = SVRS
+    else:
+        state_config = sigla_estado
 
-MG_PRODUCAO = {
-    "CTeRecepcaoSincV4": "https://cte.fazenda.mg.gov.br/cte/services/CTeRecepcaoSincV4?wsdl",
-    "CTeRecepcaoGTVeV4": "https://cte.fazenda.mg.gov.br/cte/services/CTeRecepcaoGTVeV4?wsdl",
-    "CTeRecepcaoOSV4": "https://cte.fazenda.mg.gov.br/cte/services/CTeRecepcaoOSV4?wsdl",
-    "CTeConsultaV4": "https://cte.fazenda.mg.gov.br/cte/services/CTeConsultaV4?wsdl",
-    "CTeStatusServicoV4": "https://cte.fazenda.mg.gov.br/cte/services/CTeStatusServicoV4?wsdl",
-    "CTeRecepcaoEventoV4": "https://cte.fazenda.mg.gov.br/cte/services/CTeRecepcaoEventoV4?wsdl",
-}
+    if not state_config:
+        raise ValueError(f"Estado {sigla_estado} não suportado ou configuração ausente.")
 
-MG_HOMOLOGACAO = {
-    "CTeRecepcaoSincV4": "https://hcte.fazenda.mg.gov.br/cte/services/CTeRecepcaoSincV4?wsdl",
-    "CTeRecepcaoOSV4": "https://hcte.fazenda.mg.gov.br/cte/services/CTeRecepcaoOSV4?wsdl",
-    "CTeRecepcaoGTVeV4": "https://hcte.fazenda.mg.gov.br/cte/services/CTeRecepcaoGTVeV4?wsdl",
-    "CTeConsultaV4": "https://hcte.fazenda.mg.gov.br/cte/services/CTeConsultaV4?wsdl",
-    "CTeStatusServicoV4": "https://hcte.fazenda.mg.gov.br/cte/services/CTeStatusServicoV4?wsdl",
-    "CTeRecepcaoEventoV4": "https://hcte.fazenda.mg.gov.br/cte/services/CTeRecepcaoEventoV4?wsdl",
-}
+    environment = AMBIENTE_PRODUCAO if ambiente == 1 else AMBIENTE_HOMOLOGACAO
+    if service == "QRCode":
+        return state_config[environment][QR_CODE_URL]
 
-PR_PRODUCAO = {
-    "CTeRecepcaoSincV4": "https://cte.fazenda.pr.gov.br/cte4/CTeRecepcaoSincV4?wsdl",
-    "CTeRecepcaoGTVeV4": "https://cte.fazenda.pr.gov.br/cte4/CTeRecepcaoGTVeV4?wsdl",
-    "CTeRecepcaoOSV4": "https://cte.fazenda.pr.gov.br/cte4/CTeRecepcaoOSV4?wsdl",
-    "CTeConsultaV4": "https://cte.fazenda.pr.gov.br/cte4/CTeConsultaV4?wsdl",
-    "CTeStatusServicoV4": "https://cte.fazenda.pr.gov.br/cte4/CTeStatusServicoV4?wsdl",
-    "CTeRecepcaoEventoV4": "https://cte.fazenda.pr.gov.br/cte4/CTeRecepcaoEventoV4?wsdl",
-}
-
-PR_HOMOLOGACAO = {
-    "CTeConsultaV4": "https://homologacao.cte.fazenda.pr.gov.br/cte4/CTeConsultaV4?wsdl",
-    "CTeStatusServicoV4": "https://homologacao.cte.fazenda.pr.gov.br/cte4/CTeStatusServicoV4?wsdl",
-    "CTeRecepcaoSincV4": "https://homologacao.cte.fazenda.pr.gov.br/cte4/CTeRecepcaoSincV4?wsdl",
-    "CTeRecepcaoEventoV4": "https://homologacao.cte.fazenda.pr.gov.br/cte4/CTeRecepcaoEventoV4?wsdl",
-    "CTeRecepcaoGTVeV4": "https://homologacao.cte.fazenda.pr.gov.br/cte4/CTeRecepcaoGTVeV4?wsdl",
-    "CTeRecepcaoOSV4": "https://homologacao.cte.fazenda.pr.gov.br/cte4/CTeRecepcaoOSV4?wsdl",
-}
-
-QR_CODE_URL = "https://dfe-portal.svrs.rs.gov.br/cte/qrCode"
+    server = state_config[environment]["servidor"]
+    service_path = state_config[environment][service]
+    return f"https://{server}/{service_path}"
 
 
 class CTe(DocumentoEletronico):
@@ -200,6 +260,18 @@ class CTe(DocumentoEletronico):
         self.uf = int(uf)
         self.mod = str(mod)
 
+    def _get_ws_endpoint(self, service):
+        sigla = None
+        for uf_code, ibge_code in SIGLA_ESTADO.items():
+            if ibge_code == self.uf:
+                sigla = uf_code
+                break
+
+        if not sigla:
+            raise ValueError(f"UF {self.uf} não suportado ou configuração ausente.")
+
+        return get_service_url(sigla, service, self.ambiente)
+
     def _verifica_resposta_envio_sucesso(self, proc_envio):
         return (
             proc_envio.resposta.cStat
@@ -212,7 +284,7 @@ class CTe(DocumentoEletronico):
         )
         return self._post(
             raiz=raiz,
-            url=self._search_url("CTeStatusServicoV4"),
+            url=self._get_ws_endpoint(WS_CTE_STATUS_SERVICO),
             operacao="cteStatusServicoCT",
             classe=RetConsStatServCte,
         )
@@ -221,7 +293,7 @@ class CTe(DocumentoEletronico):
         raiz = ConsSitCte(tpAmb=self.ambiente, chCTe=chave, versao=self.versao)
         return self._post(
             raiz=raiz,
-            url=self._search_url("CTeConsultaV4"),
+            url=self._get_ws_endpoint(WS_CTE_CONSULTA),
             operacao="cteConsultaCT",
             classe=RetConsSitCte,
         )
@@ -237,7 +309,7 @@ class CTe(DocumentoEletronico):
 
         return self._post(
             raiz=base64_gzipped_xml,
-            url=self._search_url("CTeRecepcaoSincV4"),
+            url=self._get_ws_endpoint(WS_CTE_RECEPCAO_SINC),
             operacao="cteRecepcao",
             classe=RetCte,
         )
@@ -248,47 +320,10 @@ class CTe(DocumentoEletronico):
         )
         return self._post(
             raiz=raiz,
-            url=self._search_url("CTeRecepcaoEventoV4"),
+            url=self._get_ws_endpoint(WS_CTE_RECEPCAO_EVENTO),
             operacao="cteRecepcaoEvento",
             classe=RetEventoCte,
         )
-
-    def _search_url(self, service):
-        sigla = ""
-        for uf_code, ibge_code in SIGLA_ESTADO.items():
-            if ibge_code == self.uf:
-                sigla = uf_code
-
-        if sigla == "MG":
-            if self.ambiente == 1:
-                return MG_PRODUCAO[service]
-            else:
-                return MG_HOMOLOGACAO[service]
-        elif sigla == "MS":
-            if self.ambiente == 1:
-                return MS_PRODUCAO[service]
-            else:
-                return MS_HOMOLOGACAO[service]
-        elif sigla == "MT":
-            if self.ambiente == 1:
-                return MT_PRODUCAO[service]
-            else:
-                return MT_HOMOLOGACAO[service]
-        elif sigla == "PR":
-            if self.ambiente == 1:
-                return PR_PRODUCAO[service]
-            else:
-                return PR_HOMOLOGACAO[service]
-        elif sigla in SVSP:
-            if self.ambiente == 1:
-                return SVSP_PRODUCAO[service]
-            else:
-                return SVSP_HOMOLOGACAO[service]
-        elif sigla in SVRS:
-            if self.ambiente == 1:
-                return SVRS_PRODUCAO[service]
-            else:
-                return SVRS_HOMOLOGACAO[service]
 
     def consulta_recibo(self):
         pass
@@ -297,7 +332,7 @@ class CTe(DocumentoEletronico):
         return edoc.infCte.Id[:3], edoc.infCte.Id[3:]
 
     def monta_qrcode(self, chave):
-        return f"{QR_CODE_URL}?chCTe={chave}&tpAmb={self.ambiente}"
+        return f"{self._get_ws_endpoint(QR_CODE_URL)}?chCTe={chave}&tpAmb={self.ambiente}"
 
 
 class TransmissaoCTE(TransmissaoSOAP):
