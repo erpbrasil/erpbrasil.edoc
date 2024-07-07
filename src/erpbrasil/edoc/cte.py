@@ -182,6 +182,8 @@ PR_HOMOLOGACAO = {
     "CTeRecepcaoOSV4": "https://homologacao.cte.fazenda.pr.gov.br/cte4/CTeRecepcaoOSV4?wsdl",
 }
 
+QR_CODE_URL = "https://dfe-portal.svrs.rs.gov.br/cte/qrCode"
+
 
 class CTe(DocumentoEletronico):
     _namespace = "http://www.portalfiscal.inf.br/cte"
@@ -293,6 +295,9 @@ class CTe(DocumentoEletronico):
 
     def get_documento_id(self, edoc):
         return edoc.infCte.Id[:3], edoc.infCte.Id[3:]
+
+    def monta_qrcode(self, chave):
+        return f"{QR_CODE_URL}?chCTe={chave}&tpAmb={self.ambiente}"
 
 
 class TransmissaoCTE(TransmissaoSOAP):
