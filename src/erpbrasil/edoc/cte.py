@@ -1,25 +1,21 @@
+import base64
+import gzip
 from contextlib import suppress
 
 from lxml import etree
-import gzip
-import base64
 
 from erpbrasil.edoc.edoc import DocumentoEletronico
 from erpbrasil.transmissao import TransmissaoSOAP
 
-from .resposta import analisar_retorno_raw
-
 with suppress(ImportError):
     from nfelib.cte.bindings.v4_0 import (
-        Cte,
+        ConsSitCte,
+        ConsStatServCte,
         EvCancCte,
         RetConsSitCte,
         RetConsStatServCte,
         RetCte,
         RetEventoCte,
-        ConsSitCte,
-        Tcte,
-        ConsStatServCte
     )
 
 AMBIENTE_PRODUCAO = "producao"
@@ -106,7 +102,7 @@ SVSP = {
         WS_CTE_RECEPCAO_SINC: "CTeWS/WS/CTeRecepcaoSincV4.asmx?wsdl",
         WS_CTE_STATUS_SERVICO: "CTeWS/WS/CTeStatusServicoV4.asmx?wsdl",
         QR_CODE_URL: "https://homologacao.nfe.fazenda.sp.gov.br/CTeConsulta/qrCode",
-    }
+    },
 }
 
 SVRS = {
@@ -129,7 +125,7 @@ SVRS = {
         WS_CTE_RECEPCAO_SINC: "ws/CTeRecepcaoSincV4/CTeRecepcaoSincV4.asmx?wsdl",
         WS_CTE_STATUS_SERVICO: "ws/CTeStatusServicoV4/CTeStatusServicoV4.asmx?wsdl",
         QR_CODE_URL: "https://dfe-portal.svrs.rs.gov.br/cte/qrCode",
-    }
+    },
 }
 
 MT = {
@@ -152,7 +148,7 @@ MT = {
         WS_CTE_RECEPCAO_SINC: "ctews2/services/CTeRecepcaoSincV4?wsdl",
         WS_CTE_STATUS_SERVICO: "ctews2/services/CTeStatusServicoV4?wsdl",
         QR_CODE_URL: "https://homologacao.sefaz.mt.gov.br/cte/qrcode",
-    }
+    },
 }
 
 MS = {
@@ -175,7 +171,7 @@ MS = {
         WS_CTE_RECEPCAO_SINC: "ws/CTeRecepcaoSincV4?wsdl",
         WS_CTE_STATUS_SERVICO: "ws/CTeStatusServicoV4?wsdl",
         QR_CODE_URL: "http://www.dfe.ms.gov.br/cte/qrcode",
-    }
+    },
 }
 
 MG = {
@@ -198,7 +194,7 @@ MG = {
         WS_CTE_RECEPCAO_SINC: "cte/services/CTeRecepcaoSincV4?wsdl",
         WS_CTE_STATUS_SERVICO: "cte/services/CTeStatusServicoV4?wsdl",
         QR_CODE_URL: "https://cte.fazenda.mg.gov.br/portalcte/sistema/qrcode.xhtml",
-    }
+    },
 }
 
 PR = {
@@ -221,7 +217,7 @@ PR = {
         WS_CTE_RECEPCAO_SINC: "cte4/CTeRecepcaoSincV4?wsdl",
         WS_CTE_STATUS_SERVICO: "cte4/CTeStatusServicoV4?wsdl",
         QR_CODE_URL: "http://www.fazenda.pr.gov.br/cte/qrcode",
-    }
+    },
 }
 
 
@@ -234,7 +230,9 @@ def get_service_url(sigla_estado, service, ambiente):
         state_config = sigla_estado
 
     if not state_config:
-        raise ValueError(f"Estado {sigla_estado} não suportado ou configuração ausente.")
+        raise ValueError(
+            f"Estado {sigla_estado} não suportado ou configuração ausente."
+        )
 
     environment = AMBIENTE_PRODUCAO if ambiente == 1 else AMBIENTE_HOMOLOGACAO
     if service == "QRCode":
@@ -279,9 +277,7 @@ class CTe(DocumentoEletronico):
         )
 
     def status_servico(self):
-        raiz = ConsStatServCte(
-            tpAmb=self.ambiente, cUF=self.uf, versao=self.versao
-        )
+        raiz = ConsStatServCte(tpAmb=self.ambiente, cUF=self.uf, versao=self.versao)
         return self._post(
             raiz=raiz,
             url=self._get_ws_endpoint(WS_CTE_STATUS_SERVICO),
@@ -302,10 +298,10 @@ class CTe(DocumentoEletronico):
         xml_assinado = self.assina_raiz(edoc, edoc.infCte.Id)
 
         # Compactar o XML assinado com GZip
-        gzipped_xml = gzip.compress(xml_assinado.encode('utf-8'))
+        gzipped_xml = gzip.compress(xml_assinado.encode("utf-8"))
 
         # Codificar o XML compactado em Base64
-        base64_gzipped_xml = base64.b64encode(gzipped_xml).decode('utf-8')
+        base64_gzipped_xml = base64.b64encode(gzipped_xml).decode("utf-8")
 
         return self._post(
             raiz=base64_gzipped_xml,
@@ -332,17 +328,18 @@ class CTe(DocumentoEletronico):
         return edoc.infCte.Id[:3], edoc.infCte.Id[3:]
 
     def monta_qrcode(self, chave):
-        return f"{self._get_ws_endpoint(QR_CODE_URL)}?chCTe={chave}&tpAmb={self.ambiente}"
+        return (
+            f"{self._get_ws_endpoint(QR_CODE_URL)}?chCTe={chave}&tpAmb={self.ambiente}"
+        )
 
 
 class TransmissaoCTE(TransmissaoSOAP):
-
     def interpretar_mensagem(self, mensagem, **kwargs):
         if isinstance(mensagem, str):
             try:
-                return etree.fromstring(mensagem, parser=etree.XMLParser(
-                    remove_blank_text=True
-                ))
+                return etree.fromstring(
+                    mensagem, parser=etree.XMLParser(remove_blank_text=True)
+                )
             except (etree.XMLSyntaxError, ValueError):
                 # Retorna a string original se houver um erro na conversão
                 return mensagem
