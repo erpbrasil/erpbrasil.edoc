@@ -12,6 +12,7 @@ with suppress(ImportError):
         ConsSitCte,
         ConsStatServCte,
         EvCancCte,
+        EventoCte,
         RetConsSitCte,
         RetConsStatServCte,
         RetCte,
@@ -310,16 +311,45 @@ class CTe(DocumentoEletronico):
             classe=RetCte,
         )
 
-    def cancela_documento(self, doc_numero, justificativa):
-        raiz = EvCancCte(
-            descEvento="Cancelamento", nProt=doc_numero, xJust=justificativa
-        )
+    def enviar_lote_evento(self, lista_eventos, numero_lote=False):
+        for raiz_evento in lista_eventos:
+            evento = EventoCte(
+                versao="4.00",
+                infEvento=raiz_evento,
+            )
+            xml_assinado = self.assina_raiz(evento, evento.infEvento.Id)
+
         return self._post(
-            raiz=raiz,
-            url=self._get_ws_endpoint(WS_CTE_RECEPCAO_EVENTO),
-            operacao="cteRecepcaoEvento",
-            classe=RetEventoCte,
+            xml_assinado,
+            self._get_ws_endpoint(WS_CTE_RECEPCAO_EVENTO),
+            "cteRecepcaoEvento",
+            RetEventoCte,
         )
+
+    def cancela_documento(
+        self, chave, protocolo_autorizacao, justificativa, data_hora_evento=False
+    ):
+        tipo_evento = "110111"
+        sequencia = "1"
+        raiz = EventoCte.InfEvento(
+            Id="ID" + tipo_evento + chave + sequencia.zfill(3),
+            cOrgao=self.uf,
+            tpAmb=self.ambiente,
+            CNPJ=chave[6:20],
+            chCTe=chave,
+            dhEvento=data_hora_evento or self._hora_agora(),
+            tpEvento=tipo_evento,
+            nSeqEvento=sequencia,
+            detEvento=EventoCte.InfEvento.DetEvento(
+                EvCancCte(
+                    descEvento="Cancelamento",
+                    nProt=protocolo_autorizacao,
+                    xJust=justificativa,
+                ),
+                versaoEvento="4.00",
+            ),
+        )
+        return raiz
 
     def consulta_recibo(self):
         pass
