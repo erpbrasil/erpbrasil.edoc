@@ -17,7 +17,8 @@ class RetornoSoap:
 
 def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
     retorno.raise_for_status()
-    match = re.search("<soap:Body>(.*?)</soap:Body>", retorno.text.replace("\n", ""))
+    pattern = r"<[a-zA-Z0-9:]Body.?>(.*?)</[a-zA-Z0-9:]*Body>"
+    match = re.search(pattern, retorno.text.replace("\n", ""))
     if match:
         xml_resposta = match.group(1)
         xml_etree = etree.fromstring(xml_resposta)
