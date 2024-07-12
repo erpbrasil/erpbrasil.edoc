@@ -1027,7 +1027,9 @@ class NFe(DocumentoEletronico):
         )
 
     def monta_processo(self, edoc, proc_envio, proc_recibo=None):
-        nfe = proc_envio.envio_raiz.find("{" + self._namespace + "}NFe")
+        nfe = proc_envio.envio_raiz.find(
+            "{" + self._namespace + "}NFe"
+        )  # Se proc_envio for 'None', debugar o método 'analisar_retorno_raw'
         if proc_recibo:
             protocolos = proc_recibo.resposta.protNFe
         else:
