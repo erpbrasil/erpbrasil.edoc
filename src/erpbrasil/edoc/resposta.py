@@ -1,6 +1,7 @@
 # Copyright (C) 2018 - TODAY Luis Felipe Mileo - KMEE INFORMATICA LTDA
 # License MIT
 
+import logging
 import re
 
 from lxml import etree
@@ -37,6 +38,8 @@ def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
         classe.Validate_simpletypes_ = False
         resposta = classe.parseString(resultado, silence=True)
         return RetornoSoap(operacao, raiz, xml, retorno, resposta)
+    else:
+        logging.warning("'match' em 'analisar_retorno_raw' é None")
 
 
 def analisar_retorno(operacao, raiz, xml, retorno, classe):
