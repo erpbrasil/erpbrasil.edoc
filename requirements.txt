@@ -2,3 +2,4 @@ nfelib<=2.0.7
 nfselib.ginfes
 nfselib.issnet
 lxml
+erpbrasil.transmissao>=1.1.0
