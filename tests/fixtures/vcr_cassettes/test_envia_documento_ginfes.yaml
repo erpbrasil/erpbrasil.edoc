@@ -173,7 +173,7 @@ interactions:
       User-Agent:
       - Zeep/3.4.0 (www.python-zeep.org)
     method: POST
-    uri: https://homologacao.ginfes.com.br//ServiceGinfesImpl
+    uri: https://homologacao.ginfes.com.br/ServiceGinfesImpl
   response:
     body:
       string: !!binary |
@@ -320,7 +320,7 @@ interactions:
       User-Agent:
       - Zeep/3.4.0 (www.python-zeep.org)
     method: POST
-    uri: https://homologacao.ginfes.com.br//ServiceGinfesImpl
+    uri: https://homologacao.ginfes.com.br/ServiceGinfesImpl
   response:
     body:
       string: !!binary |
