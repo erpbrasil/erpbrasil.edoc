@@ -6,6 +6,10 @@ import re
 
 from lxml import etree
 
+combined_pattern = re.compile(
+    r"<soap:Body>(.*?)</soap:Body>|<[a-zA-Z0-9:]*Body[^>]*>(.*?)</[a-zA-Z0-9:]*Body>"
+)
+
 
 class RetornoSoap:
     def __init__(self, webservice, raiz, xml, retorno, resposta):
@@ -18,10 +22,9 @@ class RetornoSoap:
 
 def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
     retorno.raise_for_status()
-    pattern = r"<[a-zA-Z0-9:]Body.?>(.*?)</[a-zA-Z0-9:]*Body>"
-    match = re.search(pattern, retorno.text.replace("\n", ""))
+    match = re.search(combined_pattern, retorno.text.replace("\n", ""))
     if match:
-        xml_resposta = match.group(1)
+        xml_resposta = match.group(1) or match.group(2)
         xml_etree = etree.fromstring(xml_resposta)
         resultado = xml_etree[0]
 
