@@ -12,12 +12,24 @@ with suppress(ImportError):
         ConsSitCte,
         ConsStatServCte,
         EvCancCte,
+        EvCceCte,
         EventoCte,
         RetConsSitCte,
         RetConsStatServCte,
         RetCte,
         RetEventoCte,
     )
+
+TEXTO_CARTA_CORRECAO = """A Carta de Correcao e disciplinada pelo Art. 58-B do \
+CONVENIO/SINIEF 06/89: Fica permitida a utilizacao de carta de \
+correcao, para regularizacao de erro ocorrido na emissao de \
+documentos fiscais relativos a prestacao de servico de \
+transporte, desde que o erro nao esteja relacionado com: \
+I - as variaveis que determinam o valor do imposto tais como: \
+base de calculo, aliquota, diferenca de preco, quantidade, \
+valor da prestacao; II - a correcao de dados cadastrais que \
+implique mudanca do emitente, tomador, remetente ou do \
+destinatario; III - a data de emissao ou de saida."""
 
 AMBIENTE_PRODUCAO = "producao"
 AMBIENTE_HOMOLOGACAO = "homologacao"
@@ -345,6 +357,72 @@ class CTe(DocumentoEletronico):
                     descEvento="Cancelamento",
                     nProt=protocolo_autorizacao,
                     xJust=justificativa,
+                ),
+                versaoEvento="4.00",
+            ),
+        )
+        return raiz
+
+    def carta_correcao(
+        self,
+        chave,
+        protocolo_autorizacao,
+        justificativa,
+        sequencia,
+        data_hora_evento=False,
+    ):
+        tipo_evento = "110110"
+
+        temp_string = justificativa.replace("\\n", "TEMP_NEW_LINE")
+
+        # Separar a string pelo separador
+        lista = temp_string.split(";")
+
+        # Dividir a lista em sublistas usando o separador temporário
+        result = []
+        sublist = []
+
+        for item in lista:
+            if "TEMP_NEW_LINE" in item:
+                parts = item.split("TEMP_NEW_LINE")
+                sublist.append(parts[0])
+                result.append(sublist)
+                sublist = [parts[1]]
+            else:
+                sublist.append(item)
+
+        # Adicionar a última sublista
+        result.append(sublist)
+        correcoes = []
+        nro_item = 1  # Inicia a sequência de itens alterados
+
+        for linha in result:
+            grupo, campo, valor = linha
+            correcao = EvCceCte.InfCorrecao(
+                grupoAlterado=grupo,
+                campoAlterado=campo,
+                valorAlterado=valor,
+                nroItemAlterado=str(
+                    nro_item
+                ),  # Adiciona a sequência de itens alterados
+            )
+            correcoes.append(correcao)
+            nro_item += 1  # Incrementa a sequência
+
+        raiz = EventoCte.InfEvento(
+            Id="ID" + tipo_evento + chave + sequencia.zfill(3),
+            cOrgao=self.uf,
+            tpAmb=self.ambiente,
+            CNPJ=chave[6:20],
+            chCTe=chave,
+            dhEvento=data_hora_evento or self._hora_agora(),
+            tpEvento=tipo_evento,
+            nSeqEvento=sequencia,
+            detEvento=EventoCte.InfEvento.DetEvento(
+                EvCceCte(
+                    descEvento="Carta de Correcao",
+                    infCorrecao=correcoes,  # Lista de correções
+                    xCondUso=TEXTO_CARTA_CORRECAO,
                 ),
                 versaoEvento="4.00",
             ),
