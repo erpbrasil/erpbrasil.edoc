@@ -1,9 +1,14 @@
 # Copyright (C) 2018 - TODAY Luis Felipe Mileo - KMEE INFORMATICA LTDA
 # License MIT
 
+import logging
 import re
 
 from lxml import etree
+
+combined_pattern = re.compile(
+    r"<soap:Body>(.*?)</soap:Body>|<[a-zA-Z0-9:]*Body[^>]*>(.*?)</[a-zA-Z0-9:]*Body>"
+)
 
 
 class RetornoSoap:
@@ -17,9 +22,9 @@ class RetornoSoap:
 
 def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
     retorno.raise_for_status()
-    match = re.search("<soap:Body>(.*?)</soap:Body>", retorno.text.replace("\n", ""))
+    match = re.search(combined_pattern, retorno.text.replace("\n", ""))
     if match:
-        xml_resposta = match.group(1)
+        xml_resposta = match.group(1) or match.group(2)
         xml_etree = etree.fromstring(xml_resposta)
         resultado = xml_etree[0]
 
@@ -36,6 +41,8 @@ def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
         classe.Validate_simpletypes_ = False
         resposta = classe.parseString(resultado, silence=True)
         return RetornoSoap(operacao, raiz, xml, retorno, resposta)
+    else:
+        logging.warning("'match' em 'analisar_retorno_raw' é None")
 
 
 def analisar_retorno(operacao, raiz, xml, retorno, classe):
