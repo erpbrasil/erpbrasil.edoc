@@ -440,6 +440,20 @@ class CTe(DocumentoEletronico):
             f"{self._get_ws_endpoint(QR_CODE_URL)}?chCTe={chave}&tpAmb={self.ambiente}"
         )
 
+    def monta_cte_proc(self, doc, prot):
+        """
+        Constrói e retorna o XML do processo da CT-e,
+        incorporando a CT-e com o seu protocolo de autorização.
+        """
+        proc = etree.Element(
+            f"{{{self._namespace}}}cteProc",
+            versao=self.versao,
+            nsmap={None: self._namespace},
+        )
+        proc.append(doc)
+        proc.append(prot)
+        return etree.tostring(proc)
+
 
 class TransmissaoCTE(TransmissaoSOAP):
     def interpretar_mensagem(self, mensagem, **kwargs):
