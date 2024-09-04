@@ -1091,3 +1091,6 @@ class NFe(DocumentoEletronico):
             "consultaCadastro",
             retConsCad,
         )
+
+    def monta_qrcode(self, chave):
+        return
