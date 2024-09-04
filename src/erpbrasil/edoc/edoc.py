@@ -228,3 +228,6 @@ class DocumentoEletronico(ABC):
 
     def monta_processo(self, edoc, proc_envio, proc_recibo):
         return True
+
+    def monta_qrcode(self, chave):
+        return
