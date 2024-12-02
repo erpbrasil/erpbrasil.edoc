@@ -1,49 +1,34 @@
 # Copyright (C) 2019  Luis Felipe Mileo - KMEE
+# Copyright (C) 2024  Marcel Savegnago - Escodoo
 
 
-import binascii
-import datetime
-import time
+import base64
+import gzip
+from contextlib import suppress
 
 from lxml import etree
 
 from erpbrasil.edoc.edoc import DocumentoEletronico
+from erpbrasil.transmissao import TransmissaoSOAP
 
-try:
-    # Consulta Status
-    # Consulta Não Encerrados
-    from nfelib.mdfe.bindings.v3_0.cons_mdfe_nao_enc_v3_00 import ConsMdfeNaoEnc
-
-    # Consulta Recibo
-    from nfelib.mdfe.bindings.v3_0.cons_reci_mdfe_v3_00 import ConsReciMdfe
-
-    # Consulta Documento
-    from nfelib.mdfe.bindings.v3_0.cons_sit_mdfe_v3_00 import ConsSitMdfe
-    from nfelib.mdfe.bindings.v3_0.cons_stat_serv_mdfe_v3_00 import ConsStatServMdfe
-
-    # Envio
-    from nfelib.mdfe.bindings.v3_0.envi_mdfe_v3_00 import EnviMdfe
-    from nfelib.mdfe.bindings.v3_0.ev_canc_mdfe_v3_00 import EvCancMdfe
-    from nfelib.mdfe.bindings.v3_0.ev_enc_mdfe_v3_00 import EvEncMdfe
-
-    # Eventos
-    from nfelib.mdfe.bindings.v3_0.evento_mdfe_v3_00 import EventoMdfe
-
-    # Processamento
-    from nfelib.mdfe.bindings.v3_0.proc_mdfe_v3_00 import MdfeProc
-    from nfelib.mdfe.bindings.v3_0.ret_cons_mdfe_nao_enc_v3_00 import RetConsMdfeNaoEnc
-    from nfelib.mdfe.bindings.v3_0.ret_cons_reci_mdfe_v3_00 import RetConsReciMdfe
-    from nfelib.mdfe.bindings.v3_0.ret_cons_sit_mdfe_v3_00 import RetConsSitMdfe
-    from nfelib.mdfe.bindings.v3_0.ret_cons_stat_serv_mdfe_v3_00 import (
+with suppress(ImportError):
+    from nfelib.mdfe.bindings.v3_0 import (
+        ConsSitMdfe,
+        ConsStatServMdfe,
+        EvCancMdfe,
+        EvEncMdfe,
+        EventoMdfe,
+        RetConsSitMdfe,
         RetConsStatServMdfe,
+        RetEventoMdfe,
+        RetMdfe,
     )
-    from nfelib.mdfe.bindings.v3_0.ret_envi_mdfe_v3_00 import RetEnviMdfe
-    from nfelib.mdfe.bindings.v3_0.ret_evento_mdfe_v3_00 import RetEventoMdfe
-except ImportError:
-    pass
+
+AMBIENTE_PRODUCAO = 1
+AMBIENTE_HOMOLOGACAO = 2
 
 WS_MDFE_CONSULTA = "MDFeConsulta"
-WS_MDFE_SITUACAO = "MDFeStatusServico"
+WS_MDFE_STATUS_SERVICO = "MDFeStatusServicoMDF"
 WS_MDFE_CONSULTA_NAO_ENCERRADOS = "MDFeConsNaoEnc"
 WS_MDFE_DISTRIBUICAO = "MDFeDistribuicaoDFe"
 
@@ -52,49 +37,107 @@ WS_MDFE_RECEPCAO_SINC = "MDFeRecepcaoSinc"
 WS_MDFE_RET_RECEPCAO = "MDFeRetRecepcao"
 WS_MDFE_RECEPCAO_EVENTO = "MDFeRecepcaoEvento"
 
-AMBIENTE_PRODUCAO = 1
-AMBIENTE_HOMOLOGACAO = 2
+QR_CODE_URL = "QRCode"
 
 MDFE_MODELO = "58"
 
-SVC_RS = {
+SIGLA_ESTADO = {
+    "AC": 12,
+    "AL": 27,
+    "AM": 13,
+    "AP": 16,
+    "BA": 29,
+    "CE": 23,
+    "DF": 53,
+    "ES": 32,
+    "GO": 52,
+    "MA": 21,
+    "MG": 31,
+    "MS": 50,
+    "MT": 51,
+    "PA": 15,
+    "PB": 25,
+    "PE": 26,
+    "PI": 22,
+    "PR": 41,
+    "RJ": 33,
+    "RN": 24,
+    "RO": 11,
+    "RR": 14,
+    "RS": 43,
+    "SC": 42,
+    "SE": 28,
+    "SP": 35,
+    "TO": 17,
+    "AN": 91,
+}
+
+SVRS_STATES = [
+    "AC",
+    "AL",
+    "AM",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "GO",
+    "MA",
+    "PA",
+    "PB",
+    "PI",
+    "RJ",
+    "RN",
+    "RO",
+    "SC",
+    "SE",
+    "TO",
+    "AP",
+    "PE",
+    "RR",
+    "SP",
+]
+
+SVRS = {
     AMBIENTE_PRODUCAO: {
         "servidor": "mdfe.svrs.rs.gov.br",
-        WS_MDFE_RECEPCAO: "ws/MDFeRecepcao/MDFeRecepcao.asmx?wsdl",
         WS_MDFE_RET_RECEPCAO: "ws/MDFeRetRecepcao/MDFeRetRecepcao.asmx?wsdl",
         WS_MDFE_RECEPCAO_EVENTO: "ws/MDFeRecepcaoEvento/MDFeRecepcaoEvento.asmx?wsdl",
         WS_MDFE_CONSULTA: "ws/MDFeConsulta/MDFeConsulta.asmx?wsdl",
-        WS_MDFE_SITUACAO: "ws/MDFeStatusServico/MDFeStatusServico.asmx?wsdl",
+        WS_MDFE_STATUS_SERVICO: "ws/MDFeStatusServico/MDFeStatusServico.asmx?wsdl",
         WS_MDFE_CONSULTA_NAO_ENCERRADOS: "ws/MDFeConsNaoEnc/MDFeConsNaoEnc.asmx?wsdl",
         WS_MDFE_DISTRIBUICAO: "ws/MDFeDistribuicaoDFe/MDFeDistribuicaoDFe.asmx?wsdl",
         WS_MDFE_RECEPCAO_SINC: "ws/MDFeRecepcaoSinc/MDFeRecepcaoSinc.asmx?wsdl",
+        QR_CODE_URL: "https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode",
     },
     AMBIENTE_HOMOLOGACAO: {
         "servidor": "mdfe-homologacao.svrs.rs.gov.br",
-        WS_MDFE_RECEPCAO: "ws/MDFeRecepcao/MDFeRecepcao.asmx?wsdl",
         WS_MDFE_RET_RECEPCAO: "ws/MDFeRetRecepcao/MDFeRetRecepcao.asmx?wsdl",
         WS_MDFE_RECEPCAO_EVENTO: "ws/MDFeRecepcaoEvento/MDFeRecepcaoEvento.asmx?wsdl",
         WS_MDFE_CONSULTA: "ws/MDFeConsulta/MDFeConsulta.asmx?wsdl",
-        WS_MDFE_SITUACAO: "ws/MDFeStatusServico/MDFeStatusServico.asmx?wsdl",
+        WS_MDFE_STATUS_SERVICO: "ws/MDFeStatusServico/MDFeStatusServico.asmx?wsdl",
         WS_MDFE_CONSULTA_NAO_ENCERRADOS: "ws/MDFeConsNaoEnc/MDFeConsNaoEnc.asmx?wsdl",
         WS_MDFE_DISTRIBUICAO: "ws/MDFeDistribuicaoDFe/MDFeDistribuicaoDFe.asmx?wsdl",
         WS_MDFE_RECEPCAO_SINC: "ws/MDFeRecepcaoSinc/MDFeRecepcaoSinc.asmx?wsdl",
+        QR_CODE_URL: "https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode",
     },
 }
 
-QR_CODE_URL = "https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode"
 
-NAMESPACES = {
-    "mdfe": "http://www.portalfiscal.inf.br/mdfe",
-    "ds": "http://www.w3.org/2000/09/xmldsig#",
-}
+def get_service_url(sigla_estado, service, ambiente):
+    state_config = SVRS if sigla_estado in SVRS_STATES else sigla_estado
 
+    if not state_config:
+        raise ValueError(
+            f"Estado {sigla_estado} não suportado ou configuração ausente."
+        )
 
-def localizar_url(servico, ambiente=2):
-    dominio = SVC_RS[ambiente]["servidor"]
-    complemento = SVC_RS[ambiente][servico]
+    environment = AMBIENTE_PRODUCAO if ambiente == 1 else AMBIENTE_HOMOLOGACAO
+    if service == "QRCode":
+        return state_config[environment][QR_CODE_URL]
 
-    return f"https://{dominio}/{complemento}"
+    server = state_config[environment]["servidor"]
+    service_path = state_config[environment][service]
+    return f"https://{server}/{service_path}"
 
 
 class MDFe(DocumentoEletronico):
@@ -114,123 +157,79 @@ class MDFe(DocumentoEletronico):
         self.uf = int(uf)
         self.mod = str(mod)
 
+    def _get_ws_endpoint(self, service):
+        sigla = None
+        for uf_code, ibge_code in SIGLA_ESTADO.items():
+            if ibge_code == self.uf:
+                sigla = uf_code
+                break
+
+        if not sigla:
+            raise ValueError(f"UF {self.uf} não suportado ou configuração ausente.")
+
+        return get_service_url(sigla, service, self.ambiente)
+
     def _verifica_resposta_envio_sucesso(self, proc_envio):
         return (
             proc_envio.resposta.cStat
             == self._edoc_situacao_arquivo_recebido_com_sucesso
         )
 
-    def _verifica_servico_em_operacao(self, proc_servico):
-        return proc_servico.resposta.cStat == self._edoc_situacao_servico_em_operacao
-
-    def _aguarda_tempo_medio(self, proc_envio):
-        time.sleep(float(proc_envio.resposta.infRec.tMed) * 1.3)
-
-    def _edoc_situacao_em_processamento(self, proc_recibo):
-        return proc_recibo.resposta.cStat == "105"
+    def status_servico(self):
+        raiz = ConsStatServMdfe(tpAmb=self.ambiente, versao=self.versao)
+        return self._post(
+            raiz=raiz,
+            url=self._get_ws_endpoint(WS_MDFE_STATUS_SERVICO),
+            operacao="mdfeStatusServicoMDF",
+            classe=RetConsStatServMdfe,
+        )
 
     def get_documento_id(self, edoc):
-        return edoc.infMDFe.Id[:3], edoc.infMDFe.Id[3:]
+        return edoc.infMdfe.Id[:3], edoc.infMdfe.Id[3:]
 
     def monta_qrcode(self, chave):
-        return f"{QR_CODE_URL}?chMDFe={chave}&tpAmb={self.ambiente}"
-
-    def monta_qrcode_contingencia(self, edoc, xml_assinado):
-        chave = edoc.infMDFe.Id.replace("MDFe", "")
-
-        xml = etree.fromstring(xml_assinado)
-        digest_value = xml.find(".//ds:DigestValue", namespaces=NAMESPACES).text
-        digest_value_hex = binascii.hexlify(digest_value.encode()).decode()
-
-        return f"{self.monta_qrcode(chave)}&sign={digest_value_hex}"
-
-    def status_servico(self):
-        return self._post(
-            ConsStatServMdfe(tpAmb=self.ambiente, versao=self.versao),
-            localizar_url(WS_MDFE_SITUACAO, int(self.ambiente)),
-            "mdfeStatusServicoMDF",
-            RetConsStatServMdfe,
+        return (
+            f"{self._get_ws_endpoint(QR_CODE_URL)}?chMDFe={chave}&tpAmb={self.ambiente}"
         )
 
     def consulta_documento(self, chave):
-        raiz = ConsSitMdfe(
-            versao=self.versao,
-            tpAmb=self.ambiente,
-            chMDFe=chave,
-        )
+        raiz = ConsSitMdfe(tpAmb=self.ambiente, chMDFe=chave, versao=self.versao)
         return self._post(
-            raiz,
-            localizar_url(WS_MDFE_CONSULTA, int(self.ambiente)),
-            "mdfeConsultaMDF",
-            RetConsSitMdfe,
-        )
-
-    def consulta_nao_encerrados(self, cnpj):
-        raiz = ConsMdfeNaoEnc(
-            versao=self.versao,
-            tpAmb=self.ambiente,
-            CNPJ=cnpj,
-        )
-        return self._post(
-            raiz,
-            localizar_url(WS_MDFE_CONSULTA_NAO_ENCERRADOS, int(self.ambiente)),
-            "mdfeConsNaoEnc",
-            RetConsMdfeNaoEnc,
+            raiz=raiz,
+            url=self._get_ws_endpoint(WS_MDFE_CONSULTA),
+            operacao="mdfeConsulta",
+            classe=RetConsSitMdfe,
         )
 
     def envia_documento(self, edoc):
-        """
+        xml_assinado = self.assina_raiz(edoc, edoc.infMDFe.Id)
 
-        Exportar o documento
-        Assinar o documento
-        Adicionar o mesmo ao envio
+        # Compactar o XML assinado com GZip
+        gzipped_xml = gzip.compress(xml_assinado.encode("utf-8"))
 
-        :param edoc:
-        :return:
-        """
-        raiz = EnviMdfe(
-            versao=self.versao,
-            idLote=datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
-            MDFe=edoc,
-        )
-        xml_assinado = self.assina_raiz(raiz, edoc.infMDFe.Id)
+        # Codificar o XML compactado em Base64
+        base64_gzipped_xml = base64.b64encode(gzipped_xml).decode("utf-8")
+
         return self._post(
-            xml_assinado,
-            localizar_url(WS_MDFE_RECEPCAO, int(self.ambiente)),
-            "mdfeRecepcaoLote",
-            RetEnviMdfe,
+            raiz=base64_gzipped_xml,
+            url=self._get_ws_endpoint(WS_MDFE_RECEPCAO_SINC),
+            operacao="mdfeRecepcao",
+            classe=RetMdfe,
         )
 
-    def consulta_recibo(self, numero=False, proc_envio=False):
-        if proc_envio:
-            numero = proc_envio.resposta.infRec.nRec
-
-        if not numero:
-            return
-
-        raiz = ConsReciMdfe(
+    def monta_mdfe_proc(self, doc, prot):
+        """
+        Constrói e retorna o XML do processo da MDF-e,
+        incorporando a MDF-e com o seu protocolo de autorização.
+        """
+        proc = etree.Element(
+            f"{{{self._namespace}}}mdfeProc",
             versao=self.versao,
-            tpAmb=self.ambiente,
-            nRec=numero,
+            nsmap={None: self._namespace},
         )
-        return self._post(
-            raiz,
-            localizar_url(WS_MDFE_RET_RECEPCAO, int(self.ambiente)),
-            "mdfeRetRecepcao",
-            RetConsReciMdfe,
-        )
-
-    def monta_processo(self, edoc, proc_envio, proc_recibo):
-        mdfe = proc_envio.envio_raiz.find("{" + self._namespace + "}MDFe")
-        protocolos = proc_recibo.resposta.protMDFe
-        if mdfe and protocolos:
-            if not isinstance(protocolos, list):
-                protocolos = [protocolos]
-            for protocolo in protocolos:
-                mdfe_proc = MdfeProc(versao=self.versao, protMDFe=protocolo)
-                proc_recibo.processo = mdfe_proc
-                proc_recibo.processo_xml = mdfe_proc.to_xml()
-                proc_recibo.protocolo = protocolo
+        proc.append(doc)
+        proc.append(prot)
+        return etree.tostring(proc)
 
     def envia_evento(self, evento, tipo, chave, sequencia="001", data_hora=False):
         inf_evento = EventoMdfe.InfEvento(
@@ -251,7 +250,7 @@ class MDFe(DocumentoEletronico):
 
         return self._post(
             xml_assinado,
-            localizar_url(WS_MDFE_RECEPCAO_EVENTO, int(self.ambiente)),
+            self._get_ws_endpoint(WS_MDFE_RECEPCAO_EVENTO),
             "mdfeRecepcaoEvento",
             RetEventoMdfe,
         )
@@ -279,3 +278,19 @@ class MDFe(DocumentoEletronico):
         return self.envia_evento(
             evento=encerramento, tipo="110112", chave=chave, data_hora=data_hora_evento
         )
+
+    def consulta_recibo(self):
+        pass
+
+
+class TransmissaoMDFE(TransmissaoSOAP):
+    def interpretar_mensagem(self, mensagem, **kwargs):
+        if isinstance(mensagem, str):
+            try:
+                return etree.fromstring(
+                    mensagem, parser=etree.XMLParser(remove_blank_text=True)
+                )
+            except (etree.XMLSyntaxError, ValueError):
+                # Retorna a string original se houver um erro na conversão
+                return mensagem
+        return mensagem
