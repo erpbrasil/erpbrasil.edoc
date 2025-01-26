@@ -681,8 +681,6 @@ def localizar_url(servico, estado, mod="55", ambiente=2, contingencia=False):
         dominio = "cad.sefazrs.rs.gov.br"
     if sigla in ("AC", "RN", "PB", "SC", "RJ") and servico == WS_NFE_CADASTRO:
         dominio = "cad.svrs.rs.gov.br"
-    if sigla == "AN" and servico == WS_NFE_RECEPCAO_EVENTO:
-        dominio = "www.nfe.fazenda.gov.br"
 
     return f"https://{dominio}/{complemento}"
 
