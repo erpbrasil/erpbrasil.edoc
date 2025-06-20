@@ -94,6 +94,7 @@ SVRS_STATES = [
     "AP",
     "PE",
     "RR",
+    "RS",
     "SP",
 ]
 
