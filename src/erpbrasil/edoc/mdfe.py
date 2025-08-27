@@ -94,6 +94,7 @@ SVRS_STATES = [
     "AP",
     "PE",
     "RR",
+    "RS",
     "SP",
 ]
 
@@ -124,14 +125,15 @@ SVRS = {
 
 
 def get_service_url(sigla_estado, service, ambiente):
-    state_config = SVRS if sigla_estado in SVRS_STATES else sigla_estado
-
-    if not state_config:
+    if sigla_estado in SVRS_STATES:
+        state_config = SVRS
+    else:
         raise ValueError(
             f"Estado {sigla_estado} não suportado ou configuração ausente."
         )
 
     environment = AMBIENTE_PRODUCAO if ambiente == 1 else AMBIENTE_HOMOLOGACAO
+
     if service == "QRCode":
         return state_config[environment][QR_CODE_URL]
 
