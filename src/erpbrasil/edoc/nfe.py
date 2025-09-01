@@ -788,27 +788,35 @@ class NFe(DocumentoEletronico):
 
     def envia_documento(self, edoc):
         """
-
         Exportar o documento
         Assinar o documento
         Adicionar o mesmo ao envio
-
-        :param edoc:
+        :param edoc: pode ser um objeto único ou uma lista de objetos.
         :return:
         """
-        xml_assinado = self.assina_raiz(edoc, edoc.infNFe.Id)
+        if not isinstance(edoc, list):
+            docs = [edoc]
+        else:
+            docs = edoc
+
+        envio_sincrono = self.envio_sincrono
+        if self.mod == "55" and len(docs) == 1:
+            envio_sincrono = True
 
         raiz = retEnviNFe.TEnviNFe(
             versao=self.versao,
             idLote=datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
-            indSinc="1" if self.envio_sincrono else "0",
+            indSinc="1" if envio_sincrono else "0",
         )
         raiz.original_tagname_ = "enviNFe"
         xml_envio_string, xml_envio_etree = self._generateds_to_string_etree(raiz)
-        xml_envio_etree.append(etree.fromstring(xml_assinado))
+
+        for doc in docs:
+            xml_assinado = self.assina_raiz(doc, doc.infNFe.Id)
+            xml_envio_etree.append(etree.fromstring(xml_assinado))
+
         return self._post(
             xml_envio_etree,
-            # 'https://hom.sefazvirtual.fazenda.gov.br/NFeAutorizacao4/NFeAutorizacao4.asmx?wsdl',
             self._get_ws_endpoint(WS_NFE_AUTORIZACAO),
             "nfeAutorizacaoLote",
             retEnviNFe,
@@ -1025,33 +1033,49 @@ class NFe(DocumentoEletronico):
         )
 
     def monta_processo(self, edoc, proc_envio, proc_recibo=None):
-        nfe = proc_envio.envio_raiz.find(
-            "{" + self._namespace + "}NFe"
-        )  # Se proc_envio for 'None', debugar o método 'analisar_retorno_raw'
         if proc_recibo:
             protocolos = proc_recibo.resposta.protNFe
         else:
-            # A falta do recibo indica envio no modo síncrono
-            # o protocolo é recuperado diretamente da resposta do envio.
             protocolos = proc_envio.resposta.protNFe
-        if len(nfe) and protocolos:
-            if not isinstance(protocolos, list):
-                protocolos = [protocolos]
-            for protocolo in protocolos:
+
+        if not protocolos:
+            return False
+
+        if not isinstance(protocolos, list):
+            protocolos = [protocolos]
+
+        edoc_chave = edoc.infNFe.Id.replace("NFe", "")
+        nfe_element = None
+
+        # Find the NFe element corresponding to the edoc
+        for nfe in proc_envio.envio_raiz.findall(f"{{{self._namespace}}}NFe"):
+            if nfe.find(f"{{{self._namespace}}}infNFe").attrib["Id"].replace(
+                "NFe", ""
+            ) == edoc_chave:
+                nfe_element = nfe
+                break
+
+        if nfe_element is None:
+            return False
+
+        for protocolo in protocolos:
+            if protocolo.infProt.chNFe == edoc_chave:
                 nfe_proc = retEnviNFe.TNfeProc(
                     versao=self.versao,
                     protNFe=protocolo,
                 )
                 nfe_proc.original_tagname_ = "nfeProc"
-                xml_file, nfe_proc = self._generateds_to_string_etree(nfe_proc)
-                prot_nfe = nfe_proc.find("{" + self._namespace + "}protNFe")
-                prot_nfe.addprevious(nfe)
+                _, nfe_proc_etree = self._generateds_to_string_etree(nfe_proc)
+                prot_nfe = nfe_proc_etree.find(f"{{{self._namespace}}}protNFe")
+                prot_nfe.addprevious(nfe_element)
 
                 proc = proc_recibo if proc_recibo else proc_envio
-                proc.processo = nfe_proc
-                proc.processo_xml = self._generateds_to_string_etree(nfe_proc)[0]
+                proc.processo = nfe_proc_etree
+                proc.processo_xml = etree.tostring(nfe_proc_etree)
                 proc.protocolo = protocolo
-            return True
+                return True
+
+        return False
 
     def monta_nfe_proc(self, nfe, prot_nfe):
         """
