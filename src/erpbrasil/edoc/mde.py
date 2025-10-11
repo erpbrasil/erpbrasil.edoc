@@ -10,13 +10,13 @@ from erpbrasil.edoc.resposta import RetornoSoap
 from erpbrasil.transmissao import TransmissaoSOAP
 
 try:
-    from nfelib.v4_00 import retEnvConfRecebto
-    from nfelib.v4_00.retEnvConfRecebto import TEnvEvento as TEnvEventoManifestacao
-    from nfelib.v4_00.retEnvConfRecebto import TEvento as TEventoManifestacao  # noga
-    from nfelib.v4_00.retEnvConfRecebto import descEventoType as descEventoManifestacao
-    from nfelib.v4_00.retEnvConfRecebto import detEventoType as detEventoManifestacao
-    from nfelib.v4_00.retEnvConfRecebto import infEventoType as infEventoManifestacao
-    from nfelib.v4_00.retEnvConfRecebto import tpEventoType as eventoManifestacao
+    from erpbrasil.nfelib_legacy.v4_00 import retEnvConfRecebto
+    from erpbrasil.nfelib_legacy.v4_00.retEnvConfRecebto import TEnvEvento as TEnvEventoManifestacao
+    from erpbrasil.nfelib_legacy.v4_00.retEnvConfRecebto import TEvento as TEventoManifestacao  # noga
+    from erpbrasil.nfelib_legacy.v4_00.retEnvConfRecebto import descEventoType as descEventoManifestacao
+    from erpbrasil.nfelib_legacy.v4_00.retEnvConfRecebto import detEventoType as detEventoManifestacao
+    from erpbrasil.nfelib_legacy.v4_00.retEnvConfRecebto import infEventoType as infEventoManifestacao
+    from erpbrasil.nfelib_legacy.v4_00.retEnvConfRecebto import tpEventoType as eventoManifestacao
 except ImportError:
     pass
 

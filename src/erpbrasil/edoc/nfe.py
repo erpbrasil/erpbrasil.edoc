@@ -18,7 +18,7 @@ with suppress(ImportError):
     # xsd Evento Cancelamento
     # xsd CCe
     # xsd Consulta Cadastro
-    from nfelib.v4_00 import (
+    from erpbrasil.nfelib_legacy.v4_00 import (
         distDFeInt,
         retConsCad,
         retConsReciNFe,

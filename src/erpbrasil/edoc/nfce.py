@@ -11,7 +11,7 @@ from lxml import etree
 from erpbrasil.edoc.nfe import SIGLA_ESTADO, WS_NFE_AUTORIZACAO, NFe, localizar_url
 
 with suppress(ImportError):
-    from nfelib.v4_00 import retEnviNFe
+    from erpbrasil.nfelib_legacy.v4_00 import retEnviNFe
 
 
 NFCE_AMBIENTE_PRODUCAO = "1"
