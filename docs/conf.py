@@ -22,7 +22,7 @@ project = "erpbrasil.edoc"
 year = "2019"
 author = "Luis Felipe Mileo"
 copyright = f"{year}, {author}"
-version = release = "3.0.0"
+version = release = "3.1.0"
 
 pygments_style = "trac"
 templates_path = ["."]
