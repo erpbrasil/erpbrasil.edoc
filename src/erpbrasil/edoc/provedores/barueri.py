@@ -21,6 +21,7 @@ try:
         ConsultarNFeRecebidaNumero,
         NFeLoteEnviarArquivo,
         NFeLoteStatusArquivo,
+        NFeLoteBaixarArquivo,
     )
 
     barueri = True
@@ -44,6 +45,9 @@ if barueri:
         ),
         "consultar_lote_rps": ServicoNFSe(
             "NFeLoteStatusArquivo", endpoint, NFeLoteStatusArquivo, True
+        ),
+        "baixar_lote_rps": ServicoNFSe(
+            "NFeLoteBaixarArquivo", endpoint, NFeLoteBaixarArquivo, True
         ),
         "consulta_nfse_rps": ServicoNFSe(
             "ConsultaNFeRecebidaNumero", 'nfewsxml/wsgeraxml.asmx?WSDL', ConsultarNFeRecebidaNumero, True
@@ -92,13 +96,24 @@ class Barueri(NFSe):
         )
         return raiz
 
+    def _prepara_baixar_lote_rps(self, nome_arq_retorno):
+        raiz = NFeLoteBaixarArquivo.NFeLoteBaixarArquivo(
+                CPFCNPJContrib=self.cnpj_prestador, InscricaoMunicipal=self.im_prestador, NomeArqRetorno=nome_arq_retorno,)
+        return raiz
+
+    def baixar_lote_rps(self, protocolo=None):
+        return self._post(
+            body=self._prepara_baixar_lote_rps(protocolo),
+            servico=self._servicos[self.baixar_lote_rps.__name__],
+        )
+
     def _verifica_resposta_envio_sucesso(self, proc_envio):
         if proc_envio.retorno.ProtocoloRemessa:
             return True
         return False
 
     def _edoc_situacao_em_processamento(self, proc_recibo):
-        return proc_recibo.resposta.Situacao == 2
+        return proc_recibo.retorno.ListaNfeArquivosRPS.SituacaoArq == 2
 
     def _prepara_cancelar_nfse_envio(self, doc_numero):
         pass
@@ -106,7 +121,7 @@ class Barueri(NFSe):
     def _prepara_consultar_nfse_rps(self, **kwargs):
         rps_numero = kwargs.get("rps_number")
         raiz = ConsultarNFeRecebidaNumero.NFeRecebidaNumero(
-            CPFCNPJTomador=self.cnpj_tomador,
+            CPFCNPJTomador=self.cnpj_prestador,
             CPFCNPJPrestador=self.cnpj_prestador,
             NumeroNota=rps_numero,
         )
