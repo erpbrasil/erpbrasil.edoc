@@ -1,15 +1,8 @@
 # Copyright (C) 2023  Luis Felipe Mileo - KMEE
 
 
-import xml.etree.ElementTree as ET
-from datetime import datetime
-
-from lxml import etree
-
-from erpbrasil.base import misc
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 from erpbrasil.edoc.resposta import RetornoSoap
-from zeep.helpers import serialize_object
 
 try:
     from urllib.parse import urljoin
@@ -18,10 +11,9 @@ except ImportError:
 
 try:
     from nfselib.barueri import (
-        ConsultarNFeRecebidaNumero,
+        NFeLoteBaixarArquivo,
         NFeLoteEnviarArquivo,
         NFeLoteStatusArquivo,
-        NFeLoteBaixarArquivo,
     )
 
     barueri = True
@@ -29,11 +21,6 @@ except ImportError:
     barueri = False
 
 endpoint = "nfeservice/wsrps.asmx?WSDL"
-nsmap = {
-    "consulta": "http://www.barueri.sp.gov.br/nfe/ConsultaNFeRecebidaNumero"
-    "ConsultaNFeRecebidaNumero.v1.xsd",
-    "tipo": "https://servicos.barueri.sp.gov.br/nfewsxml/wsgeraxml.asmx?op=ConsultaNFeRecebidaNumero",
-}
 
 if barueri:
     servicos = {
@@ -50,7 +37,7 @@ if barueri:
             "NFeLoteBaixarArquivo", endpoint, NFeLoteBaixarArquivo, True
         ),
         "consulta_nfse_rps": ServicoNFSe(
-            "ConsultaNFeRecebidaNumero", 'nfewsxml/wsgeraxml.asmx?WSDL', ConsultarNFeRecebidaNumero, True
+            "NFeLoteStatusArquivo", endpoint, NFeLoteStatusArquivo, True
         ),
     }
 else:
@@ -82,23 +69,26 @@ class Barueri(NFSe):
 
     def _prepara_consulta_recibo(self, proc_envio):
         raiz = NFeLoteStatusArquivo.NFeLoteStatusArquivo(
-                CPFCNPJContrib=self.cnpj_prestador, InscricaoMunicipal=self.im_prestador
-            ,
+            CPFCNPJContrib=self.cnpj_prestador,
+            InscricaoMunicipal=self.im_prestador,
             ProtocoloRemessa=proc_envio.resposta.ProtocoloRemessa,
         )
         return raiz
 
     def _prepara_consultar_lote_rps(self, protocolo):
         raiz = NFeLoteStatusArquivo.NFeLoteStatusArquivo(
-                CPFCNPJContrib=self.cnpj_prestador, InscricaoMunicipal=self.im_prestador
-            ,
+            CPFCNPJContrib=self.cnpj_prestador,
+            InscricaoMunicipal=self.im_prestador,
             ProtocoloRemessa=protocolo,
         )
         return raiz
 
     def _prepara_baixar_lote_rps(self, nome_arq_retorno):
         raiz = NFeLoteBaixarArquivo.NFeLoteBaixarArquivo(
-                CPFCNPJContrib=self.cnpj_prestador, InscricaoMunicipal=self.im_prestador, NomeArqRetorno=nome_arq_retorno,)
+            CPFCNPJContrib=self.cnpj_prestador,
+            InscricaoMunicipal=self.im_prestador,
+            NomeArqRetorno=nome_arq_retorno,
+        )
         return raiz
 
     def baixar_lote_rps(self, protocolo=None):
@@ -119,107 +109,46 @@ class Barueri(NFSe):
         pass
 
     def _prepara_consultar_nfse_rps(self, **kwargs):
-        rps_numero = kwargs.get("rps_number")
-        raiz = ConsultarNFeRecebidaNumero.NFeRecebidaNumero(
-            CPFCNPJTomador=self.cnpj_prestador,
-            CPFCNPJPrestador=self.cnpj_prestador,
-            NumeroNota=rps_numero,
+        protocolo = kwargs.get("lot_receipt_number")
+        raiz = NFeLoteStatusArquivo.NFeLoteStatusArquivo(
+            CPFCNPJContrib=self.cnpj_prestador,
+            InscricaoMunicipal=self.im_prestador,
+            ProtocoloRemessa=protocolo,
         )
         return raiz
 
-    def analisa_retorno_consulta(
-        self, processo, number, company_cnpj_cpf, company_legal_name
-    ):
-        data = serialize_object(processo.resposta, target_cls=dict)
-        root = etree.Element("ConsultarNfeResposta")
+    def analisa_retorno_consulta(self, processo):
+        mensagem = ""
+        if processo.webservice == "NFeLoteStatusArquivo" and processo.resposta:
+            lista_msgs = processo.resposta.ListaMensagemRetorno
 
-        if processo.webservice == "ConsultaNFeRecebidaNumero":
-            # if "ListaNfe" in data:
-            #     lista = etree.SubElement(root, "ListaNfe")
-            #     for nfe in data["ListaNfe"]:
-            #         item = etree.SubElement(lista, "CompNfe")
-            #         for k, v in nfe.items():
-            #             etree.SubElement(item, k).text = str(v)
-
-            if "ListaMensagemRetorno" in data:
-                msgs = etree.SubElement(root, "ListaMensagemRetorno")
-                for msg in data["ListaMensagemRetorno"]:
-                    item = etree.SubElement(msgs, "MensagemRetorno")
-                    for k, v in msg.items():
-                        etree.SubElement(item, k).text = str(v)
-                mensagem = ""
-
-            retorno = root
-            enviado = retorno.findall(".//CompNfe")
-            nao_encontrado = retorno.findall(".//MensagemRetorno")
-            # TODO: PAREI AQUI
-
-            if enviado:
-                # NFS-e já foi enviada
-
-                cancelada = retorno.findall(
-                    ".//tipo:NfseCancelamento", namespaces=nsmap
+            if lista_msgs.Codigo != "OK200":
+                mensagem += (
+                    lista_msgs.Codigo
+                    + " - "
+                    + lista_msgs.Mensagem
+                    + " - Correção: "
+                    + lista_msgs.Correcao
+                    + "\n"
                 )
-
-                if cancelada:
-                    # NFS-e enviada foi cancelada
-
-                    data = retorno.findall(".//tipo:DataHora", namespaces=nsmap)[0].text
-                    data = datetime.strptime(data, "%Y-%m-%dT%H:%M:%S").strftime(
-                        "%m/%d/%Y"
-                    )
-                    mensagem = "NFS-e cancelada em " + data
-
-                else:
-                    numero_retorno = retorno.findall(
-                        ".//tipo:InfNfse/tipo:Numero", namespaces=nsmap
-                    )[0].text
-                    cnpj_prestador_retorno = retorno.findall(
-                        ".//tipo:IdentificacaoPrestador/tipo:Cnpj", namespaces=nsmap
-                    )[0].text
-                    razao_social_prestador_retorno = retorno.findall(
-                        ".//tipo:PrestadorServico/tipo:RazaoSocial", namespaces=nsmap
-                    )[0].text
-
-                    variables_error = []
-
-                    if numero_retorno != number:
-                        variables_error.append("Número")
-                    if cnpj_prestador_retorno != misc.punctuation_rm(company_cnpj_cpf):
-                        variables_error.append("CNPJ do prestador")
-                    if razao_social_prestador_retorno != company_legal_name:
-                        variables_error.append("Razão Social de prestador")
-
-                    if variables_error:
-                        mensagem = (
-                            "Os seguintes campos não condizem com"
-                            " o provedor NFS-e: \n"
-                        )
-                        mensagem += "\n".join(variables_error)
-                    else:
-                        mensagem = "NFS-e enviada e corresponde com o provedor"
-
-            elif nao_encontrado:
-                # NFS-e não foi enviada
-
-                mensagem_erro = msg.get('Mensagem')
-                correcao = msg.get('Correcao')
-                codigo = msg.get('Codigo')
-                mensagem = (
-                    codigo + " - " + mensagem_erro + " - Correção: " + correcao + "\n"
-                )
-
             else:
-                mensagem = "Erro desconhecido."
+                status = int(processo.resposta.ListaNfeArquivosRPS.SituacaoArq)
+                if status == 0:
+                    mensagem = "Validated"
+                elif status == 1:
+                    mensagem = "Successfully Processed"
+                elif status == 2:
+                    mensagem = "Processed with Error"
+                elif status == -1 or status == -2:
+                    mensagem = "Batch not yet processed"
 
-        return mensagem
+        return status, mensagem
 
     def analisa_retorno_cancelamento(self, processo):
         pass
 
-
     def _post(self, body, servico):
-        header_string = '1'
+        header_string = "1"
 
         body_string, body_etree = self._generateds_to_string_etree(body)
 
@@ -228,7 +157,7 @@ class Barueri(NFSe):
 
         if header_string:
             with self._transmissao.cliente(
-                    urljoin(self._url, servico.endpoint)
+                urljoin(self._url, servico.endpoint)
             ) as cliente:
                 resposta = cliente.service[servico.operacao](
                     header_string,
