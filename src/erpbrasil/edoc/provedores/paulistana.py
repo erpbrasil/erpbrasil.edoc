@@ -7,7 +7,7 @@ from base64 import b64encode
 from erpbrasil.edoc.nfse import NFSe, ServicoNFSe
 
 try:
-    from nfselib.paulistana.v02 import (
+    from nfselib.paulistana.v03 import (
         PedidoCancelamentoNFe,
         PedidoConsultaLote,
         PedidoConsultaNFe,
@@ -17,12 +17,11 @@ try:
     )
 
     from erpbrasil.assinatura.assinatura import Assinatura
-
     paulistana = True
 except ImportError:
     paulistana = False
 
-endpoint = "ws/lotenfe.asmx?WSDL"
+endpoint = "lotenfe.asmx?WSDL"
 
 if paulistana:
     servicos_base = {
@@ -51,10 +50,11 @@ if paulistana:
 
 
 class Paulistana(NFSe):
+
     def __init__(
         self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
     ):
-        self._url = "https://nfe.prefeitura.sp.gov.br"
+        self._url = "https://nfews.prefeitura.sp.gov.br"
 
         # Não tem URL de homologação mas tem métodos para testes
         # no mesmo webservice
@@ -71,10 +71,8 @@ class Paulistana(NFSe):
     def _prepara_envia_documento(self, edoc):
         assinador = Assinatura(self._transmissao.certificado)
         for rps in edoc.RPS:
-            data = rps.Assinatura
-            data_bytes = data.encode("ascii")
-            assinatura = assinador.sign_pkcs1v15_sha1(data_bytes)
-            rps.Assinatura = b64encode(assinatura).decode()
+            assinatura_bytes = assinador.sign_pkcs1v15_sha1(rps.Assinatura)
+            rps.Assinatura = assinatura_bytes
         xml_assinado = self.assina_raiz(edoc, "")
         return xml_assinado
 
@@ -94,7 +92,7 @@ class Paulistana(NFSe):
 
         edoc = PedidoConsultaLote.PedidoConsultaLote(
             Cabecalho=PedidoConsultaLote.CabecalhoType(
-                Versao=1,
+                Versao=2,
                 CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj),
                 NumeroLote=numero_lote,
             )
@@ -112,8 +110,8 @@ class Paulistana(NFSe):
 
         raiz = PedidoConsultaNFe.PedidoConsultaNFe(
             Cabecalho=PedidoConsultaNFe.CabecalhoType(
-                Versao=1,
-                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj_prestador),
+                Versao=2,
+                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj_prestador)
             ),
             Detalhe=[
                 PedidoConsultaNFe.DetalheType(
@@ -147,12 +145,12 @@ class Paulistana(NFSe):
         numero_nfse = doc_numero.get("numero_nfse")
         codigo_verificacao = doc_numero.get("codigo_verificacao") or ""
 
-        assinatura = self.im_prestador.zfill(8)
+        assinatura = self.im_prestador.zfill(12)
         assinatura += numero_nfse.zfill(12)
 
         raiz = PedidoCancelamentoNFe.PedidoCancelamentoNFe(
             Cabecalho=PedidoCancelamentoNFe.CabecalhoType(
-                Versao=1,
+                Versao=2,
                 CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=self.cnpj_prestador),
             ),
             Detalhe=[
