@@ -145,13 +145,17 @@ class Paulistana(NFSe):
         numero_nfse = doc_numero.get("numero_nfse")
         codigo_verificacao = doc_numero.get("codigo_verificacao") or ""
 
-        assinatura = self.im_prestador.zfill(12)
-        assinatura += numero_nfse.zfill(12)
+        assinatura_raw = (
+            self.im_prestador.zfill(8)
+            + numero_nfse.zfill(12)
+        )
 
         raiz = PedidoCancelamentoNFe.PedidoCancelamentoNFe(
             Cabecalho=PedidoCancelamentoNFe.CabecalhoType(
                 Versao=2,
-                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=self.cnpj_prestador),
+                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(
+                    CNPJ=self.cnpj_prestador
+                ),
             ),
             Detalhe=[
                 PedidoCancelamentoNFe.DetalheType(
@@ -160,17 +164,17 @@ class Paulistana(NFSe):
                         NumeroNFe=int(numero_nfse),
                         CodigoVerificacao=codigo_verificacao.zfill(8),
                     ),
-                    AssinaturaCancelamento=assinatura,
+                    AssinaturaCancelamento=None,
                 )
             ],
         )
 
         assinador = Assinatura(self._transmissao.certificado)
         for detalhe in raiz.Detalhe:
-            data = detalhe.AssinaturaCancelamento
-            data_bytes = data.encode("ascii")
-            assinatura = assinador.sign_pkcs1v15_sha1(data_bytes)
-            detalhe.AssinaturaCancelamento = b64encode(assinatura).decode()
+            assinatura_bytes = assinador.sign_pkcs1v15_sha1(
+                assinatura_raw.encode("ascii")
+            )
+            detalhe.AssinaturaCancelamento = assinatura_bytes
         xml_assinado = self.assina_raiz(raiz, "")
         return xml_assinado
 
