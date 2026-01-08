@@ -44,7 +44,7 @@ def read(*names, **kwargs):
 
 setup(
     name="erpbrasil.edoc",
-    version="3.1.0",
+    version="3.1.1",
     license="MIT",
     description=(
         "Emissão de documentos fiscais e outras obrigações"
