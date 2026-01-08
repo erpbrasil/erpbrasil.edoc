@@ -32000,7 +32000,7 @@ class infProtType(GeneratedsSuper):
         if self.digVal is not None:
             namespaceprefix_ = self.digVal_nsprefix_ + ':' if (UseCapturedNS_ and self.digVal_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdigVal>%s</%sdigVal>%s' % (namespaceprefix_ , self.gds_format_base64(self.digVal, input_name='digVal'), namespaceprefix_ , eol_))
+            outfile.write('<%sdigVal>%s</%sdigVal>%s' % (namespaceprefix_ , self.gds_format_base64(self.digVal, input_name='digVal').decode(), namespaceprefix_ , eol_))
         if self.cStat is not None:
             namespaceprefix_ = self.cStat_nsprefix_ + ':' if (UseCapturedNS_ and self.cStat_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
