@@ -214,6 +214,14 @@ class DocumentoEletronico(ABC):
         return datetime.strftime(datetime.now(), "%Y-%m-%d")
 
     def assina_raiz(self, raiz, id, getchildren=False):
+        # Garante que uma Signature pré-existente (ex.: re-envio de NF-e
+        # reconstruída a partir do XML já assinado) não seja serializada pelo
+        # generateDS, que escreve <ds:Signature> sem declarar xmlns:ds e
+        # quebra o etree.fromstring em _generateds_to_string_etree.
+        # Como vamos reassinar a raiz, descartar a Signature anterior é o
+        # comportamento correto.
+        if hasattr(raiz, "Signature") and raiz.Signature is not None:
+            raiz.Signature = None
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
             xml_etree, id, getchildren
