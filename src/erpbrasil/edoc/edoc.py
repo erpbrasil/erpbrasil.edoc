@@ -61,6 +61,20 @@ class DocumentoEletronico(ABC):
             )
         contents = output.getvalue()
         output.close()
+        # Reforço defensivo: as legacy generateDS bindings
+        # (nfelib_legacy/v4_00/retEnviNFe.py:2218 e análogos) hardcodam
+        # `namespaceprefix_='ds:'` e `namespacedef_=''` ao exportar uma
+        # Signature pré-existente, gerando `<ds:Signature>` sem declarar
+        # `xmlns:ds`. Isso quebra o etree.fromstring abaixo. Detectar e
+        # injetar a declaração ausente para qualquer caller que não tenha
+        # zerado a Signature antes (ex.: assina_raiz já zera, mas outros
+        # caminhos podem chegar aqui com generateDS já assinado).
+        if "<ds:Signature" in contents and "xmlns:ds=" not in contents:
+            contents = contents.replace(
+                "<ds:Signature",
+                '<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"',
+                1,
+            )
         return contents, etree.fromstring(contents)
 
     def _post(self, raiz, url, operacao, classe):
