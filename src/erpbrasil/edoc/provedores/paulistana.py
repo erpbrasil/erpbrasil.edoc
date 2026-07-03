@@ -22,59 +22,123 @@ try:
 except ImportError:
     paulistana = False
 
+try:
+    from nfselib.paulistana.v03 import PedidoCancelamentoNFe as PedidoCancelamentoNFeV3
+    from nfselib.paulistana.v03 import PedidoConsultaLote as PedidoConsultaLoteV3
+    from nfselib.paulistana.v03 import PedidoConsultaNFe as PedidoConsultaNFeV3
+    from nfselib.paulistana.v03 import (
+        RetornoCancelamentoNFe as RetornoCancelamentoNFeV3,
+    )
+    from nfselib.paulistana.v03 import RetornoConsulta as RetornoConsultaV3
+    from nfselib.paulistana.v03 import RetornoEnvioLoteRPS as RetornoEnvioLoteRPSV3
+
+    paulistana_v03 = True
+except ImportError:
+    paulistana_v03 = False
+
 endpoint = "ws/lotenfe.asmx?WSDL"
 
 if paulistana:
-    servicos_base = {
-        "consulta_recibo": ServicoNFSe("ConsultaLote", endpoint, RetornoConsulta, True),
-        "consulta_nfse_rps": ServicoNFSe(
-            "ConsultaNFe", endpoint, RetornoConsulta, True
-        ),
-        "cancela_documento": ServicoNFSe(
-            "CancelamentoNFe", endpoint, RetornoCancelamentoNFe, True
-        ),
+    # Versões do schema do WS LoteNFe:
+    # - v02: schema *_v01.xsd (legado, fato gerador até 31/12/2025)
+    # - v03: schema *_v02.xsd (Reforma Tributária 2026 / IBS-CBS)
+    VERSOES_SCHEMA = {
+        "v02": {
+            "versao_cabecalho": 1,
+            "url": "https://nfe.prefeitura.sp.gov.br",
+            "endpoint": "ws/lotenfe.asmx?WSDL",
+            "pedido_consulta_lote": PedidoConsultaLote,
+            "pedido_consulta_nfe": PedidoConsultaNFe,
+            "pedido_cancelamento_nfe": PedidoCancelamentoNFe,
+            "retorno_envio_lote_rps": RetornoEnvioLoteRPS,
+            "retorno_consulta": RetornoConsulta,
+            "retorno_cancelamento_nfe": RetornoCancelamentoNFe,
+            # tpAssinatura no schema v01 é exportado pelo generateDS como
+            # string: o valor atribuído já deve estar codificado em base64
+            "assinatura_em_bytes": False,
+        },
     }
+    if paulistana_v03:
+        VERSOES_SCHEMA["v03"] = {
+            "versao_cabecalho": 2,
+            # WS da Reforma Tributária (Manual v3.3.7)
+            "url": "https://nfews.prefeitura.sp.gov.br",
+            "endpoint": "lotenfe.asmx?WSDL",
+            "pedido_consulta_lote": PedidoConsultaLoteV3,
+            "pedido_consulta_nfe": PedidoConsultaNFeV3,
+            "pedido_cancelamento_nfe": PedidoCancelamentoNFeV3,
+            "retorno_envio_lote_rps": RetornoEnvioLoteRPSV3,
+            "retorno_consulta": RetornoConsultaV3,
+            "retorno_cancelamento_nfe": RetornoCancelamentoNFeV3,
+            # tpAssinatura no schema v02 é xs:base64Binary: o export do
+            # generateDS aplica o base64, o valor atribuído deve ser bytes
+            "assinatura_em_bytes": True,
+        }
 
-    servicos_hml = {
-        "envia_documento": ServicoNFSe(
-            "TesteEnvioLoteRPS", endpoint, RetornoEnvioLoteRPS, True
-        ),
-    }
-    servicos_hml.update(servicos_base.copy())
-
-    servicos_prod = {
-        "envia_documento": ServicoNFSe(
-            "EnvioLoteRPS", endpoint, RetornoEnvioLoteRPS, True
-        ),
-    }
-    servicos_prod.update(servicos_base.copy())
+    def _montar_servicos(ambiente, schema):
+        endpoint_ws = schema["endpoint"]
+        servicos = {
+            "consulta_recibo": ServicoNFSe(
+                "ConsultaLote", endpoint_ws, schema["retorno_consulta"], True
+            ),
+            "consulta_nfse_rps": ServicoNFSe(
+                "ConsultaNFe", endpoint_ws, schema["retorno_consulta"], True
+            ),
+            "cancela_documento": ServicoNFSe(
+                "CancelamentoNFe", endpoint_ws, schema["retorno_cancelamento_nfe"], True
+            ),
+        }
+        # Não tem URL de homologação mas tem método para testes
+        # no mesmo webservice
+        operacao_envio = "TesteEnvioLoteRPS" if ambiente == "2" else "EnvioLoteRPS"
+        servicos["envia_documento"] = ServicoNFSe(
+            operacao_envio, endpoint_ws, schema["retorno_envio_lote_rps"], True
+        )
+        return servicos
 
 
 class Paulistana(NFSe):
     def __init__(
-        self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
+        self,
+        transmissao,
+        ambiente,
+        cidade_ibge,
+        cnpj_prestador,
+        im_prestador,
+        versao_schema="v02",
     ):
-        self._url = "https://nfe.prefeitura.sp.gov.br"
-
-        # Não tem URL de homologação mas tem métodos para testes
-        # no mesmo webservice
-
-        if ambiente == "2":
-            self._servicos = servicos_hml
-        else:
-            self._servicos = servicos_prod
+        if versao_schema not in VERSOES_SCHEMA:
+            raise ValueError(
+                "Versão de schema indisponível: %s (instale a nfselib.paulistana "
+                "com suporte a ela). Disponíveis: %s"
+                % (versao_schema, ", ".join(sorted(VERSOES_SCHEMA)))
+            )
+        self._versao_schema = versao_schema
+        self._schema = VERSOES_SCHEMA[versao_schema]
+        self._url = self._schema["url"]
+        self._servicos = _montar_servicos(ambiente, self._schema)
 
         super().__init__(
             transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
         )
 
+    def _assina_paulistana(self, assinador, data):
+        """Assina a cadeia de posições fixas do layout paulistano.
+
+        Aceita str ou bytes; devolve no formato que o binding da versão
+        de schema em uso espera no campo (str base64 no v02, bytes no v03).
+        """
+        if isinstance(data, str):
+            data = data.encode("ascii")
+        assinatura = assinador.sign_pkcs1v15_sha1(data)
+        if self._schema["assinatura_em_bytes"]:
+            return assinatura
+        return b64encode(assinatura).decode()
+
     def _prepara_envia_documento(self, edoc):
         assinador = Assinatura(self._transmissao.certificado)
         for rps in edoc.RPS:
-            data = rps.Assinatura
-            data_bytes = data.encode("ascii")
-            assinatura = assinador.sign_pkcs1v15_sha1(data_bytes)
-            rps.Assinatura = b64encode(assinatura).decode()
+            rps.Assinatura = self._assina_paulistana(assinador, rps.Assinatura)
         xml_assinado = self.assina_raiz(edoc, "")
         return xml_assinado
 
@@ -92,10 +156,12 @@ class Paulistana(NFSe):
         numero_lote = int(retorno.find(".//NumeroLote").text)
         cnpj = retorno.find(".//CNPJ").text
 
-        edoc = PedidoConsultaLote.PedidoConsultaLote(
-            Cabecalho=PedidoConsultaLote.CabecalhoType(
-                Versao=1,
-                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj),
+        consulta_lote = self._schema["pedido_consulta_lote"]
+        consulta_nfe = self._schema["pedido_consulta_nfe"]
+        edoc = consulta_lote.PedidoConsultaLote(
+            Cabecalho=consulta_lote.CabecalhoType(
+                Versao=self._schema["versao_cabecalho"],
+                CPFCNPJRemetente=consulta_nfe.tpCPFCNPJ(CNPJ=cnpj),
                 NumeroLote=numero_lote,
             )
         )
@@ -110,14 +176,15 @@ class Paulistana(NFSe):
         rps_serie = kwargs.get("serie_rps")
         rps_numero = kwargs.get("numero_rps")
 
-        raiz = PedidoConsultaNFe.PedidoConsultaNFe(
-            Cabecalho=PedidoConsultaNFe.CabecalhoType(
-                Versao=1,
-                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=cnpj_prestador),
+        consulta_nfe = self._schema["pedido_consulta_nfe"]
+        raiz = consulta_nfe.PedidoConsultaNFe(
+            Cabecalho=consulta_nfe.CabecalhoType(
+                Versao=self._schema["versao_cabecalho"],
+                CPFCNPJRemetente=consulta_nfe.tpCPFCNPJ(CNPJ=cnpj_prestador),
             ),
             Detalhe=[
-                PedidoConsultaNFe.DetalheType(
-                    ChaveRPS=PedidoConsultaNFe.tpChaveRPS(
+                consulta_nfe.DetalheType(
+                    ChaveRPS=consulta_nfe.tpChaveRPS(
                         InscricaoPrestador=int(inscricao_prestador),
                         SerieRPS=rps_serie,
                         NumeroRPS=int(rps_numero),
@@ -150,14 +217,16 @@ class Paulistana(NFSe):
         assinatura = self.im_prestador.zfill(8)
         assinatura += numero_nfse.zfill(12)
 
-        raiz = PedidoCancelamentoNFe.PedidoCancelamentoNFe(
-            Cabecalho=PedidoCancelamentoNFe.CabecalhoType(
-                Versao=1,
-                CPFCNPJRemetente=PedidoConsultaNFe.tpCPFCNPJ(CNPJ=self.cnpj_prestador),
+        cancelamento_nfe = self._schema["pedido_cancelamento_nfe"]
+        consulta_nfe = self._schema["pedido_consulta_nfe"]
+        raiz = cancelamento_nfe.PedidoCancelamentoNFe(
+            Cabecalho=cancelamento_nfe.CabecalhoType(
+                Versao=self._schema["versao_cabecalho"],
+                CPFCNPJRemetente=consulta_nfe.tpCPFCNPJ(CNPJ=self.cnpj_prestador),
             ),
             Detalhe=[
-                PedidoCancelamentoNFe.DetalheType(
-                    ChaveNFe=PedidoCancelamentoNFe.tpChaveNFe(
+                cancelamento_nfe.DetalheType(
+                    ChaveNFe=cancelamento_nfe.tpChaveNFe(
                         InscricaoPrestador=int(self.im_prestador),
                         NumeroNFe=int(numero_nfse),
                         CodigoVerificacao=codigo_verificacao.zfill(8),
@@ -169,10 +238,9 @@ class Paulistana(NFSe):
 
         assinador = Assinatura(self._transmissao.certificado)
         for detalhe in raiz.Detalhe:
-            data = detalhe.AssinaturaCancelamento
-            data_bytes = data.encode("ascii")
-            assinatura = assinador.sign_pkcs1v15_sha1(data_bytes)
-            detalhe.AssinaturaCancelamento = b64encode(assinatura).decode()
+            detalhe.AssinaturaCancelamento = self._assina_paulistana(
+                assinador, detalhe.AssinaturaCancelamento
+            )
         xml_assinado = self.assina_raiz(raiz, "")
         return xml_assinado
 
