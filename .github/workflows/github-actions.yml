@@ -24,7 +24,7 @@ jobs:
             toxpython: 'python3.7'
             python_arch: 'x64'
             tox_env: 'py37'
-            os: 'ubuntu-latest'
+            os: 'ubuntu-22.04'
           - name: 'py37 (windows)'
             python: '3.7'
             toxpython: 'python3.7'

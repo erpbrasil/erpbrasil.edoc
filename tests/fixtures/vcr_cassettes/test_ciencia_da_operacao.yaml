@@ -11,7 +11,7 @@ interactions:
       User-Agent:
       - Zeep/4.2.1 (www.python-zeep.org)
     method: GET
-    uri: https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?wsdl
+    uri: https://www1.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx?wsdl
   response:
     body:
       string: "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<wsdl:definitions xmlns:s=\"http://www.w3.org/2001/XMLSchema\"
@@ -48,9 +48,9 @@ interactions:
         />\r\n      </wsdl:input>\r\n      <wsdl:output>\r\n        <soap12:body use=\"literal\"
         />\r\n      </wsdl:output>\r\n    </wsdl:operation>\r\n  </wsdl:binding>\r\n
         \ <wsdl:service name=\"NFeRecepcaoEvento4\">\r\n    <wsdl:port name=\"NFeRecepcaoEvento4Soap\"
-        binding=\"tns:NFeRecepcaoEvento4Soap\">\r\n      <soap:address location=\"https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx\"
+        binding=\"tns:NFeRecepcaoEvento4Soap\">\r\n      <soap:address location=\"https://www1.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx\"
         />\r\n    </wsdl:port>\r\n    <wsdl:port name=\"NFeRecepcaoEvento4Soap12\"
-        binding=\"tns:NFeRecepcaoEvento4Soap12\">\r\n      <soap12:address location=\"https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx\"
+        binding=\"tns:NFeRecepcaoEvento4Soap12\">\r\n      <soap12:address location=\"https://www1.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx\"
         />\r\n    </wsdl:port>\r\n  </wsdl:service>\r\n</wsdl:definitions>"
     headers:
       Cache-Control:
@@ -100,7 +100,7 @@ interactions:
       User-Agent:
       - Zeep/3.4.0 (www.python-zeep.org)
     method: POST
-    uri: https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx
+    uri: https://www1.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx
   response:
     body:
       string: '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"

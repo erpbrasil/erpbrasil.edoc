@@ -29,7 +29,7 @@ interactions:
       User-Agent:
       - Zeep/3.4.0 (www.python-zeep.org)
     method: POST
-    uri: https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx
+    uri: https://www1.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx
   response:
     body:
       string: '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
