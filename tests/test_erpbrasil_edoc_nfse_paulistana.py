@@ -8,8 +8,8 @@ from erpbrasil.transmissao import TransmissaoSOAP
 from nfselib.paulistana.v02.PedidoEnvioLoteRPS import (
     CabecalhoType,
     PedidoEnvioLoteRPS,
-    tpCPFCNPJ,
     tpChaveRPS,
+    tpCPFCNPJ,
     tpEndereco,
     tpRPS,
 )

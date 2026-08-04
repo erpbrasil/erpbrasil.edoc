@@ -24,7 +24,9 @@ def _deducao(valor_deduzir):
 
 class Tests(TestCase):
     def test_construtor_sem_chave_nem_rps_gera_excecao(self):
-        with self.assertRaises(Exception):
+        # chave.py levanta `Exception` puro (sem subclasse), entao nao da
+        # para restringir o tipo aqui.
+        with self.assertRaises(Exception):  # noqa: B017
             ChaveNFSeDSF()
 
     def test_construtor_com_chave_faz_parse_de_todos_os_campos(self):
