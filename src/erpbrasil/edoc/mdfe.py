@@ -2,14 +2,22 @@
 # Copyright (C) 2024  Marcel Savegnago - Escodoo
 
 
+import atexit
 import base64
 import gzip
-from contextlib import suppress
+import logging
+import os
+import tempfile
+import time
+from contextlib import contextmanager, suppress
 
+import requests
 from lxml import etree
 
 from erpbrasil.edoc.edoc import DocumentoEletronico
 from erpbrasil.transmissao import TransmissaoSOAP
+
+_logger = logging.getLogger(__name__)
 
 with suppress(ImportError):
     from nfelib.mdfe.bindings.v3_0 import (
@@ -72,31 +80,7 @@ SIGLA_ESTADO = {
     "AN": 91,
 }
 
-SVRS_STATES = [
-    "AC",
-    "AL",
-    "AM",
-    "BA",
-    "CE",
-    "DF",
-    "ES",
-    "GO",
-    "MA",
-    "PA",
-    "PB",
-    "PI",
-    "RJ",
-    "RN",
-    "RO",
-    "SC",
-    "SE",
-    "TO",
-    "AP",
-    "PE",
-    "RR",
-    "RS",
-    "SP",
-]
+SVRS_STATES = tuple(state for state in SIGLA_ESTADO if state != "AN")
 
 SVRS = {
     AMBIENTE_PRODUCAO: {
@@ -124,7 +108,67 @@ SVRS = {
 }
 
 
+def _get_environment(ambiente):
+    environment = int(ambiente)
+    if environment not in (AMBIENTE_PRODUCAO, AMBIENTE_HOMOLOGACAO):
+        raise ValueError(f"Ambiente MDF-e {ambiente} não suportado.")
+    return environment
+
+
+_TEMP_WSDL_FILES = []
+
+
+def _cleanup_temp_wsdl():
+    for f in _TEMP_WSDL_FILES:
+        with suppress(OSError):
+            os.unlink(f)
+
+
+atexit.register(_cleanup_temp_wsdl)
+
+
+_WSDL_FILE_MAPPING = {
+    WS_MDFE_RECEPCAO_SINC: "mdferecepcaosinc.wsdl",
+    WS_MDFE_RECEPCAO_EVENTO: "mdferecepcaoevento.wsdl",
+    WS_MDFE_CONSULTA: "mdfeconsulta.wsdl",
+    WS_MDFE_STATUS_SERVICO: "mdfestatusservico.wsdl",
+    WS_MDFE_CONSULTA_NAO_ENCERRADOS: "mdfeconsnaoenc.wsdl",
+    WS_MDFE_DISTRIBUICAO: "mdfedistribuicaodfe.wsdl",
+}
+
+
+def _get_local_wsdl_url(service, remote_url):
+    """Return a file:// URL for a local WSDL with the correct endpoint, or None."""
+    filename = _WSDL_FILE_MAPPING.get(service)
+    if not filename:
+        return None
+    try:
+        import nfelib
+        wsdl_path = os.path.join(
+            os.path.dirname(nfelib.__file__), "mdfe", "wsdl", "v3_0", filename
+        )
+    except ImportError:
+        return None
+    if not os.path.isfile(wsdl_path):
+        return None
+    try:
+        tree = etree.parse(wsdl_path)
+        ns = {"soap12": "http://schemas.xmlsoap.org/wsdl/soap12/"}
+        actual_url = remote_url.replace("?wsdl", "").replace("?WSDL", "")
+        for address in tree.findall(".//soap12:address", ns):
+            address.set("location", actual_url)
+        with tempfile.NamedTemporaryFile(
+            mode="wb", suffix=".wsdl", delete=False
+        ) as f:
+            tree.write(f, xml_declaration=True, encoding="utf-8")
+            _TEMP_WSDL_FILES.append(f.name)
+            return "file://" + f.name
+    except Exception:
+        return None
+
+
 def get_service_url(sigla_estado, service, ambiente):
+    sigla_estado = sigla_estado.upper()
     if sigla_estado in SVRS_STATES:
         state_config = SVRS
     else:
@@ -132,14 +176,20 @@ def get_service_url(sigla_estado, service, ambiente):
             f"Estado {sigla_estado} não suportado ou configuração ausente."
         )
 
-    environment = AMBIENTE_PRODUCAO if ambiente == 1 else AMBIENTE_HOMOLOGACAO
+    environment = _get_environment(ambiente)
 
     if service == "QRCode":
         return state_config[environment][QR_CODE_URL]
 
     server = state_config[environment]["servidor"]
     service_path = state_config[environment][service]
-    return f"https://{server}/{service_path}"
+    remote_url = f"https://{server}/{service_path}"
+
+    local_url = _get_local_wsdl_url(service, remote_url)
+    if local_url:
+        return local_url
+
+    return remote_url
 
 
 class MDFe(DocumentoEletronico):
@@ -149,7 +199,7 @@ class MDFe(DocumentoEletronico):
     _edoc_situacao_servico_em_operacao = "107"
     _edoc_situacao_ja_enviado = ("100", "101", "132")
 
-    _consulta_servico_ao_enviar = True
+    _consulta_servico_ao_enviar = False
     _maximo_tentativas_consulta_recibo = 5
 
     def __init__(self, transmissao, uf, versao="3.00", ambiente="2", mod="58"):
@@ -296,3 +346,55 @@ class TransmissaoMDFE(TransmissaoSOAP):
                 # Retorna a string original se houver um erro na conversão
                 return mensagem
         return mensagem
+
+    @contextmanager
+    def cliente(self, url, verify=False, service_name=None, port_name=None):
+        max_attempts = 2
+        last_error = None
+        for attempt in range(1, max_attempts + 1):
+            try:
+                with super().cliente(
+                    url, verify=verify,
+                    service_name=service_name, port_name=port_name
+                ) as client:
+                    yield client
+                return
+            except (ConnectionError, requests.exceptions.ConnectionError,
+                    ConnectionResetError, ConnectionRefusedError,
+                    ConnectionAbortedError) as e:
+                last_error = e
+                if attempt < max_attempts:
+                    _logger.warning(
+                        "MDF-e connection error (attempt %d/%d): %s. Retrying...",
+                        attempt, max_attempts, e,
+                    )
+                    time.sleep(1)
+                else:
+                    _logger.error(
+                        "MDF-e connection error after %d attempts: %s",
+                        max_attempts, e,
+                    )
+        raise last_error
+
+    def enviar(self, operacao, mensagem):
+        max_attempts = 2
+        last_error = None
+        for attempt in range(1, max_attempts + 1):
+            try:
+                return super().enviar(operacao, mensagem)
+            except (ConnectionError, requests.exceptions.ConnectionError,
+                    ConnectionResetError, ConnectionRefusedError,
+                    ConnectionAbortedError) as e:
+                last_error = e
+                if attempt < max_attempts:
+                    _logger.warning(
+                        "MDF-e send error (attempt %d/%d): %s. Retrying...",
+                        attempt, max_attempts, e,
+                    )
+                    time.sleep(1)
+                else:
+                    _logger.error(
+                        "MDF-e send error after %d attempts: %s",
+                        max_attempts, e,
+                    )
+        raise last_error
