@@ -134,7 +134,8 @@ class DocumentoEletronico(ABC):
 
         proc_envio = self.envia_documento(edoc)
         if self.envio_sincrono:
-            self.monta_processo(edoc, proc_envio)
+            proc_recibo = self.consulta_recibo(proc_envio=proc_envio)
+            self.monta_processo(edoc, proc_envio, proc_recibo)
         yield proc_envio
 
         # Retorna imediatamente se alguma das condições abaixo for verdadeira:
