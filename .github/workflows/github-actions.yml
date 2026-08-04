@@ -75,3 +75,11 @@ jobs:
         TOXPYTHON: '${{ matrix.toxpython }}'
       run: >
         tox -e ${{ matrix.tox_env }} -v
+    - name: upload coverage to codecov
+      if: startsWith(matrix.tox_env, 'py3')
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        flags: ${{ matrix.tox_env }}
+        fail_ci_if_error: false
