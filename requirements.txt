@@ -4,5 +4,5 @@ nfselib.issnet
 lxml
 erpbrasil.transmissao>=1.1.0
 cryptography<47; python_version < "3.9"
-zeep==4.3.2
+zeep==4.3.3
 requests==2.32.4
