@@ -1,6 +1,7 @@
 nfelib<=2.0.7
 nfselib.ginfes
 nfselib.issnet
+nfselib.paulistana
 lxml
 erpbrasil.transmissao>=1.1.0
 cryptography<47; python_version < "3.9"
