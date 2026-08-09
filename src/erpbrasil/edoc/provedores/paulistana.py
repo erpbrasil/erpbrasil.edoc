@@ -72,7 +72,7 @@ class Paulistana(NFSe):
         assinador = Assinatura(self._transmissao.certificado)
         for rps in edoc.RPS:
             data = rps.Assinatura
-            data_bytes = data.encode("ascii")
+            data_bytes = data.encode("ascii") if isinstance(data, str) else data
             assinatura = assinador.sign_pkcs1v15_sha1(data_bytes)
             rps.Assinatura = b64encode(assinatura).decode()
         xml_assinado = self.assina_raiz(edoc, "")
