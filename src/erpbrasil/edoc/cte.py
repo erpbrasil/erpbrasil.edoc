@@ -246,7 +246,8 @@ def get_service_url(sigla_estado, service, ambiente):
             f"Estado {sigla_estado} não suportado ou configuração ausente."
         )
 
-    environment = AMBIENTE_PRODUCAO if ambiente == 1 else AMBIENTE_HOMOLOGACAO
+    # ambiente chega como int (1) ou texto ("1", como o tpAmb do XML)
+    environment = AMBIENTE_PRODUCAO if str(ambiente) == "1" else AMBIENTE_HOMOLOGACAO
     if service == "QRCode":
         return state_config[environment][QR_CODE_URL]
 
