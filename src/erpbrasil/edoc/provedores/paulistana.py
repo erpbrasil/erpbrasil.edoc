@@ -108,10 +108,10 @@ class Paulistana(NFSe):
         versao_schema="v02",
     ):
         if versao_schema not in VERSOES_SCHEMA:
+            disponiveis = ", ".join(sorted(VERSOES_SCHEMA))
             raise ValueError(
-                "Versão de schema indisponível: %s (instale a nfselib.paulistana "
-                "com suporte a ela). Disponíveis: %s"
-                % (versao_schema, ", ".join(sorted(VERSOES_SCHEMA)))
+                f"Versão de schema indisponível: {versao_schema} (instale a "
+                f"nfselib.paulistana com suporte a ela). Disponíveis: {disponiveis}"
             )
         self._versao_schema = versao_schema
         self._schema = VERSOES_SCHEMA[versao_schema]
