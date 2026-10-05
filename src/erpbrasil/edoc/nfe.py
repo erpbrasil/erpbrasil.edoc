@@ -969,6 +969,15 @@ class NFe(DocumentoEletronico):
             self._edoc_situacao_arquivo_processado_com_sucesso,
         ]
 
+    def _resposta_envio_ja_processada(self, proc_envio):
+        """cStat 104 sem infRec: o lote já voltou processado, com o protNFe."""
+        resposta = getattr(proc_envio, "resposta", None)
+        return bool(
+            resposta
+            and resposta.cStat == self._edoc_situacao_arquivo_processado_com_sucesso
+            and not getattr(resposta, "infRec", None)
+        )
+
     def _aguarda_tempo_medio(self, proc_envio):
         time.sleep(float(proc_envio.resposta.infRec.tMed))
 

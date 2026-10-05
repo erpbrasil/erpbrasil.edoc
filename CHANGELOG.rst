@@ -120,6 +120,10 @@ Correções:
   (#100).
 - NF-e: caminhos da contingência SVC-RS em produção, que estavam trocados entre
   os serviços (AM, BA, GO, MA, MS, MT, PE, PI e PR).
+- NF-e: o lote que volta já processado a um envio assíncrono (cStat 104, sem
+  infRec), comum na contingência, não quebra mais o ``processar_documento`` com
+  AttributeError depois da autorização; o processo é montado como no envio
+  síncrono (#102).
 - Barueri: ``analisa_retorno_consulta`` não levanta mais UnboundLocalError em
   retorno com erro.
 - Os extras ``nfelib`` e ``mdfelib`` instalam a nfelib (apontavam para pacotes

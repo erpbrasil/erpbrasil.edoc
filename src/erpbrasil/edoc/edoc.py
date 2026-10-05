@@ -147,7 +147,12 @@ class DocumentoEletronico(ABC):
         #
 
         proc_envio = self.envia_documento(edoc)
-        if self.envio_sincrono:
+        # O lote pode voltar já processado num envio assíncrono (na NF-e, cStat
+        # 104 sem infRec): sem recibo para consultar, segue como síncrono.
+        envio_sincrono = self.envio_sincrono or self._resposta_envio_ja_processada(
+            proc_envio
+        )
+        if envio_sincrono:
             self.monta_processo(edoc, proc_envio)
         yield proc_envio
 
@@ -158,7 +163,7 @@ class DocumentoEletronico(ABC):
         if (
             not proc_envio.resposta
             or not self._verifica_resposta_envio_sucesso(proc_envio)
-            or self.envio_sincrono
+            or envio_sincrono
         ):
             return
 
@@ -246,6 +251,9 @@ class DocumentoEletronico(ABC):
         return True
 
     def _verifica_documento_ja_enviado(self, proc_consulta):
+        return False
+
+    def _resposta_envio_ja_processada(self, proc_envio):
         return False
 
     def monta_processo(self, edoc, proc_envio, proc_recibo):
