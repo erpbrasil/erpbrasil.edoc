@@ -61,6 +61,20 @@ class DocumentoEletronico(ABC):
             )
         contents = output.getvalue()
         output.close()
+        # Reforço defensivo: as legacy generateDS bindings
+        # (nfelib_legacy/v4_00/retEnviNFe.py:2218 e análogos) hardcodam
+        # `namespaceprefix_='ds:'` e `namespacedef_=''` ao exportar uma
+        # Signature pré-existente, gerando `<ds:Signature>` sem declarar
+        # `xmlns:ds`. Isso quebra o etree.fromstring abaixo. Detectar e
+        # injetar a declaração ausente para qualquer caller que não tenha
+        # zerado a Signature antes (ex.: assina_raiz já zera, mas outros
+        # caminhos podem chegar aqui com generateDS já assinado).
+        if "<ds:Signature" in contents and "xmlns:ds=" not in contents:
+            contents = contents.replace(
+                "<ds:Signature",
+                '<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"',
+                1,
+            )
         return contents, etree.fromstring(contents)
 
     def _post(self, raiz, url, operacao, classe):
@@ -214,6 +228,14 @@ class DocumentoEletronico(ABC):
         return datetime.strftime(datetime.now(), "%Y-%m-%d")
 
     def assina_raiz(self, raiz, id, getchildren=False):
+        # Garante que uma Signature pré-existente (ex.: re-envio de NF-e
+        # reconstruída a partir do XML já assinado) não seja serializada pelo
+        # generateDS, que escreve <ds:Signature> sem declarar xmlns:ds e
+        # quebra o etree.fromstring em _generateds_to_string_etree.
+        # Como vamos reassinar a raiz, descartar a Signature anterior é o
+        # comportamento correto.
+        if hasattr(raiz, "Signature") and raiz.Signature is not None:
+            raiz.Signature = None
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
         xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
             xml_etree, id, getchildren
