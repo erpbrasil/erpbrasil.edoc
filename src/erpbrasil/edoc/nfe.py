@@ -187,11 +187,11 @@ SVC_AN = {
 SVC_RS = {
     AMBIENTE_PRODUCAO: {
         "servidor": "nfe.svrs.rs.gov.br",
-        WS_NFE_RECEPCAO_EVENTO: "ws/NfeConsulta/NfeConsulta4.asmx?wsdl",
-        WS_NFE_AUTORIZACAO: "ws/NfeStatusServico/NfeStatusServico4.asmx?wsdl",
-        WS_NFE_RET_AUTORIZACAO: "ws/recepcaoevento/recepcaoevento4.asmx?wsdl",
-        WS_NFE_CONSULTA: "ws/NfeAutorizacao/NFeAutorizacao4.asmx?wsdl",
-        WS_NFE_SITUACAO: "ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx?wsdl",
+        WS_NFE_CONSULTA: "ws/NfeConsulta/NfeConsulta4.asmx?wsdl",
+        WS_NFE_SITUACAO: "ws/NfeStatusServico/NfeStatusServico4.asmx?wsdl",
+        WS_NFE_RECEPCAO_EVENTO: "ws/recepcaoevento/recepcaoevento4.asmx?wsdl",
+        WS_NFE_AUTORIZACAO: "ws/NfeAutorizacao/NFeAutorizacao4.asmx?wsdl",
+        WS_NFE_RET_AUTORIZACAO: "ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx?wsdl",  # noqa
     },
     AMBIENTE_HOMOLOGACAO: {
         "servidor": "nfe-homologacao.svrs.rs.gov.br",
