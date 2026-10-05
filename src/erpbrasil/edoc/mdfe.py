@@ -72,31 +72,8 @@ SIGLA_ESTADO = {
     "AN": 91,
 }
 
-SVRS_STATES = [
-    "AC",
-    "AL",
-    "AM",
-    "BA",
-    "CE",
-    "DF",
-    "ES",
-    "GO",
-    "MA",
-    "PA",
-    "PB",
-    "PI",
-    "RJ",
-    "RN",
-    "RO",
-    "SC",
-    "SE",
-    "TO",
-    "AP",
-    "PE",
-    "RR",
-    "RS",
-    "SP",
-]
+# O Portal do MDF-e lista a SVRS como autorizadora de todas as UFs
+SVRS_STATES = [uf for uf in SIGLA_ESTADO if uf != "AN"]
 
 SVRS = {
     AMBIENTE_PRODUCAO: {
