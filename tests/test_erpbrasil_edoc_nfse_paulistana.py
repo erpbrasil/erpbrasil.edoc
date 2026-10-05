@@ -1,9 +1,11 @@
+from base64 import b64encode
 from types import SimpleNamespace
-from unittest import TestCase
+from unittest import TestCase, skipUnless
 
+from erpbrasil.assinatura.assinatura import Assinatura
 from erpbrasil.base import misc
 from erpbrasil.edoc.provedores.cidades import NFSeFactory
-from erpbrasil.edoc.provedores.paulistana import Paulistana
+from erpbrasil.edoc.provedores.paulistana import Paulistana, paulistana_v03
 from erpbrasil.transmissao import TransmissaoSOAP
 from nfselib.paulistana.v02.PedidoEnvioLoteRPS import (
     CabecalhoType,
@@ -157,6 +159,30 @@ class PreparaDocumentosTests(TestCertificateMixin, TestCase):
             im_prestador=misc.punctuation_rm("3.570.741-0"),
         )
         self.assertIn("envia_documento", nfse_producao._servicos)
+
+    def _nfse_com_schema(self, versao_schema):
+        return NFSeFactory(
+            transmissao=self.nfse._transmissao,
+            ambiente="2",
+            cidade_ibge=3550308,
+            cnpj_prestador=misc.punctuation_rm("07.865.699/0001-00"),
+            im_prestador=misc.punctuation_rm("3.570.741-0"),
+            versao_schema=versao_schema,
+        )
+
+    def test_versao_schema_desconhecida_levanta_erro(self):
+        with self.assertRaises(ValueError):
+            self._nfse_com_schema("v99")
+
+    @skipUnless(paulistana_v03, "nfselib.paulistana sem o schema v03")
+    def test_v03_assina_em_bytes_e_v02_em_base64(self):
+        assinador = Assinatura(self.certificate)
+        assinatura_v03 = self._nfse_com_schema("v03")._assina_paulistana(
+            assinador, "RPS0001"
+        )
+        assinatura_v02 = self.nfse._assina_paulistana(assinador, "RPS0001")
+        self.assertIsInstance(assinatura_v03, bytes)
+        self.assertEqual(b64encode(assinatura_v03).decode(), assinatura_v02)
 
 
 def create_nfse_object():

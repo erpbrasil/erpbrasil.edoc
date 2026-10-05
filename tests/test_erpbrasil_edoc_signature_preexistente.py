@@ -1,8 +1,11 @@
+from types import SimpleNamespace
 from unittest import TestCase
 
 from erpbrasil.edoc.nfe import NFe
 from erpbrasil.nfelib_legacy.v4_00 import retEnviNFe
 from lxml import etree
+
+from .test_certificate_mixin import TestCertificateMixin
 
 NS_DS = "http://www.w3.org/2000/09/xmldsig#"
 SIGNATURE_XML = (
@@ -41,3 +44,24 @@ class TestSignaturePreExistente(TestCase):
     def test_export_sem_signature_nao_muda(self):
         xml_string, _ = self.nfe._generateds_to_string_etree(_tnfe(False))
         self.assertNotIn("xmlns:ds", xml_string)
+
+
+class TestReassinatura(TestCertificateMixin, TestCase):
+    def test_reassinar_descarta_a_signature_anterior(self):
+        nfe = NFe(
+            SimpleNamespace(certificado=self.certificate),
+            "35",
+            versao="4.00",
+            ambiente="2",
+        )
+        chave = "NFe35260112345678000195550010000000011000000011"
+        tnfe = _tnfe(True)
+        tnfe.infNFe = retEnviNFe.infNFeType(versao="4.00", Id=chave)
+
+        xml_assinado = nfe.assina_raiz(tnfe, chave)
+
+        self.assertIsNone(tnfe.Signature)
+        self.assertEqual(
+            len(etree.fromstring(xml_assinado).findall(f".//{{{NS_DS}}}Signature")), 1
+        )
+        self.assertNotIn("YmJi", xml_assinado)  # SignatureValue da assinatura antiga
