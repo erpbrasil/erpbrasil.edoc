@@ -90,7 +90,8 @@ O endereço do webservice é escolhido pela UF (ou pela cidade, na NFS-e) e pelo
 Provedores de NFS-e
 ~~~~~~~~~~~~~~~~~~~
 
-A ``NFSeFactory`` escolhe o provedor pelo código IBGE da cidade do prestador.
+A ``NFSeFactory`` escolhe o provedor pelo código IBGE da cidade do prestador. A tabela
+traz as cidades homologadas.
 
 .. list-table::
     :header-rows: 1
@@ -115,6 +116,19 @@ A ``NFSeFactory`` escolhe o provedor pelo código IBGE da cidade do prestador.
     * - Barueri
       - Barueri-SP (3505708)
       - ``erpbrasil.edoc[nfselib.barueri]``
+
+Outras cidades atendidas pelos mesmos provedores podem funcionar, mas não foram
+homologadas. Para usar uma delas, inclua o código IBGE da cidade no dicionário
+``cidades`` de ``erpbrasil.edoc.provedores.cidades`` e homologue o envio, as consultas e
+o cancelamento antes de ir para produção; um PR com a cidade nova ajuda quem vier
+depois. Também dá para registrar em tempo de execução, sem mudar a biblioteca:
+
+.. code:: python
+
+    from erpbrasil.edoc.provedores.cidades import cidades
+    from erpbrasil.edoc.provedores.ginfes import Ginfes
+
+    cidades[codigo_ibge] = Ginfes  # cidade atendida pelo Ginfes, ainda não homologada
 
 Instalação
 ==========
@@ -225,8 +239,10 @@ Créditos
 ========
 
 Biblioteca criada pela `Akretion <https://akretion.com/>`_ e pela
-`KMEE <https://www.kmee.com.br>`_, mantida com a comunidade da localização brasileira.
-Veja a `lista de contribuidores <https://github.com/erpbrasil/erpbrasil.edoc/graphs/contributors>`_.
+`KMEE <https://www.kmee.com.br>`_ e mantida com a comunidade da localização brasileira,
+com contribuições da `Engenere <https://github.com/Engenere>`_ e da
+`Escodoo <https://www.escodoo.com.br>`_, entre outras empresas e pessoas. Veja a
+`lista de contribuidores <https://github.com/erpbrasil/erpbrasil.edoc/graphs/contributors>`_.
 
 Licença
 =======
