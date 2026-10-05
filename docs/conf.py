@@ -47,3 +47,8 @@ html_short_title = f"{project}-{version}"
 napoleon_use_ivar = True
 napoleon_use_rtype = False
 napoleon_use_param = False
+
+# o compare do selo commits-since aponta para a tag da versão, que só existe
+# depois do merge do bump; sites de terceiros ganham uma segunda tentativa
+linkcheck_ignore = [r"https://github\.com/erpbrasil/erpbrasil\.edoc/compare/"]
+linkcheck_retries = 2
