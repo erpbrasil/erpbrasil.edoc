@@ -124,6 +124,8 @@ Correções:
   infRec), comum na contingência, não quebra mais o ``processar_documento`` com
   AttributeError depois da autorização; o processo é montado como no envio
   síncrono (#102).
+- NF-e: consulta de cadastro do AM e do PE pelo CadConsultaCadastro4, como
+  publica o Portal NF-e; a versão 2 dava 404 (#87).
 - Barueri: ``analisa_retorno_consulta`` não levanta mais UnboundLocalError em
   retorno com erro.
 - Os extras ``nfelib`` e ``mdfelib`` instalam a nfelib (apontavam para pacotes
