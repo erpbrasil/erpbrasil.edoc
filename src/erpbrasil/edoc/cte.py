@@ -89,6 +89,7 @@ SVRS_STATES = [
     "RJ",
     "RN",
     "RO",
+    "RS",
     "SC",
     "SE",
     "TO",
@@ -233,20 +234,25 @@ PR = {
 }
 
 
+# UFs com SEFAZ autorizadora própria (MT, MS, MG, PR); as demais usam SVRS/SVSP
+ESTADOS_PROPRIOS = {"MT": MT, "MS": MS, "MG": MG, "PR": PR}
+
+
 def get_service_url(sigla_estado, service, ambiente):
     if sigla_estado in SVSP_STATES:
         state_config = SVSP
     elif sigla_estado in SVRS_STATES:
         state_config = SVRS
     else:
-        state_config = sigla_estado
+        state_config = ESTADOS_PROPRIOS.get(sigla_estado)
 
     if not state_config:
         raise ValueError(
             f"Estado {sigla_estado} não suportado ou configuração ausente."
         )
 
-    environment = AMBIENTE_PRODUCAO if ambiente == 1 else AMBIENTE_HOMOLOGACAO
+    # ambiente chega como int (1) ou texto ("1", como o tpAmb do XML)
+    environment = AMBIENTE_PRODUCAO if str(ambiente) == "1" else AMBIENTE_HOMOLOGACAO
     if service == "QRCode":
         return state_config[environment][QR_CODE_URL]
 
