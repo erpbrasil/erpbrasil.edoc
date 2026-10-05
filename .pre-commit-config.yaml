@@ -1,5 +1,4 @@
-exclude: tests/fixtures
-exclude: '^(\.tox|ci/templates|\.bumpversion\.cfg)(/|$)'
+exclude: '^(tests/fixtures|\.tox|ci/templates|\.bumpversion\.cfg|src/erpbrasil/nfelib_legacy)(/|$)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
