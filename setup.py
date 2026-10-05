@@ -55,6 +55,7 @@ setup(
         ),
         re.sub(":[a-z]+:`~?(.*?)`", r"``\1``", read("CHANGELOG.rst")),
     ),
+    long_description_content_type="text/x-rst",
     author="Luis Felipe Mileo",
     author_email="mileo@kmee.com.br",
     url="https://github.com/erpbrasil/erpbrasil.edoc",

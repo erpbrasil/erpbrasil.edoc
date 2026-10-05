@@ -228,7 +228,7 @@ UFAM = {
             WS_NFE_RECEPCAO_EVENTO: "services2/services/RecepcaoEvento4?wsdl",
             WS_NFE_AUTORIZACAO: "services2/services/NfeAutorizacao4?wsdl",
             WS_NFE_RET_AUTORIZACAO: "services2/services/NfeRetAutorizacao4?wsdl",  # noqa
-            WS_NFE_CADASTRO: "services2/services/cadconsultacadastro2?wsdl",
+            WS_NFE_CADASTRO: "services2/services/CadConsultaCadastro4?wsdl",
         },
         AMBIENTE_HOMOLOGACAO: {
             "servidor": "homnfe.sefaz.am.gov.br",
@@ -238,7 +238,7 @@ UFAM = {
             WS_NFE_RECEPCAO_EVENTO: "services2/services/RecepcaoEvento4?wsdl",
             WS_NFE_AUTORIZACAO: "services2/services/NfeAutorizacao4?wsdl",
             WS_NFE_RET_AUTORIZACAO: "services2/services/NfeRetAutorizacao4?wsdl",  # noqa
-            WS_NFE_CADASTRO: "services2/services/cadconsultacadastro2?wsdl",
+            WS_NFE_CADASTRO: "services2/services/CadConsultaCadastro4?wsdl",
         },
     },
     NFCE_MODELO: {
@@ -511,7 +511,7 @@ UFPE = {
         WS_NFE_RECEPCAO_EVENTO: "nfe-service/services/NFeRecepcaoEvento4?wsdl",
         WS_NFE_AUTORIZACAO: "nfe-service/services/NFeAutorizacao4?Wsdl",
         WS_NFE_RET_AUTORIZACAO: "nfe-service/services/NFeRetAutorizacao4?wsdl",
-        WS_NFE_CADASTRO: "nfe-service/services/CadConsultaCadastro2?wsdl",
+        WS_NFE_CADASTRO: "nfe-service/services/CadConsultaCadastro4?wsdl",
     },
     AMBIENTE_HOMOLOGACAO: {
         "servidor": "nfehomolog.sefaz.pe.gov.br",
@@ -521,7 +521,7 @@ UFPE = {
         WS_NFE_RECEPCAO_EVENTO: "nfe-service/services/NFeRecepcaoEvento4?wsdl",
         WS_NFE_AUTORIZACAO: "nfe-service/services/NFeAutorizacao4?wsdl",
         WS_NFE_RET_AUTORIZACAO: "nfe-service/services/NFeRetAutorizacao4?wsdl",
-        WS_NFE_CADASTRO: "nfe-service/services/CadConsultaCadastro2?wsdl",
+        WS_NFE_CADASTRO: "nfe-service/services/CadConsultaCadastro4?wsdl",
     },
 }
 
@@ -968,6 +968,15 @@ class NFe(DocumentoEletronico):
             self._edoc_situacao_arquivo_recebido_com_sucesso,
             self._edoc_situacao_arquivo_processado_com_sucesso,
         ]
+
+    def _resposta_envio_ja_processada(self, proc_envio):
+        """cStat 104 sem infRec: o lote já voltou processado, com o protNFe."""
+        resposta = getattr(proc_envio, "resposta", None)
+        return bool(
+            resposta
+            and resposta.cStat == self._edoc_situacao_arquivo_processado_com_sucesso
+            and not getattr(resposta, "infRec", None)
+        )
 
     def _aguarda_tempo_medio(self, proc_envio):
         time.sleep(float(proc_envio.resposta.infRec.tMed))

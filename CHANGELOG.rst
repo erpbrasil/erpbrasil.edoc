@@ -120,6 +120,12 @@ Correções:
   (#100).
 - NF-e: caminhos da contingência SVC-RS em produção, que estavam trocados entre
   os serviços (AM, BA, GO, MA, MS, MT, PE, PI e PR).
+- NF-e: o lote que volta já processado a um envio assíncrono (cStat 104, sem
+  infRec), comum na contingência, não quebra mais o ``processar_documento`` com
+  AttributeError depois da autorização; o processo é montado como no envio
+  síncrono (#102).
+- NF-e: consulta de cadastro do AM e do PE pelo CadConsultaCadastro4, como
+  publica o Portal NF-e; a versão 2 dava 404 (#87).
 - Barueri: ``analisa_retorno_consulta`` não levanta mais UnboundLocalError em
   retorno com erro.
 - Os extras ``nfelib`` e ``mdfelib`` instalam a nfelib (apontavam para pacotes
@@ -128,6 +134,7 @@ Correções:
 Outros:
 
 - README reescrito; descrição e links do pacote no PyPI.
+- A Release do GitHub publica no PyPI (workflow ``publish``, Trusted Publishing).
 - CI: py37 removido; zeep e requests por versão do Python (alertas de
   segurança); testes de Paulistana, ISSNet, chave, CT-e, MDF-e, contingência
   SVC-RS, Barueri e reassinatura.
