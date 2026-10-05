@@ -134,6 +134,7 @@ Correções:
 Outros:
 
 - README reescrito; descrição e links do pacote no PyPI.
+- A Release do GitHub publica no PyPI (workflow ``publish``, Trusted Publishing).
 - CI: py37 removido; zeep e requests por versão do Python (alertas de
   segurança); testes de Paulistana, ISSNet, chave, CT-e, MDF-e, contingência
   SVC-RS, Barueri e reassinatura.

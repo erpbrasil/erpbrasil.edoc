@@ -230,10 +230,14 @@ Publicação de uma versão
    ``src/erpbrasil/edoc/__init__.py``.
 3. Abrir o PR com o bump e mesclar com o CI verde.
 4. Criar a Release ``vX.Y.Z`` no GitHub sobre o commit mesclado (ela cria a tag).
-5. ``python -m build``, ``twine check dist/*`` e ``twine upload dist/*``.
 
-Para testar antes de anunciar, publique um release candidate (``X.Y.Zrc1``): o
-``pip`` só instala pré-releases quando pedido com ``--pre`` ou com a versão exata.
+A Release dispara o workflow ``publish``, que gera o sdist e o wheel, confere se a
+versão do pacote é a da tag e publica no PyPI. Não há token no repositório: o PyPI
+aceita só este workflow, rodando no ambiente ``pypi`` (Trusted Publishing).
+
+Para testar antes de anunciar, publique um release candidate (``X.Y.Zrc1``, com a
+Release marcada como pré-release): o ``pip`` só instala pré-releases quando pedido
+com ``--pre`` ou com a versão exata.
 
 Créditos
 ========
