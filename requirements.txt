@@ -5,5 +5,7 @@ nfselib.paulistana
 lxml
 erpbrasil.transmissao>=1.1.0
 cryptography<47; python_version < "3.9"
-zeep==4.3.2
-requests==2.32.4
+zeep==4.3.2; python_version < "3.10"
+zeep==4.3.3; python_version >= "3.10"
+requests==2.32.4; python_version < "3.10"
+requests==2.33.0; python_version >= "3.10"
