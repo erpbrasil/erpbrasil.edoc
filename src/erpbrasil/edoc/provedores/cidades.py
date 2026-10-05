@@ -23,8 +23,14 @@ cidades = {
 }
 
 
-def NFSeFactory(transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador):
-    """Factory"""
+def NFSeFactory(
+    transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador, **kwargs
+):
+    """Factory
+
+    kwargs extras são repassados ao provedor (ex.: versao_schema="v03"
+    para o schema da Reforma Tributária na Paulistana).
+    """
     return cidades[int(cidade_ibge)](
-        transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
+        transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador, **kwargs
     )

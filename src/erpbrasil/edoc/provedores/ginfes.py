@@ -73,6 +73,13 @@ class Ginfes(NFSe):
         # edoc.LoteRps.ListaRps.Rps[0].InfRps.Id
         return edoc.LoteRps.Id, edoc.LoteRps.NumeroLote
 
+    def assina_raiz(self, raiz, id, getchildren=False):
+        # O Ginfes foi validado com o XML assinado sem quebras de linha, como a
+        # base fazia até a 3.1.1; a base passou a preservá-las (rejeição 297 da
+        # NF-e), mas aqui elas só chegam dentro do certificado e da assinatura
+        xml_assinado = super().assina_raiz(raiz, id, getchildren)
+        return xml_assinado.replace("\n", "").replace("\r", "")
+
     def _prepara_envia_documento(self, edoc):
         numero_lote = self._gera_numero_lote()
         edoc.LoteRps.Id = "lote" + numero_lote

@@ -69,6 +69,13 @@ class Tests(TestCertificateMixin, TestCase):
         )
         self.assertEqual(resultado, "NFS-e cancelada em 11/20/2020")
 
+    def test_xml_assinado_sem_quebra_de_linha(self):
+        # comportamento validado no Ginfes até a 3.1.1
+        xml_assinado = self.nfse._prepara_consultar_lote_rps("123456")
+        self.assertIn("Signature", xml_assinado)
+        self.assertNotIn("\n", xml_assinado)
+        self.assertNotIn("\r", xml_assinado)
+
 
 def create_nfse_object():
     return EnviarLoteRpsEnvio(

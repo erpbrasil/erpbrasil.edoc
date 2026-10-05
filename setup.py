@@ -21,17 +21,16 @@ nfselib_paulistana_require = [
 nfselib_dsf_require = [
     "nfselib.dsf",
 ]
-nfselib_betha_require = [
-    "nfselib.betha",
-]
 nfselib_issnet_require = [
     "nfselib.issnet",
 ]
-nfelib_require = [
-    "nfselib",
+nfselib_barueri_require = [
+    "nfselib.barueri",
 ]
-mdfelib_require = [
-    "mdfelib",
+# CT-e e MDF-e usam as bindings da nfelib; NF-e, NFC-e e manifestação usam as
+# bindings embutidas em erpbrasil.nfelib_legacy
+nfelib_require = [
+    "nfelib",
 ]
 
 
@@ -44,11 +43,11 @@ def read(*names, **kwargs):
 
 setup(
     name="erpbrasil.edoc",
-    version="3.1.1",
+    version="3.2.0",
     license="MIT",
     description=(
-        "Emissão de documentos fiscais e outras obrigações"
-        " (NF-E, NFS-E, MDF-E, CT-E, REINF, E-SOCIAL)"
+        "Transmissão de documentos fiscais eletrônicos brasileiros"
+        " (NF-e, NFC-e, CT-e, MDF-e, manifestação do destinatário e NFS-e)"
     ),
     long_description="{}\n{}".format(
         re.compile("^.. start-badges.*^.. end-badges", re.M | re.S).sub(
@@ -87,8 +86,8 @@ setup(
         "Topic :: Utilities",
     ],
     project_urls={
-        "Documentation": "https://erpbrasiledoc.readthedocs.io/",
-        "Changelog": "https://erpbrasiledoc.readthedocs.io/en/latest/changelog.html",
+        "Documentation": "https://github.com/erpbrasil/erpbrasil.edoc#readme",
+        "Changelog": "https://github.com/erpbrasil/erpbrasil.edoc/blob/master/CHANGELOG.rst",
         "Issue Tracker": "https://github.com/erpbrasil/erpbrasil.edoc/issues",
     },
     keywords=[
@@ -100,10 +99,11 @@ setup(
         "nfselib.ginfes": nfselib_ginfes_require,
         "nfselib.paulistana": nfselib_paulistana_require,
         "nfselib.dsf": nfselib_dsf_require,
-        "nfselib.betha": nfselib_betha_require,
         "nfselib.issnet": nfselib_issnet_require,
+        "nfselib.barueri": nfselib_barueri_require,
         "nfelib": nfelib_require,
-        "mdfelib": mdfelib_require,
+        # nome mantido para quem já instala com ele; o MDF-e usa a nfelib
+        "mdfelib": nfelib_require,
     },
     setup_requires=[],
     entry_points={
