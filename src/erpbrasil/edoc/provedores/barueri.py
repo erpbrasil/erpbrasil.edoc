@@ -118,6 +118,7 @@ class Barueri(NFSe):
         return raiz
 
     def analisa_retorno_consulta(self, processo):
+        status = None
         mensagem = ""
         if processo.webservice == "NFeLoteStatusArquivo" and processo.resposta:
             lista_msgs = processo.resposta.ListaMensagemRetorno
