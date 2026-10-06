@@ -54,7 +54,7 @@ class Tests(TestCertificateMixin, TestCase):
         )
 
     @pytest.mark.xfail(
-        strict=True, reason="cassete de 2020: o POST vai para //ServiceGinfesImpl e o VCR nao casa; regravar"
+        ZEEP_NOVO, strict=True, reason="cassete de 2020: com zeep >= 4.3 o POST vai para //ServiceGinfesImpl; regravar"
     )
     @gravador.use_cassette("tests/fixtures/vcr_cassettes/test_envia_documento_ginfes.yaml")
     def test_envia_documento_ginfes(self):
@@ -64,7 +64,7 @@ class Tests(TestCertificateMixin, TestCase):
         self.assertIn(resultado.resposta.Situacao, [2, 4])
 
     @pytest.mark.xfail(
-        strict=True, reason="cassete de 2020: o POST vai para //ServiceGinfesImpl e o VCR nao casa; regravar"
+        ZEEP_NOVO, strict=True, reason="cassete de 2020: com zeep >= 4.3 o POST vai para //ServiceGinfesImpl; regravar"
     )
     @gravador.use_cassette("tests/fixtures/vcr_cassettes/test_cancelar_documento_ginfes.yaml")
     def test_cancelar_documento_ginfes(self):
@@ -74,7 +74,7 @@ class Tests(TestCertificateMixin, TestCase):
         self.assertTrue(resultado[0])
 
     @pytest.mark.xfail(
-        strict=True, reason="cassete de 2020: o POST vai para //ServiceGinfesImpl e o VCR nao casa; regravar"
+        ZEEP_NOVO, strict=True, reason="cassete de 2020: com zeep >= 4.3 o POST vai para //ServiceGinfesImpl; regravar"
     )
     @gravador.use_cassette("tests/fixtures/vcr_cassettes/test_consulta_documento_ginfes.yaml")
     def test_consulta_documento_ginfes(self):
