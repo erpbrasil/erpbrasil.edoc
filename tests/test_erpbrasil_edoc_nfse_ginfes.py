@@ -3,6 +3,7 @@ from unittest import TestCase
 
 import pytest
 import vcr
+import zeep
 from requests import Session
 
 from erpbrasil.base import misc
@@ -31,6 +32,9 @@ from .test_certificate_mixin import TestCertificateMixin
 # Os cassetes guardam o corpo gzip como foi recebido; com urllib3 2 o playback
 # precisa descomprimir, senao o zeep recebe bytes gzip no lugar do WSDL.
 gravador = vcr.VCR(decode_compressed_response=True)
+# zeep 4.3 (Python >= 3.10) monta o endereco com barra dupla e o cassete de 2020 nao casa;
+# com zeep 4.2 (Python 3.8 e 3.9) os tres testes passam.
+ZEEP_NOVO = tuple(int(x) for x in zeep.__version__.split(".")[:2]) >= (4, 3)
 
 
 class Tests(TestCertificateMixin, TestCase):
