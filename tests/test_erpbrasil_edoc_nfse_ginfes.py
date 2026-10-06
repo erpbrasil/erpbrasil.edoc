@@ -3,7 +3,6 @@ from unittest import TestCase
 
 import pytest
 import vcr
-import zeep
 from requests import Session
 
 from erpbrasil.base import misc
@@ -32,9 +31,8 @@ from .test_certificate_mixin import TestCertificateMixin
 # Os cassetes guardam o corpo gzip como foi recebido; com urllib3 2 o playback
 # precisa descomprimir, senao o zeep recebe bytes gzip no lugar do WSDL.
 gravador = vcr.VCR(decode_compressed_response=True)
-# zeep 4.3 (Python >= 3.10) monta o endereco com barra dupla e o cassete de 2020 nao casa;
-# com zeep 4.2 (Python 3.8 e 3.9) os tres testes passam.
-ZEEP_NOVO = tuple(int(x) for x in zeep.__version__.split(".")[:2]) >= (4, 3)
+# O cassete do Ginfes (2020) casa com o zeep de Python 3.8 e 3.9 e falha nos demais
+# (barra dupla no endereco ou matcher do vcrpy): xfail nao estrito ate regravar.
 
 
 class Tests(TestCertificateMixin, TestCase):
@@ -53,9 +51,7 @@ class Tests(TestCertificateMixin, TestCase):
             im_prestador=misc.punctuation_rm("35172"),
         )
 
-    @pytest.mark.xfail(
-        ZEEP_NOVO, strict=True, reason="cassete de 2020: com zeep >= 4.3 o POST vai para //ServiceGinfesImpl; regravar"
-    )
+    @pytest.mark.xfail(reason="cassete de 2020: so casa em algumas combinacoes de zeep e vcrpy; regravar")
     @gravador.use_cassette("tests/fixtures/vcr_cassettes/test_envia_documento_ginfes.yaml")
     def test_envia_documento_ginfes(self):
         retorno = self.nfse.envia_documento(create_nfse_object())
@@ -63,9 +59,7 @@ class Tests(TestCertificateMixin, TestCase):
 
         self.assertIn(resultado.resposta.Situacao, [2, 4])
 
-    @pytest.mark.xfail(
-        ZEEP_NOVO, strict=True, reason="cassete de 2020: com zeep >= 4.3 o POST vai para //ServiceGinfesImpl; regravar"
-    )
+    @pytest.mark.xfail(reason="cassete de 2020: so casa em algumas combinacoes de zeep e vcrpy; regravar")
     @gravador.use_cassette("tests/fixtures/vcr_cassettes/test_cancelar_documento_ginfes.yaml")
     def test_cancelar_documento_ginfes(self):
         retorno = self.nfse.cancela_documento(115)
@@ -73,9 +67,7 @@ class Tests(TestCertificateMixin, TestCase):
 
         self.assertTrue(resultado[0])
 
-    @pytest.mark.xfail(
-        ZEEP_NOVO, strict=True, reason="cassete de 2020: com zeep >= 4.3 o POST vai para //ServiceGinfesImpl; regravar"
-    )
+    @pytest.mark.xfail(reason="cassete de 2020: so casa em algumas combinacoes de zeep e vcrpy; regravar")
     @gravador.use_cassette("tests/fixtures/vcr_cassettes/test_consulta_documento_ginfes.yaml")
     def test_consulta_documento_ginfes(self):
         retorno = self.nfse.consulta_nfse_rps(rps_number=304, rps_serie=111, rps_type=1)

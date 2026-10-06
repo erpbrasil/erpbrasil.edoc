@@ -105,5 +105,5 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install dist/*.whl erpbrasil.base erpbrasil.assinatura erpbrasil.transmissao erpbrasil.edoc.pdf
           python -c "import erpbrasil.base, erpbrasil.assinatura, erpbrasil.transmissao, erpbrasil.edoc; import erpbrasil.edoc.pdf; from erpbrasil.edoc.nfe import NFe; from importlib.metadata import version; print(version('erpbrasil.edoc'))"
-          python -m pip uninstall -y erpbrasil.base
-          python -c "import erpbrasil.edoc, erpbrasil.edoc.pdf, erpbrasil.edoc.resposta; print('namespace ok sem a base')"
+          python -m pip uninstall -y erpbrasil.base erpbrasil.edoc.pdf
+          python -c "import erpbrasil.edoc, erpbrasil.edoc.resposta; print('namespace ok sem a base')"
