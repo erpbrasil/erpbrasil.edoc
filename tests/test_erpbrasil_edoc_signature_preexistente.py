@@ -1,9 +1,10 @@
 from types import SimpleNamespace
 from unittest import TestCase
 
+from lxml import etree
+
 from erpbrasil.edoc.nfe import NFe
 from erpbrasil.nfelib_legacy.v4_00 import retEnviNFe
-from lxml import etree
 
 from .test_certificate_mixin import TestCertificateMixin
 
@@ -61,7 +62,5 @@ class TestReassinatura(TestCertificateMixin, TestCase):
         xml_assinado = nfe.assina_raiz(tnfe, chave)
 
         self.assertIsNone(tnfe.Signature)
-        self.assertEqual(
-            len(etree.fromstring(xml_assinado).findall(f".//{{{NS_DS}}}Signature")), 1
-        )
+        self.assertEqual(len(etree.fromstring(xml_assinado).findall(f".//{{{NS_DS}}}Signature")), 1)
         self.assertNotIn("YmJi", xml_assinado)  # SignatureValue da assinatura antiga

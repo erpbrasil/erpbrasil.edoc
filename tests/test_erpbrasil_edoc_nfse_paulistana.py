@@ -2,11 +2,6 @@ from base64 import b64encode
 from types import SimpleNamespace
 from unittest import TestCase, skipUnless
 
-from erpbrasil.assinatura.assinatura import Assinatura
-from erpbrasil.base import misc
-from erpbrasil.edoc.provedores.cidades import NFSeFactory
-from erpbrasil.edoc.provedores.paulistana import Paulistana, paulistana_v03
-from erpbrasil.transmissao import TransmissaoSOAP
 from nfselib.paulistana.v02.PedidoEnvioLoteRPS import (
     CabecalhoType,
     PedidoEnvioLoteRPS,
@@ -16,6 +11,12 @@ from nfselib.paulistana.v02.PedidoEnvioLoteRPS import (
     tpRPS,
 )
 from requests import Session
+
+from erpbrasil.assinatura.assinatura import Assinatura
+from erpbrasil.base import misc
+from erpbrasil.edoc.provedores.cidades import NFSeFactory
+from erpbrasil.edoc.provedores.paulistana import Paulistana, paulistana_v03
+from erpbrasil.transmissao import TransmissaoSOAP
 
 from .test_certificate_mixin import TestCertificateMixin
 
@@ -60,9 +61,7 @@ class AnalisaRetornoCancelamentoTests(TestCase):
         self.nfse = Paulistana.__new__(Paulistana)
 
     def test_cancelamento_com_sucesso(self):
-        processo = SimpleNamespace(
-            resposta=SimpleNamespace(Cabecalho=SimpleNamespace(Sucesso=True), Erro=[])
-        )
+        processo = SimpleNamespace(resposta=SimpleNamespace(Cabecalho=SimpleNamespace(Sucesso=True), Erro=[]))
         status, mensagem = self.nfse.analisa_retorno_cancelamento_paulistana(processo)
         self.assertTrue(status)
         self.assertEqual(mensagem, "")
@@ -70,15 +69,9 @@ class AnalisaRetornoCancelamentoTests(TestCase):
     def test_cancelamento_com_erro(self):
         erro = SimpleNamespace(
             Codigo=1306,
-            Descricao=(
-                "A NFS-e que se deseja cancelar não foi gerada via Web Service."
-            ),
+            Descricao=("A NFS-e que se deseja cancelar não foi gerada via Web Service."),
         )
-        processo = SimpleNamespace(
-            resposta=SimpleNamespace(
-                Cabecalho=SimpleNamespace(Sucesso=False), Erro=[erro]
-            )
-        )
+        processo = SimpleNamespace(resposta=SimpleNamespace(Cabecalho=SimpleNamespace(Sucesso=False), Erro=[erro]))
         status, mensagem = self.nfse.analisa_retorno_cancelamento_paulistana(processo)
         self.assertFalse(status)
         self.assertEqual(
@@ -114,10 +107,7 @@ class PreparaDocumentosTests(TestCertificateMixin, TestCase):
         self.assertIn("07865699000100", xml_assinado)
 
     def test_prepara_consulta_recibo_le_numero_lote_e_cnpj_do_retorno(self):
-        proc_envio = SimpleNamespace(
-            retorno="<root><NumeroLote>123</NumeroLote>"
-            "<CNPJ>07865699000100</CNPJ></root>"
-        )
+        proc_envio = SimpleNamespace(retorno="<root><NumeroLote>123</NumeroLote><CNPJ>07865699000100</CNPJ></root>")
         xml = self.nfse._prepara_consulta_recibo(proc_envio)
         self.assertIn("123", xml)
         self.assertIn("07865699000100", xml)
@@ -133,9 +123,7 @@ class PreparaDocumentosTests(TestCertificateMixin, TestCase):
         self.assertIn("294", xml)
 
     def test_prepara_cancelar_nfse_envio_com_codigo_verificacao(self):
-        xml = self.nfse._prepara_cancelar_nfse_envio(
-            {"numero_nfse": "001", "codigo_verificacao": "0000"}
-        )
+        xml = self.nfse._prepara_cancelar_nfse_envio({"numero_nfse": "001", "codigo_verificacao": "0000"})
         self.assertIn("07865699000100", xml)
 
     def test_prepara_cancelar_nfse_envio_sem_codigo_verificacao(self):
@@ -177,9 +165,7 @@ class PreparaDocumentosTests(TestCertificateMixin, TestCase):
     @skipUnless(paulistana_v03, "nfselib.paulistana sem o schema v03")
     def test_v03_assina_em_bytes_e_v02_em_base64(self):
         assinador = Assinatura(self.certificate)
-        assinatura_v03 = self._nfse_com_schema("v03")._assina_paulistana(
-            assinador, "RPS0001"
-        )
+        assinatura_v03 = self._nfse_com_schema("v03")._assina_paulistana(assinador, "RPS0001")
         assinatura_v02 = self.nfse._assina_paulistana(assinador, "RPS0001")
         self.assertIsInstance(assinatura_v03, bytes)
         self.assertEqual(b64encode(assinatura_v03).decode(), assinatura_v02)
@@ -199,10 +185,7 @@ def create_nfse_object():
         ),
         RPS=[
             tpRPS(
-                Assinatura=(
-                    "35707410111  0000000002942020102"
-                    "9TNN00000000001000000000000000000002692262228384000151"
-                ),
+                Assinatura=("35707410111  00000000029420201029TNN00000000001000000000000000000002692262228384000151"),
                 ChaveRPS=tpChaveRPS(
                     InscricaoPrestador=35707410,
                     SerieRPS="111",

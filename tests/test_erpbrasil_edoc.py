@@ -3,8 +3,9 @@ import os
 from unittest import TestCase
 
 import vcr
-from erpbrasil.edoc.mde import MDe, TransmissaoMDE
 from requests import Session
+
+from erpbrasil.edoc.mde import MDe, TransmissaoMDE
 
 from .test_certificate_mixin import TestCertificateMixin
 
@@ -29,6 +30,10 @@ logging.config.dictConfig(
     }
 )
 
+# Os cassetes guardam o corpo gzip como foi recebido; com urllib3 2 o playback
+# precisa descomprimir, senao o zeep recebe bytes gzip no lugar do WSDL.
+gravador = vcr.VCR(decode_compressed_response=True)
+
 VALID_CSTAT_LIST = ["137", "138"]
 
 
@@ -37,16 +42,14 @@ class Tests(TestCertificateMixin, TestCase):
 
     def setUp(self):
         super().setUp()
-        self.chave = os.environ.get(
-            "CHAVE_NFE", "35200309091076000144550010001807401003642343"
-        )
+        self.chave = os.environ.get("CHAVE_NFE", "35200309091076000144550010001807401003642343")
         session = Session()
         session.verify = False
 
         transmissao = TransmissaoMDE(self.certificate, session)
         self.mde = MDe(transmissao, "35", versao="1.01", ambiente="1")
 
-    @vcr.use_cassette(
+    @gravador.use_cassette(
         "tests/fixtures/vcr_cassettes/test_nsu_especifico.yaml",
     )
     def test_nsu_especifico(self):
@@ -57,7 +60,7 @@ class Tests(TestCertificateMixin, TestCase):
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
-    @vcr.use_cassette(
+    @gravador.use_cassette(
         "tests/fixtures/vcr_cassettes/test_ultimo_nsu.yaml",
     )
     def test_ultimo_nsu(self):
@@ -68,10 +71,8 @@ class Tests(TestCertificateMixin, TestCase):
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)
 
-    @vcr.use_cassette("tests/fixtures/vcr_cassettes/test_chave.yaml")
+    @gravador.use_cassette("tests/fixtures/vcr_cassettes/test_chave.yaml")
     def test_chave(self):
-        ret = self.mde.consultar_distribuicao(
-            cnpj_cpf=self.certificate.cnpj_cpf, chave=self.chave
-        )
+        ret = self.mde.consultar_distribuicao(cnpj_cpf=self.certificate.cnpj_cpf, chave=self.chave)
 
         self.assertIn(ret.resposta.cStat, VALID_CSTAT_LIST)

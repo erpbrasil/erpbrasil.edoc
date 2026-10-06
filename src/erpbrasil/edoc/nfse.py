@@ -13,9 +13,7 @@ except ImportError:
     from urlparse import urljoin
 
 
-ServicoNFSe = collections.namedtuple(
-    "ServicoNFSe", ["operacao", "endpoint", "classe_retorno", "assinar"]
-)
+ServicoNFSe = collections.namedtuple("ServicoNFSe", ["operacao", "endpoint", "classe_retorno", "assinar"])
 
 
 class NFSe(DocumentoEletronico):
@@ -29,9 +27,7 @@ class NFSe(DocumentoEletronico):
     _edoc_situacao_em_processamento = "TODO"
     _edoc_situacao_servico_em_operacao = "TODO"
 
-    def __init__(
-        self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-    ):
+    def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador):
         self.ambiente = ambiente
         self.cidade = cidade_ibge
         self.cnpj_prestador = cnpj_prestador
@@ -52,24 +48,18 @@ class NFSe(DocumentoEletronico):
             header_string = header.attrib.get("Versao")
 
         if header_string:
-            with self._transmissao.cliente(
-                urljoin(self._url, servico.endpoint)
-            ) as cliente:
+            with self._transmissao.cliente(urljoin(self._url, servico.endpoint)) as cliente:
                 resposta = cliente.service[servico.operacao](
                     header_string,
                     body_string,
                 )
         else:
-            with self._transmissao.cliente(
-                urljoin(self._url, servico.endpoint)
-            ) as cliente:
+            with self._transmissao.cliente(urljoin(self._url, servico.endpoint)) as cliente:
                 resposta = cliente.service[servico.operacao](
                     body_string,
                 )
 
-        return analisar_retorno(
-            servico.operacao, body, body_string, resposta, servico.classe_retorno
-        )
+        return analisar_retorno(servico.operacao, body, body_string, resposta, servico.classe_retorno)
 
     def _aguarda_tempo_medio(self, proc_envio):
         time.sleep(self._tempo_medio)

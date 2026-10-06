@@ -28,24 +28,16 @@ endpoint = "ServiceGinfesImpl?wsdl"
 
 if ginfes:
     servicos = {
-        "envia_documento": ServicoNFSe(
-            "RecepcionarLoteRpsV3", endpoint, servico_enviar_lote_rps_resposta, True
-        ),
+        "envia_documento": ServicoNFSe("RecepcionarLoteRpsV3", endpoint, servico_enviar_lote_rps_resposta, True),
         "consulta_recibo": ServicoNFSe(
             "ConsultarSituacaoLoteRpsV3",
             endpoint,
             servico_consultar_situacao_lote_rps_resposta,
             True,
         ),
-        "consultar_lote_rps": ServicoNFSe(
-            "ConsultarLoteRpsV3", endpoint, servico_consultar_lote_rps_resposta, True
-        ),
-        "cancela_documento": ServicoNFSe(
-            "CancelarNfseV3", endpoint, servico_cancelar_nfse_envio, True
-        ),
-        "consulta_nfse_rps": ServicoNFSe(
-            "ConsultarNfsePorRpsV3", endpoint, servico_cancelar_nfse_envio, True
-        ),
+        "consultar_lote_rps": ServicoNFSe("ConsultarLoteRpsV3", endpoint, servico_consultar_lote_rps_resposta, True),
+        "cancela_documento": ServicoNFSe("CancelarNfseV3", endpoint, servico_cancelar_nfse_envio, True),
+        "consulta_nfse_rps": ServicoNFSe("ConsultarNfsePorRpsV3", endpoint, servico_cancelar_nfse_envio, True),
     }
     cabecalho = cabecalho(versao="3", versaoDados="3")
 else:
@@ -56,18 +48,14 @@ else:
 class Ginfes(NFSe):
     _header = cabecalho
 
-    def __init__(
-        self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-    ):
+    def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador):
         if ambiente == "2":
             self._url = "https://homologacao.ginfes.com.br"
         else:
             self._url = "https://producao.ginfes.com.br"
         self._servicos = servicos
 
-        super().__init__(
-            transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-        )
+        super().__init__(transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)
 
     def get_documento_id(self, edoc):
         # edoc.LoteRps.ListaRps.Rps[0].InfRps.Id
@@ -172,43 +160,32 @@ class Ginfes(NFSe):
 
         return xml_assinado
 
-    def analisa_retorno_consulta(
-        self, processo, number, company_cnpj_cpf, company_legal_name
-    ):
+    def analisa_retorno_consulta(self, processo, number, company_cnpj_cpf, company_legal_name):
         retorno = ET.fromstring(processo.retorno)
         nsmap = {
-            "consulta": "http://www.ginfes.com.br/servico_consultar_"
-            "nfse_rps_resposta_v03.xsd",
+            "consulta": "http://www.ginfes.com.br/servico_consultar_nfse_rps_resposta_v03.xsd",
             "tipo": "http://www.ginfes.com.br/tipos_v03.xsd",
         }
 
         mensagem = ""
         if processo.webservice == "ConsultarNfsePorRpsV3":
             enviado = retorno.findall(".//consulta:CompNfse", namespaces=nsmap)
-            nao_encontrado = retorno.findall(
-                ".//tipo:MensagemRetorno", namespaces=nsmap
-            )
+            nao_encontrado = retorno.findall(".//tipo:MensagemRetorno", namespaces=nsmap)
 
             if enviado:
                 # NFS-e já foi enviada
 
-                cancelada = retorno.findall(
-                    ".//tipo:NfseCancelamento", namespaces=nsmap
-                )
+                cancelada = retorno.findall(".//tipo:NfseCancelamento", namespaces=nsmap)
 
                 if cancelada:
                     # NFS-e enviada foi cancelada
 
                     data = retorno.findall(".//tipo:DataHora", namespaces=nsmap)[0].text
-                    data = datetime.strptime(data, "%Y-%m-%dT%H:%M:%S").strftime(
-                        "%m/%d/%Y"
-                    )
+                    data = datetime.strptime(data, "%Y-%m-%dT%H:%M:%S").strftime("%m/%d/%Y")
                     mensagem = "NFS-e cancelada em " + data
 
                 else:
-                    numero_retorno = retorno.findall(
-                        ".//tipo:InfNfse/tipo:Numero", namespaces=nsmap
-                    )[0].text
+                    numero_retorno = retorno.findall(".//tipo:InfNfse/tipo:Numero", namespaces=nsmap)[0].text
                     cnpj_prestador_retorno = retorno.findall(
                         ".//tipo:IdentificacaoPrestador/tipo:Cnpj", namespaces=nsmap
                     )[0].text
@@ -226,10 +203,7 @@ class Ginfes(NFSe):
                         variables_error.append("Razão Social de prestador")
 
                     if variables_error:
-                        mensagem = (
-                            "Os seguintes campos não condizem com"
-                            " o provedor NFS-e: \n"
-                        )
+                        mensagem = "Os seguintes campos não condizem com o provedor NFS-e: \n"
                         mensagem += "\n".join(variables_error)
                     else:
                         mensagem = "NFS-e enviada e corresponde com o provedor"
@@ -237,14 +211,10 @@ class Ginfes(NFSe):
             elif nao_encontrado:
                 # NFS-e não foi enviada
 
-                mensagem_erro = retorno.findall(".//tipo:Mensagem", namespaces=nsmap)[
-                    0
-                ].text
+                mensagem_erro = retorno.findall(".//tipo:Mensagem", namespaces=nsmap)[0].text
                 correcao = retorno.findall(".//tipo:Correcao", namespaces=nsmap)[0].text
                 codigo = retorno.findall(".//tipo:Codigo", namespaces=nsmap)[0].text
-                mensagem = (
-                    codigo + " - " + mensagem_erro + " - Correção: " + correcao + "\n"
-                )
+                mensagem = codigo + " - " + mensagem_erro + " - Correção: " + correcao + "\n"
 
             else:
                 mensagem = "Erro desconhecido."
@@ -260,14 +230,10 @@ class Ginfes(NFSe):
 
             sucesso = retorno.findall(".//tipo:Sucesso", namespaces=nsmap)
             if not sucesso:
-                mensagem_erro = retorno.findall(".//tipo:Mensagem", namespaces=nsmap)[
-                    0
-                ].text
+                mensagem_erro = retorno.findall(".//tipo:Mensagem", namespaces=nsmap)[0].text
                 correcao = retorno.findall(".//tipo:Correcao", namespaces=nsmap)[0].text
                 codigo = retorno.findall(".//tipo:Codigo", namespaces=nsmap)[0].text
-                mensagem_completa += (
-                    codigo + " - " + mensagem_erro + " - Correção: " + correcao + "\n"
-                )
+                mensagem_completa += codigo + " - " + mensagem_erro + " - Correção: " + correcao + "\n"
                 situacao = False
 
             return situacao, mensagem_completa

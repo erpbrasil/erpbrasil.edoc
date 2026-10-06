@@ -1,25 +1,125 @@
-[tool.ruff]
-target-version = "py38"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.ruff.lint]
-select = [
-    # pycodestyle
-    "E",
-    # Pyflakes
-    "F",
-    # pyupgrade
-    "UP",
-    # flake8-bugbear
-    "B",
-    # flake8-simplify
-    "SIM",
-    # flake8-comprehensions
-    "C4",
-    # isort
-    "I",
+[project]
+name = "erpbrasil.edoc"
+version = "3.3.0"
+description = "Transmissão de documentos fiscais eletrônicos brasileiros (NF-e, NFC-e, CT-e, MDF-e, manifestação do destinatário e NFS-e)"
+readme = "README.rst"
+license = {text = "MIT"}
+authors = [
+  {name = "Luis Felipe Mileo", email = "mileo@kmee.com.br"},
+]
+keywords = ["NF-e", "NFC-e", "CT-e", "MDF-e", "NFS-e", "SEFAZ", "e-invoicing", "Brasil"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Office/Business :: Financial :: Accounting",
+]
+# Piso 3.6: e o Python do CI da OCA para o Odoo 12.0. Odoo 20 roda ate 3.14.
+requires-python = ">=3.6"
+dependencies = [
+    "erpbrasil.base>=2.0.0",
+    "erpbrasil.assinatura>=1.2.0",
+    "erpbrasil.transmissao>=1.0.0",
+    "lxml",
 ]
 
-isort = { known-first-party = ['src/erpbrasil', 'tests'] }
+[project.optional-dependencies]
+# CT-e e MDF-e usam as bindings da nfelib (Python >= 3.9); NF-e, NFC-e e
+# manifestacao usam as bindings embutidas em erpbrasil.nfelib_legacy.
+nfelib = ["nfelib"]
+# nome mantido para quem ja instala com ele; o MDF-e usa a nfelib
+mdfelib = ["nfelib"]
+# Nomes com hifen (PEP 685): o pip moderno aceita `erpbrasil.edoc[nfselib.paulistana]`
+# normalizando para este nome; o pip antigo do Python 3.6 e 3.7 so aceita a forma com hifen.
+nfselib-ginfes = ["nfselib.ginfes"]
+nfselib-paulistana = ["nfselib.paulistana"]
+nfselib-issnet = ["nfselib.issnet"]
+# a nfselib.barueri usa o six sem declarar a dependencia
+nfselib-barueri = ["nfselib.barueri", "six"]
+test = [
+    "pytest",
+    "pytest-cov",
+    "coverage[toml]",
+    "vcrpy",
+]
+doc = [
+    "sphinx>=1.3",
+    "sphinx-rtd-theme",
+]
+
+[project.scripts]
+erpbrasil-edoc = "erpbrasil.edoc.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/erpbrasil/erpbrasil.edoc"
+Documentation = "https://erpbrasiledoc.readthedocs.io/en/latest/"
+Changelog = "https://github.com/erpbrasil/erpbrasil.edoc/blob/master/CHANGELOG.rst"
+"Issue Tracker" = "https://github.com/erpbrasil/erpbrasil.edoc/issues"
+
+# Os namespaces `erpbrasil` e `erpbrasil.edoc` sao compartilhados (base, assinatura,
+# transmissao; edoc.pdf, edoc.gen). Os dois __init__ usam pkgutil.extend_path.
+[tool.hatch.build.targets.wheel]
+packages = ["src/erpbrasil"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src",
+    "tests",
+    "docs",
+    "AUTHORS.rst",
+    "CHANGELOG.rst",
+    "CONTRIBUTING.rst",
+    "LICENSE",
+    "README.rst",
+    "tox.ini",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --tb=short"
+
+[tool.coverage.run]
+branch = true
+source = ["erpbrasil.edoc"]
+omit = ["*/nfelib_legacy/*"]
+
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+
+[tool.ruff]
+# O menor alvo que o ruff aceita; a sintaxe fica compativel com 3.6 e o CI roda em 3.6 e 3.7.
+target-version = "py37"
+line-length = 120
+src = ["src", "tests"]
+extend-exclude = ["src/erpbrasil/nfelib_legacy"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["erpbrasil"]
 
 [tool.doc8]
 max-line-length = 88

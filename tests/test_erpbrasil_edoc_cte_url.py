@@ -1,4 +1,5 @@
 import pytest
+
 from erpbrasil.edoc import cte
 
 UFS = [uf for uf in cte.SIGLA_ESTADO if uf != "AN"]
@@ -15,9 +16,7 @@ def _servidor_esperado(uf, ambiente):
     if uf in PROPRIOS:
         return PROPRIOS[uf][0 if producao else 1]
     if uf in ("AP", "PE", "RR", "SP"):
-        return (
-            "nfe.fazenda.sp.gov.br" if producao else "homologacao.nfe.fazenda.sp.gov.br"
-        )
+        return "nfe.fazenda.sp.gov.br" if producao else "homologacao.nfe.fazenda.sp.gov.br"
     return "cte.svrs.rs.gov.br" if producao else "cte-homologacao.svrs.rs.gov.br"
 
 

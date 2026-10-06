@@ -279,10 +279,7 @@ class NFCe(NFe):
         return hash_object.hexdigest().upper()
 
     def _build_qrcode(self, pre_qrcode, qr_hash):
-        return (
-            f"{ESTADO_QRCODE[SIGLA_ESTADO[str(self.uf)]][self.ambiente]}"
-            f"{pre_qrcode}|{qr_hash}"
-        )
+        return f"{ESTADO_QRCODE[SIGLA_ESTADO[str(self.uf)]][self.ambiente]}{pre_qrcode}|{qr_hash}"
 
     @property
     def consulta_qrcode_url(self):
@@ -292,9 +289,7 @@ class NFCe(NFe):
         xml = ET.fromstring(xml_assinado)
         chave_nfce = edoc.infNFe.Id.replace("NFe", "")
         data_emissao = edoc.infNFe.ide.dhEmi[8:10]
-        total_nfe = xml.find(
-            ".//nfe:total/nfe:ICMSTot/nfe:vNF", namespaces=NAMESPACES
-        ).text
+        total_nfe = xml.find(".//nfe:total/nfe:ICMSTot/nfe:vNF", namespaces=NAMESPACES).text
         digest_value = xml.find(".//ds:DigestValue", namespaces=NAMESPACES).text
         digest_value_hex = binascii.hexlify(digest_value.encode()).decode()
         pre_qrcode_witouth_csc = (
@@ -341,9 +336,7 @@ class NFCe(NFe):
 
         return self._post(
             xml_envio_etree,
-            localizar_url(
-                WS_NFE_AUTORIZACAO, str(self.uf), self.mod, int(self.ambiente)
-            ),
+            localizar_url(WS_NFE_AUTORIZACAO, str(self.uf), self.mod, int(self.ambiente)),
             "nfeAutorizacaoLote",
             retEnviNFe,
         )

@@ -32,24 +32,16 @@ endpoint = "servicos.asmx?WSDL"
 
 if issnet:
     servicos = {
-        "envia_documento": ServicoNFSe(
-            "RecepcionarLoteRps", endpoint, servico_enviar_lote_rps_resposta, True
-        ),
+        "envia_documento": ServicoNFSe("RecepcionarLoteRps", endpoint, servico_enviar_lote_rps_resposta, True),
         "consulta_recibo": ServicoNFSe(
             "ConsultarSituacaoLoteRPS",
             endpoint,
             servico_consultar_situacao_lote_rps_resposta,
             True,
         ),
-        "consultar_lote_rps": ServicoNFSe(
-            "ConsultarLoteRps", endpoint, servico_consultar_lote_rps_resposta, True
-        ),
-        "cancela_documento": ServicoNFSe(
-            "CancelarNfse", endpoint, servico_cancelar_nfse_envio, True
-        ),
-        "consulta_nfse_rps": ServicoNFSe(
-            "ConsultarNFSePorRPS", endpoint, servico_consultar_nfse_rps_envio, True
-        ),
+        "consultar_lote_rps": ServicoNFSe("ConsultarLoteRps", endpoint, servico_consultar_lote_rps_resposta, True),
+        "cancela_documento": ServicoNFSe("CancelarNfse", endpoint, servico_cancelar_nfse_envio, True),
+        "consulta_nfse_rps": ServicoNFSe("ConsultarNFSePorRPS", endpoint, servico_consultar_nfse_rps_envio, True),
     }
 else:
     servicos = ()
@@ -58,22 +50,14 @@ else:
 class Issnet(NFSe):
     _header = None
 
-    def __init__(
-        self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-    ):
+    def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador):
         if ambiente == "2":
             self._url = "https://www.issnetonline.com.br/webserviceabrasf/homologacao/"
         else:
-            self._url = (
-                "https://www.issnetonline.com.br/webserviceabrasf/"
-                + cidade[int(cidade_ibge)]
-                + "/"
-            )
+            self._url = "https://www.issnetonline.com.br/webserviceabrasf/" + cidade[int(cidade_ibge)] + "/"
         self._servicos = servicos
 
-        super().__init__(
-            transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-        )
+        super().__init__(transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)
 
     def get_documento_id(self, edoc):
         # edoc.LoteRps.ListaRps.Rps[0].InfRps.Id
@@ -200,47 +184,33 @@ class Issnet(NFSe):
 
         return xml_string
 
-    def analisa_retorno_consulta(
-        self, processo, number, company_cnpj_cpf, company_legal_name
-    ):
+    def analisa_retorno_consulta(self, processo, number, company_cnpj_cpf, company_legal_name):
         mensagem = ""
         res = {}
         retorno = ET.fromstring(processo.retorno)
         nsmap = {
-            "consulta": "http://www.issnetonline.com.br/webserviceabrasf/vsd/"
-            "servico_consultar_nfse_rps_resposta.xsd",
-            "tc": "http://www.issnetonline.com.br/webserviceabrasf/vsd/"
-            "tipos_complexos.xsd",
+            "consulta": "http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_nfse_rps_resposta.xsd",
+            "tc": "http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd",
         }
 
         if processo.webservice == "ConsultarNFSePorRPS":
             enviado = retorno.findall(".//consulta:CompNfse", namespaces=nsmap)
-            nao_encontrado = retorno.findall(
-                ".//consulta:MensagemRetorno", namespaces=nsmap
-            )
+            nao_encontrado = retorno.findall(".//consulta:MensagemRetorno", namespaces=nsmap)
 
             if enviado:
                 # NFS-e já foi enviada
 
-                cancelada = retorno.findall(
-                    ".//consulta:NfseCancelamento", namespaces=nsmap
-                )
+                cancelada = retorno.findall(".//consulta:NfseCancelamento", namespaces=nsmap)
 
                 if cancelada:
                     # NFS-e enviada foi cancelada
 
-                    data = retorno.findall(".//consulta:DataHora", namespaces=nsmap)[
-                        0
-                    ].text
-                    data = datetime.strptime(data, "%Y-%m-%dT%H:%M:%S").strftime(
-                        "%m/%d/%Y"
-                    )
+                    data = retorno.findall(".//consulta:DataHora", namespaces=nsmap)[0].text
+                    data = datetime.strptime(data, "%Y-%m-%dT%H:%M:%S").strftime("%m/%d/%Y")
                     mensagem = "NFS-e cancelada em " + data
 
                 else:
-                    numero_retorno = retorno.findall(
-                        ".//tc:InfNfse/tc:Numero", namespaces=nsmap
-                    )[0].text
+                    numero_retorno = retorno.findall(".//tc:InfNfse/tc:Numero", namespaces=nsmap)[0].text
                     cnpj_prestador_retorno = retorno.findall(
                         ".//tc:IdentificacaoPrestador/tc:CpfCnpj/tc:Cnpj",
                         namespaces=nsmap,
@@ -248,12 +218,8 @@ class Issnet(NFSe):
                     razao_social_prestador_retorno = retorno.findall(
                         ".//tc:PrestadorServico/tc:RazaoSocial", namespaces=nsmap
                     )[0].text
-                    verify_code = retorno.findall(
-                        ".//tc:InfNfse/tc:CodigoVerificacao", namespaces=nsmap
-                    )[0].text
-                    authorization_date = retorno.findall(
-                        ".//tc:InfNfse/tc:DataEmissao", namespaces=nsmap
-                    )[0].text
+                    verify_code = retorno.findall(".//tc:InfNfse/tc:CodigoVerificacao", namespaces=nsmap)[0].text
+                    authorization_date = retorno.findall(".//tc:InfNfse/tc:DataEmissao", namespaces=nsmap)[0].text
                     variables_error = []
 
                     if number and numero_retorno != number:
@@ -264,10 +230,7 @@ class Issnet(NFSe):
                         variables_error.append("Razão Social de prestador")
 
                     if variables_error:
-                        mensagem = (
-                            "Os seguintes campos não condizem com"
-                            " o provedor NFS-e: \n"
-                        )
+                        mensagem = "Os seguintes campos não condizem com o provedor NFS-e: \n"
                         mensagem += "\n".join(variables_error)
                     else:
                         mensagem = "NFS-e enviada e corresponde com o provedor"
@@ -280,14 +243,10 @@ class Issnet(NFSe):
             elif nao_encontrado:
                 # NFS-e não foi enviada
 
-                mensagem_erro = retorno.findall(".//tc:Mensagem", namespaces=nsmap)[
-                    0
-                ].text
+                mensagem_erro = retorno.findall(".//tc:Mensagem", namespaces=nsmap)[0].text
                 correcao = retorno.findall(".//tc:Correcao", namespaces=nsmap)[0].text
                 codigo = retorno.findall(".//tc:Codigo", namespaces=nsmap)[0].text
-                mensagem = (
-                    codigo + " - " + mensagem_erro + " - Correção: " + correcao + "\n"
-                )
+                mensagem = codigo + " - " + mensagem_erro + " - Correção: " + correcao + "\n"
 
             else:
                 mensagem = "Erro desconhecido."
@@ -301,21 +260,17 @@ class Issnet(NFSe):
             retorno = ET.fromstring(processo.retorno)
 
             sucesso = retorno.findall(
-                ".//{http://www.issnetonline.com.br/webserviceabrasf/vsd/"
-                "tipos_complexos.xsd}Sucesso"
+                ".//{http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd}Sucesso"
             )
             if not sucesso:
                 mensagem_erro = retorno.findall(
-                    ".//{http://www.issnetonline.com.br/webserviceabrasf/vsd/"
-                    "tipos_complexos.xsd}Mensagem"
+                    ".//{http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd}Mensagem"
                 )[0].text
                 correcao = retorno.findall(
-                    ".//{http://www.issnetonline.com.br/webserviceabrasf/vsd/"
-                    "tipos_complexos.xsd}Correcao"
+                    ".//{http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd}Correcao"
                 )[0].text
                 codigo = retorno.findall(
-                    ".//{http://www.issnetonline.com.br/webserviceabrasf/vsd/"
-                    "tipos_complexos.xsd}Codigo"
+                    ".//{http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd}Codigo"
                 )[0].text
                 mensagem_completa += codigo + " - " + mensagem_erro
                 if correcao:

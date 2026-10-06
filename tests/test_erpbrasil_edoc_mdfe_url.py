@@ -11,13 +11,12 @@ class TestMDFeServiceUrl(TestCase):
             with self.subTest(uf=uf):
                 self.assertEqual(
                     mdfe.get_service_url(uf, mdfe.WS_MDFE_STATUS_SERVICO, "1"),
-                    "https://mdfe.svrs.rs.gov.br/"
-                    "ws/MDFeStatusServico/MDFeStatusServico.asmx?wsdl",
+                    "https://mdfe.svrs.rs.gov.br/ws/MDFeStatusServico/MDFeStatusServico.asmx?wsdl",
                 )
                 self.assertTrue(
-                    mdfe.get_service_url(
-                        uf, mdfe.WS_MDFE_STATUS_SERVICO, "2"
-                    ).startswith("https://mdfe-homologacao.svrs.rs.gov.br/")
+                    mdfe.get_service_url(uf, mdfe.WS_MDFE_STATUS_SERVICO, "2").startswith(
+                        "https://mdfe-homologacao.svrs.rs.gov.br/"
+                    )
                 )
 
     def test_ufs_que_davam_erro(self):

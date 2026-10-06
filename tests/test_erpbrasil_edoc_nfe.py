@@ -1,7 +1,8 @@
 from unittest import TestCase
 
-from erpbrasil.edoc.nfe import NFe
 from lxml import etree
+
+from erpbrasil.edoc.nfe import NFe
 
 
 class NFeTests(TestCase):
@@ -43,9 +44,7 @@ class NFeTests(TestCase):
         self.prot_nfe_element = etree.fromstring(prot_nfe_xml_str)
 
     def test_monta_nfe_proc(self):
-        nfe_proc_bytes = self.nfe.monta_nfe_proc(
-            self.nfe_element, self.prot_nfe_element
-        )
+        nfe_proc_bytes = self.nfe.monta_nfe_proc(self.nfe_element, self.prot_nfe_element)
         root = etree.fromstring(nfe_proc_bytes)
         self.assertIsInstance(nfe_proc_bytes, bytes)
         self.assertEqual(root.tag, "{http://www.portalfiscal.inf.br/nfe}nfeProc")
