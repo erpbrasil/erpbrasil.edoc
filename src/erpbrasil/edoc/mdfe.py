@@ -105,9 +105,7 @@ def get_service_url(sigla_estado, service, ambiente):
     if sigla_estado in SVRS_STATES:
         state_config = SVRS
     else:
-        raise ValueError(
-            f"Estado {sigla_estado} não suportado ou configuração ausente."
-        )
+        raise ValueError(f"Estado {sigla_estado} não suportado ou configuração ausente.")
 
     # ambiente chega como int (1) ou texto ("1", como o tpAmb do XML)
     environment = AMBIENTE_PRODUCAO if str(ambiente) == "1" else AMBIENTE_HOMOLOGACAO
@@ -150,10 +148,7 @@ class MDFe(DocumentoEletronico):
         return get_service_url(sigla, service, self.ambiente)
 
     def _verifica_resposta_envio_sucesso(self, proc_envio):
-        return (
-            proc_envio.resposta.cStat
-            == self._edoc_situacao_arquivo_recebido_com_sucesso
-        )
+        return proc_envio.resposta.cStat == self._edoc_situacao_arquivo_recebido_com_sucesso
 
     def status_servico(self):
         raiz = ConsStatServMdfe(tpAmb=self.ambiente, versao=self.versao)
@@ -168,9 +163,7 @@ class MDFe(DocumentoEletronico):
         return edoc.infMdfe.Id[:3], edoc.infMdfe.Id[3:]
 
     def monta_qrcode(self, chave):
-        return (
-            f"{self._get_ws_endpoint(QR_CODE_URL)}?chMDFe={chave}&tpAmb={self.ambiente}"
-        )
+        return f"{self._get_ws_endpoint(QR_CODE_URL)}?chMDFe={chave}&tpAmb={self.ambiente}"
 
     def consulta_documento(self, chave):
         raiz = ConsSitMdfe(tpAmb=self.ambiente, chMDFe=chave, versao=self.versao)
@@ -221,9 +214,7 @@ class MDFe(DocumentoEletronico):
             dhEvento=data_hora or self._hora_agora(),
             tpEvento=tipo,
             nSeqEvento=sequencia,
-            detEvento=EventoMdfe.InfEvento.DetEvento(
-                versaoEvento="3.00", any_element=evento
-            ),
+            detEvento=EventoMdfe.InfEvento.DetEvento(versaoEvento="3.00", any_element=evento),
         )
         raiz = EventoMdfe(versao="3.00", infEvento=inf_evento)
         xml_assinado = etree.fromstring(self.assina_raiz(raiz, raiz.infEvento.Id))
@@ -235,19 +226,11 @@ class MDFe(DocumentoEletronico):
             RetEventoMdfe,
         )
 
-    def cancela_documento(
-        self, chave, protocolo_autorizacao, justificativa, data_hora_evento=False
-    ):
-        evento_canc = EvCancMdfe(
-            descEvento="Cancelamento", nProt=protocolo_autorizacao, xJust=justificativa
-        )
-        return self.envia_evento(
-            evento=evento_canc, tipo="110111", chave=chave, data_hora=data_hora_evento
-        )
+    def cancela_documento(self, chave, protocolo_autorizacao, justificativa, data_hora_evento=False):
+        evento_canc = EvCancMdfe(descEvento="Cancelamento", nProt=protocolo_autorizacao, xJust=justificativa)
+        return self.envia_evento(evento=evento_canc, tipo="110111", chave=chave, data_hora=data_hora_evento)
 
-    def encerra_documento(
-        self, chave, protocolo_autorizacao, estado, municipio, data_hora_evento=False
-    ):
+    def encerra_documento(self, chave, protocolo_autorizacao, estado, municipio, data_hora_evento=False):
         encerramento = EvEncMdfe(
             descEvento="Encerramento",
             dtEnc=self._data_hoje(),
@@ -255,9 +238,7 @@ class MDFe(DocumentoEletronico):
             cUF=estado,
             cMun=municipio,
         )
-        return self.envia_evento(
-            evento=encerramento, tipo="110112", chave=chave, data_hora=data_hora_evento
-        )
+        return self.envia_evento(evento=encerramento, tipo="110112", chave=chave, data_hora=data_hora_evento)
 
     def consulta_recibo(self):
         pass
@@ -267,9 +248,7 @@ class TransmissaoMDFE(TransmissaoSOAP):
     def interpretar_mensagem(self, mensagem, **kwargs):
         if isinstance(mensagem, str):
             try:
-                return etree.fromstring(
-                    mensagem, parser=etree.XMLParser(remove_blank_text=True)
-                )
+                return etree.fromstring(mensagem, parser=etree.XMLParser(remove_blank_text=True))
             except (etree.XMLSyntaxError, ValueError):
                 # Retorna a string original se houver um erro na conversão
                 return mensagem

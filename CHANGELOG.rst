@@ -138,3 +138,20 @@ Outros:
 - CI: py37 removido; zeep e requests por versão do Python (alertas de
   segurança); testes de Paulistana, ISSNet, chave, CT-e, MDF-e, contingência
   SVC-RS, Barueri e reassinatura.
+
+3.3.0 (não publicada)
+~~~~~~~~~~~~~~~~~~~~~
+
+* Empacotamento: ``pyproject.toml`` com hatchling no lugar de ``setup.py``;
+  namespaces ``erpbrasil`` e ``erpbrasil.edoc`` por ``pkgutil.extend_path`` (o
+  ``erpbrasil.edoc.pdf`` continua convivendo; ``erpbrasil.edoc.__version__`` passa
+  a existir quando nenhum pacote legado do namespace, como o ``edoc.pdf`` 1.2.1,
+  está instalado, senão usar ``importlib.metadata.version``); extras declarados
+  num lugar só; Python
+  3.6 a 3.14 declarado e testado no CI; Release do GitHub confere a tag com a
+  versão do ``pyproject`` antes de publicar.
+* Extras com hífen (``nfselib-paulistana`` etc., PEP 685): o pip moderno continua
+  aceitando a forma com ponto; o pip do Python 3.6 e 3.7 só aceita a forma nova.
+* Sai o extra ``nfselib.dsf`` (o pacote nunca foi publicado no PyPI); o extra
+  ``nfselib.barueri`` passa a trazer o ``six`` que ela usa sem declarar; o extra
+  ``nfelib`` deixa de limitar a versão.

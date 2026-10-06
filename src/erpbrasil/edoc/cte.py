@@ -247,9 +247,7 @@ def get_service_url(sigla_estado, service, ambiente):
         state_config = ESTADOS_PROPRIOS.get(sigla_estado)
 
     if not state_config:
-        raise ValueError(
-            f"Estado {sigla_estado} não suportado ou configuração ausente."
-        )
+        raise ValueError(f"Estado {sigla_estado} não suportado ou configuração ausente.")
 
     # ambiente chega como int (1) ou texto ("1", como o tpAmb do XML)
     environment = AMBIENTE_PRODUCAO if str(ambiente) == "1" else AMBIENTE_HOMOLOGACAO
@@ -289,10 +287,7 @@ class CTe(DocumentoEletronico):
         return get_service_url(sigla, service, self.ambiente)
 
     def _verifica_resposta_envio_sucesso(self, proc_envio):
-        return (
-            proc_envio.resposta.cStat
-            == self._edoc_situacao_arquivo_recebido_com_sucesso
-        )
+        return proc_envio.resposta.cStat == self._edoc_situacao_arquivo_recebido_com_sucesso
 
     def status_servico(self):
         raiz = ConsStatServCte(tpAmb=self.ambiente, cUF=self.uf, versao=self.versao)
@@ -343,9 +338,7 @@ class CTe(DocumentoEletronico):
             RetEventoCte,
         )
 
-    def cancela_documento(
-        self, chave, protocolo_autorizacao, justificativa, data_hora_evento=False
-    ):
+    def cancela_documento(self, chave, protocolo_autorizacao, justificativa, data_hora_evento=False):
         tipo_evento = "110111"
         sequencia = "1"
         raiz = EventoCte.InfEvento(
@@ -407,9 +400,7 @@ class CTe(DocumentoEletronico):
                 grupoAlterado=grupo,
                 campoAlterado=campo,
                 valorAlterado=valor,
-                nroItemAlterado=str(
-                    nro_item
-                ),  # Adiciona a sequência de itens alterados
+                nroItemAlterado=str(nro_item),  # Adiciona a sequência de itens alterados
             )
             correcoes.append(correcao)
             nro_item += 1  # Incrementa a sequência
@@ -441,9 +432,7 @@ class CTe(DocumentoEletronico):
         return edoc.infCte.Id[:3], edoc.infCte.Id[3:]
 
     def monta_qrcode(self, chave):
-        return (
-            f"{self._get_ws_endpoint(QR_CODE_URL)}?chCTe={chave}&tpAmb={self.ambiente}"
-        )
+        return f"{self._get_ws_endpoint(QR_CODE_URL)}?chCTe={chave}&tpAmb={self.ambiente}"
 
     def monta_cte_proc(self, doc, prot):
         """
@@ -464,9 +453,7 @@ class TransmissaoCTE(TransmissaoSOAP):
     def interpretar_mensagem(self, mensagem, **kwargs):
         if isinstance(mensagem, str):
             try:
-                return etree.fromstring(
-                    mensagem, parser=etree.XMLParser(remove_blank_text=True)
-                )
+                return etree.fromstring(mensagem, parser=etree.XMLParser(remove_blank_text=True))
             except (etree.XMLSyntaxError, ValueError):
                 # Retorna a string original se houver um erro na conversão
                 return mensagem

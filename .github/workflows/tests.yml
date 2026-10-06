@@ -1,0 +1,104 @@
+name: tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  tests:
+    # Python 3.8 a 3.14 pelo setup-python. Cobre do Odoo 14 (3.8) ao Odoo 20 (3.14).
+    name: Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          if [ "${{ matrix.python }}" = "3.8" ]; then
+            python -m pip install ".[test,nfselib-paulistana,nfselib-ginfes,nfselib-issnet,nfselib-barueri]"
+          else
+            python -m pip install ".[test,nfelib,nfselib-paulistana,nfselib-ginfes,nfselib-issnet,nfselib-barueri]"
+          fi
+          python -m pip list | grep -iE "^(nfelib|nfselib|zeep|lxml|erpbrasil) "
+      - name: Test
+        run: |
+          pytest --cov --cov-report=xml --cov-branch
+      - name: Upload coverage to Codecov
+        if: matrix.python == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          verbose: true
+
+  tests-legacy:
+    # Python 3.6 e 3.7 (Odoo 12 e 13; o CI da OCA 12.0 roda 3.6). O ubuntu-latest
+    # nao oferece esses interpretadores, entao rodam em container oficial.
+    name: Python ${{ matrix.python }} (container)
+    runs-on: ubuntu-latest
+    container: python:${{ matrix.python }}-bullseye
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.6', '3.7']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[test,nfselib-paulistana,nfselib-ginfes,nfselib-issnet]"
+          python -m pip list | grep -iE "^(nfelib|nfselib|zeep|lxml|erpbrasil) "
+      - name: Test
+        run: |
+          pytest
+
+  pre-commit:
+    name: Pre-commit Hooks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: pre-commit/action@v3.0.1
+
+  check-package:
+    # Constroi o pacote, confere o conteudo do wheel e a convivencia do namespace
+    # `erpbrasil` com as outras libs publicadas no PyPI.
+    name: Build & Inspect Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build
+        run: |
+          python -m pip install --upgrade pip build check-wheel-contents twine
+          python -m build
+          check-wheel-contents dist/*.whl --ignore W002
+          twine check --strict dist/*
+      - name: Version attribute (only when no legacy nspkg sibling such as edoc.pdf is installed)
+        run: |
+          python -m venv /tmp/v && . /tmp/v/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install dist/*.whl
+          python -c "import erpbrasil.edoc; print(erpbrasil.edoc.__version__)"
+      - name: Namespace check with base, assinatura, transmissao and edoc.pdf from PyPI
+        run: |
+          python -m venv /tmp/ns && . /tmp/ns/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install dist/*.whl erpbrasil.base erpbrasil.assinatura erpbrasil.transmissao erpbrasil.edoc.pdf
+          python -c "import erpbrasil.base, erpbrasil.assinatura, erpbrasil.transmissao, erpbrasil.edoc; import erpbrasil.edoc.pdf; from erpbrasil.edoc.nfe import NFe; from importlib.metadata import version; print(version('erpbrasil.edoc'))"
+          python -m pip uninstall -y erpbrasil.base
+          python -c "import erpbrasil.edoc, erpbrasil.edoc.pdf; from erpbrasil.edoc.nfe import NFe; print('namespace ok sem a base')"

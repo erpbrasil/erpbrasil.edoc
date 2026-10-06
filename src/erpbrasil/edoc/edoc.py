@@ -39,7 +39,7 @@ class DocumentoEletronico(ABC):
         self.envio_sincrono = bool(envio_sincrono)
 
     def _generateds_to_string_etree(self, ds, pretty_print=False):
-        if type(ds) == _Element:
+        if isinstance(ds, _Element):
             return etree.tostring(ds), ds
         if isinstance(ds, str):
             return ds, etree.fromstring(ds)
@@ -149,9 +149,7 @@ class DocumentoEletronico(ABC):
         proc_envio = self.envia_documento(edoc)
         # O lote pode voltar já processado num envio assíncrono (na NF-e, cStat
         # 104 sem infRec): sem recibo para consultar, segue como síncrono.
-        envio_sincrono = self.envio_sincrono or self._resposta_envio_ja_processada(
-            proc_envio
-        )
+        envio_sincrono = self.envio_sincrono or self._resposta_envio_ja_processada(proc_envio)
         if envio_sincrono:
             self.monta_processo(edoc, proc_envio)
         yield proc_envio
@@ -160,11 +158,7 @@ class DocumentoEletronico(ABC):
         # 1. A resposta do processo de envio é falsa.
         # 2. A resposta do envio não indica sucesso.
         # 3. O envio é síncrono (não é necessário consultar o recibo).
-        if (
-            not proc_envio.resposta
-            or not self._verifica_resposta_envio_sucesso(proc_envio)
-            or envio_sincrono
-        ):
+        if not proc_envio.resposta or not self._verifica_resposta_envio_sucesso(proc_envio) or envio_sincrono:
             return
 
         #
@@ -184,10 +178,7 @@ class DocumentoEletronico(ABC):
         # esteja em processamento
         #
         tentativa = 0
-        while (
-            self._edoc_situacao_em_processamento(proc_recibo)
-            and tentativa < self._maximo_tentativas_consulta_recibo
-        ):
+        while self._edoc_situacao_em_processamento(proc_recibo) and tentativa < self._maximo_tentativas_consulta_recibo:
             self._aguarda_tempo_medio(proc_envio)
             tentativa += 1
             #
@@ -242,9 +233,7 @@ class DocumentoEletronico(ABC):
         if hasattr(raiz, "Signature") and raiz.Signature is not None:
             raiz.Signature = None
         xml_string, xml_etree = self._generateds_to_string_etree(raiz)
-        xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(
-            xml_etree, id, getchildren
-        )
+        xml_assinado = Assinatura(self._transmissao.certificado).assina_xml2(xml_etree, id, getchildren)
         return xml_assinado
 
     def _verifica_servico_em_operacao(self, proc_servico):
