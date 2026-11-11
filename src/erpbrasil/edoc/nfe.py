@@ -8,7 +8,7 @@ from contextlib import suppress
 
 from lxml import etree
 
-from erpbrasil.edoc.edoc import DocumentoEletronico
+from erpbrasil.edoc.edoc import DocumentoEletronico, xml_bytes
 
 with suppress(ImportError):
     # nfelib imports
@@ -1063,7 +1063,7 @@ class NFe(DocumentoEletronico):
         )
         nfe_proc.append(nfe)
         nfe_proc.append(prot_nfe)
-        return etree.tostring(nfe_proc)
+        return xml_bytes(nfe_proc)
 
     def consultar_cadastro(self, uf, cnpj=None, cpf=None, ie=None):
         if not cnpj and not cpf and not ie:

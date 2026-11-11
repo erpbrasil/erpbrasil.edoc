@@ -4,7 +4,7 @@ from contextlib import suppress
 
 from lxml import etree
 
-from erpbrasil.edoc.edoc import DocumentoEletronico
+from erpbrasil.edoc.edoc import DocumentoEletronico, xml_bytes
 from erpbrasil.transmissao import TransmissaoSOAP
 
 with suppress(ImportError):
@@ -446,7 +446,7 @@ class CTe(DocumentoEletronico):
         )
         proc.append(doc)
         proc.append(prot)
-        return etree.tostring(proc)
+        return xml_bytes(proc)
 
 
 class TransmissaoCTE(TransmissaoSOAP):

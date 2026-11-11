@@ -8,7 +8,7 @@ from contextlib import suppress
 
 from lxml import etree
 
-from erpbrasil.edoc.edoc import DocumentoEletronico
+from erpbrasil.edoc.edoc import DocumentoEletronico, xml_bytes
 from erpbrasil.transmissao import TransmissaoSOAP
 
 with suppress(ImportError):
@@ -202,7 +202,7 @@ class MDFe(DocumentoEletronico):
         )
         proc.append(doc)
         proc.append(prot)
-        return etree.tostring(proc)
+        return xml_bytes(proc)
 
     def envia_evento(self, evento, tipo, chave, sequencia="001", data_hora=False):
         inf_evento = EventoMdfe.InfEvento(

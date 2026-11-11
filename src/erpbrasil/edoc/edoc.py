@@ -25,6 +25,17 @@ except ImportError:
 ABC = abc.ABCMeta("ABC", (object,), {})
 
 
+def xml_bytes(element):
+    """Serializa o elemento em UTF-8, com os caracteres literais.
+
+    Sem ``encoding`` o lxml escreve em ASCII e troca cada caractere
+    acentuado por uma referência numérica (``Manuten&#231;&#227;o``). O XML
+    continua válido e a assinatura não muda, mas o arquivo gravado deixa de
+    ser legível e leitores que tratam o XML como texto mostram o nome errado.
+    """
+    return etree.tostring(element, encoding="utf-8", xml_declaration=False)
+
+
 class DocumentoEletronico(ABC):
     """
     Classe abstrata responsavel por definir os metodos e logica das classes
@@ -40,7 +51,7 @@ class DocumentoEletronico(ABC):
 
     def _generateds_to_string_etree(self, ds, pretty_print=False):
         if isinstance(ds, _Element):
-            return etree.tostring(ds), ds
+            return xml_bytes(ds), ds
         if isinstance(ds, str):
             return ds, etree.fromstring(ds)
         # if isinstance(ds, unicode):
