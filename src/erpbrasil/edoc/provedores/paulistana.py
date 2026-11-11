@@ -78,22 +78,14 @@ if paulistana:
     def _montar_servicos(ambiente, schema):
         endpoint_ws = schema["endpoint"]
         servicos = {
-            "consulta_recibo": ServicoNFSe(
-                "ConsultaLote", endpoint_ws, schema["retorno_consulta"], True
-            ),
-            "consulta_nfse_rps": ServicoNFSe(
-                "ConsultaNFe", endpoint_ws, schema["retorno_consulta"], True
-            ),
-            "cancela_documento": ServicoNFSe(
-                "CancelamentoNFe", endpoint_ws, schema["retorno_cancelamento_nfe"], True
-            ),
+            "consulta_recibo": ServicoNFSe("ConsultaLote", endpoint_ws, schema["retorno_consulta"], True),
+            "consulta_nfse_rps": ServicoNFSe("ConsultaNFe", endpoint_ws, schema["retorno_consulta"], True),
+            "cancela_documento": ServicoNFSe("CancelamentoNFe", endpoint_ws, schema["retorno_cancelamento_nfe"], True),
         }
         # Não tem URL de homologação mas tem método para testes
         # no mesmo webservice
         operacao_envio = "TesteEnvioLoteRPS" if ambiente == "2" else "EnvioLoteRPS"
-        servicos["envia_documento"] = ServicoNFSe(
-            operacao_envio, endpoint_ws, schema["retorno_envio_lote_rps"], True
-        )
+        servicos["envia_documento"] = ServicoNFSe(operacao_envio, endpoint_ws, schema["retorno_envio_lote_rps"], True)
         return servicos
 
 
@@ -118,9 +110,7 @@ class Paulistana(NFSe):
         self._url = self._schema["url"]
         self._servicos = _montar_servicos(ambiente, self._schema)
 
-        super().__init__(
-            transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-        )
+        super().__init__(transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)
 
     def _assina_paulistana(self, assinador, data):
         """Assina a cadeia de posições fixas do layout paulistano.
@@ -238,9 +228,7 @@ class Paulistana(NFSe):
 
         assinador = Assinatura(self._transmissao.certificado)
         for detalhe in raiz.Detalhe:
-            detalhe.AssinaturaCancelamento = self._assina_paulistana(
-                assinador, detalhe.AssinaturaCancelamento
-            )
+            detalhe.AssinaturaCancelamento = self._assina_paulistana(assinador, detalhe.AssinaturaCancelamento)
         xml_assinado = self.assina_raiz(raiz, "")
         return xml_assinado
 

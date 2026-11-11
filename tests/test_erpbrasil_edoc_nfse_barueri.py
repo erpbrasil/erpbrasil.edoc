@@ -44,9 +44,7 @@ class TestBarueriRetornoConsulta(TestCase):
 
     def test_retorno_com_erro_devolve_a_mensagem(self):
         resposta = SimpleNamespace(
-            ListaMensagemRetorno=SimpleNamespace(
-                Codigo="E001", Mensagem="Arquivo inválido", Correcao="Reenvie"
-            )
+            ListaMensagemRetorno=SimpleNamespace(Codigo="E001", Mensagem="Arquivo inválido", Correcao="Reenvie")
         )
         status, mensagem = self.barueri.analisa_retorno_consulta(_processo(resposta))
         self.assertIsNone(status)
@@ -65,9 +63,7 @@ class TestBarueriRetornoConsulta(TestCase):
                     ListaMensagemRetorno=SimpleNamespace(Codigo="OK200"),
                     ListaNfeArquivosRPS=SimpleNamespace(SituacaoArq=situacao),
                 )
-                status, mensagem = self.barueri.analisa_retorno_consulta(
-                    _processo(resposta)
-                )
+                status, mensagem = self.barueri.analisa_retorno_consulta(_processo(resposta))
                 self.assertEqual(status, int(situacao))
                 self.assertEqual(mensagem, mensagem_esperada)
 
@@ -123,9 +119,7 @@ class TestBarueriServicos(TestCase):
         self.assertEqual(processo.envio_raiz.NomeArqRetorno, "RETORNO.TXT")
         self.assertEqual(processo.resposta, "<retorno/>")
         url, operacao, args = self.transmissao.chamadas[0]
-        self.assertEqual(
-            url, "https://testeeiss.barueri.sp.gov.br/nfeservice/wsrps.asmx?WSDL"
-        )
+        self.assertEqual(url, "https://testeeiss.barueri.sp.gov.br/nfeservice/wsrps.asmx?WSDL")
         self.assertEqual(operacao, "NFeLoteBaixarArquivo")
         self.assertEqual(args[0], "1")
         self.assertIn("RETORNO.TXT", args[1])
@@ -137,16 +131,10 @@ class TestBarueriServicos(TestCase):
 
     def test_resposta_do_envio_e_situacao(self):
         self.assertTrue(
-            self.nfse._verifica_resposta_envio_sucesso(
-                SimpleNamespace(retorno=SimpleNamespace(ProtocoloRemessa="P1"))
-            )
+            self.nfse._verifica_resposta_envio_sucesso(SimpleNamespace(retorno=SimpleNamespace(ProtocoloRemessa="P1")))
         )
         self.assertFalse(
-            self.nfse._verifica_resposta_envio_sucesso(
-                SimpleNamespace(retorno=SimpleNamespace(ProtocoloRemessa=""))
-            )
+            self.nfse._verifica_resposta_envio_sucesso(SimpleNamespace(retorno=SimpleNamespace(ProtocoloRemessa="")))
         )
-        recibo = SimpleNamespace(
-            retorno=SimpleNamespace(ListaNfeArquivosRPS=SimpleNamespace(SituacaoArq=2))
-        )
+        recibo = SimpleNamespace(retorno=SimpleNamespace(ListaNfeArquivosRPS=SimpleNamespace(SituacaoArq=2)))
         self.assertTrue(self.nfse._edoc_situacao_em_processamento(recibo))

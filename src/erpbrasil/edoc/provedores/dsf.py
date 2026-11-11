@@ -19,18 +19,12 @@ endpoint = "WsNFe2/LoteRps.jws"
 
 if dsf:
     servicos_base = {
-        "consulta_recibo": ServicoNFSe(
-            "consultarLote", endpoint, RetornoConsultaLote, True
-        ),
-        "consultar_lote_rps": ServicoNFSe(
-            "ConsultarNota", endpoint, RetornoConsultaNFSeRPS, True
-        ),
+        "consulta_recibo": ServicoNFSe("consultarLote", endpoint, RetornoConsultaLote, True),
+        "consultar_lote_rps": ServicoNFSe("ConsultarNota", endpoint, RetornoConsultaNFSeRPS, True),
     }
 
     servicos_hml = {
-        "envia_documento": ServicoNFSe(
-            "testeEnviar", endpoint, RetornoEnvioLoteRPS, True
-        ),
+        "envia_documento": ServicoNFSe("testeEnviar", endpoint, RetornoEnvioLoteRPS, True),
     }
     servicos_hml.update(servicos_base.copy())
 
@@ -51,9 +45,7 @@ if dsf:
 
 
 class Dsf(NFSe):
-    def __init__(
-        self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-    ):
+    def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador):
         # DSS só tem uma URL
         self._url = url[int(cidade_ibge)]
 
@@ -65,9 +57,7 @@ class Dsf(NFSe):
         else:
             self._servicos = servicos_hml
 
-        super().__init__(
-            transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-        )
+        super().__init__(transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)
 
     def envia_documento(self, edoc):
         for rps in edoc.Lote.RPS:

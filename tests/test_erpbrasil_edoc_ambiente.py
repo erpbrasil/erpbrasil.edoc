@@ -43,8 +43,7 @@ class TestAmbienteCTe(TestCase):
         )
         self.assertEqual(
             proc.monta_qrcode(CHAVE),
-            cte.SVSP[cte.AMBIENTE_PRODUCAO][cte.QR_CODE_URL]
-            + f"?chCTe={CHAVE}&tpAmb=1",
+            cte.SVSP[cte.AMBIENTE_PRODUCAO][cte.QR_CODE_URL] + f"?chCTe={CHAVE}&tpAmb=1",
         )
 
     def test_processador_com_ambiente_int_ou_texto_homologacao(self):
@@ -56,8 +55,7 @@ class TestAmbienteCTe(TestCase):
             )
             self.assertEqual(
                 proc.monta_qrcode(CHAVE),
-                cte.SVSP[cte.AMBIENTE_HOMOLOGACAO][cte.QR_CODE_URL]
-                + f"?chCTe={CHAVE}&tpAmb=2",
+                cte.SVSP[cte.AMBIENTE_HOMOLOGACAO][cte.QR_CODE_URL] + f"?chCTe={CHAVE}&tpAmb=2",
             )
 
     def test_processador_com_ambiente_int_producao(self):
@@ -81,8 +79,7 @@ class TestAmbienteMDFe(TestCase):
         proc = mdfe.MDFe(_transmissao(), uf=35, ambiente="1")
         self.assertEqual(
             proc.monta_qrcode(CHAVE),
-            mdfe.SVRS[mdfe.AMBIENTE_PRODUCAO][mdfe.QR_CODE_URL]
-            + f"?chMDFe={CHAVE}&tpAmb=1",
+            mdfe.SVRS[mdfe.AMBIENTE_PRODUCAO][mdfe.QR_CODE_URL] + f"?chMDFe={CHAVE}&tpAmb=1",
         )
         self.assertEqual(
             proc._get_ws_endpoint(mdfe.WS_MDFE_STATUS_SERVICO),
@@ -94,6 +91,5 @@ class TestAmbienteMDFe(TestCase):
             proc = mdfe.MDFe(_transmissao(), uf=35, ambiente=ambiente)
             self.assertEqual(
                 proc.monta_qrcode(CHAVE),
-                mdfe.SVRS[mdfe.AMBIENTE_HOMOLOGACAO][mdfe.QR_CODE_URL]
-                + f"?chMDFe={CHAVE}&tpAmb=2",
+                mdfe.SVRS[mdfe.AMBIENTE_HOMOLOGACAO][mdfe.QR_CODE_URL] + f"?chMDFe={CHAVE}&tpAmb=2",
             )

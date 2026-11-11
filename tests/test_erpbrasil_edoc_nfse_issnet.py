@@ -1,10 +1,6 @@
 from types import SimpleNamespace
 from unittest import TestCase
 
-from erpbrasil.base import misc
-from erpbrasil.edoc.provedores.cidades import NFSeFactory
-from erpbrasil.edoc.provedores.issnet import Issnet
-from erpbrasil.transmissao import TransmissaoSOAP
 from nfselib.issnet.v1_00.servico_enviar_lote_rps_envio import (
     EnviarLoteRpsEnvio,
     ListaRpsType,
@@ -22,12 +18,14 @@ from nfselib.issnet.v1_00.servico_enviar_lote_rps_envio import (
 )
 from requests import Session
 
+from erpbrasil.base import misc
+from erpbrasil.edoc.provedores.cidades import NFSeFactory
+from erpbrasil.edoc.provedores.issnet import Issnet
+from erpbrasil.transmissao import TransmissaoSOAP
+
 from .test_certificate_mixin import TestCertificateMixin
 
-NS_CONSULTA = (
-    "http://www.issnetonline.com.br/webserviceabrasf/vsd/"
-    "servico_consultar_nfse_rps_resposta.xsd"
-)
+NS_CONSULTA = "http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_nfse_rps_resposta.xsd"
 NS_TC = "http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd"
 
 
@@ -57,12 +55,8 @@ class AnalisaRetornoConsultaTests(TestCase):
 </root>"""
 
     def test_nfse_enviada_e_dados_conferem(self):
-        processo = SimpleNamespace(
-            retorno=self._xml_enviada(), webservice="ConsultarNFSePorRPS"
-        )
-        mensagem, res = self.nfse.analisa_retorno_consulta(
-            processo, "304", "23130935000198", "KMEE"
-        )
+        processo = SimpleNamespace(retorno=self._xml_enviada(), webservice="ConsultarNFSePorRPS")
+        mensagem, res = self.nfse.analisa_retorno_consulta(processo, "304", "23130935000198", "KMEE")
         self.assertEqual(mensagem, "NFS-e enviada e corresponde com o provedor")
         self.assertEqual(
             res,
@@ -74,24 +68,16 @@ class AnalisaRetornoConsultaTests(TestCase):
         )
 
     def test_nfse_enviada_sem_number_informado(self):
-        processo = SimpleNamespace(
-            retorno=self._xml_enviada(), webservice="ConsultarNFSePorRPS"
-        )
-        mensagem, _res = self.nfse.analisa_retorno_consulta(
-            processo, None, "23130935000198", "KMEE"
-        )
+        processo = SimpleNamespace(retorno=self._xml_enviada(), webservice="ConsultarNFSePorRPS")
+        mensagem, _res = self.nfse.analisa_retorno_consulta(processo, None, "23130935000198", "KMEE")
         self.assertEqual(mensagem, "NFS-e enviada e corresponde com o provedor")
 
     def test_nfse_enviada_dados_nao_conferem(self):
         processo = SimpleNamespace(
-            retorno=self._xml_enviada(
-                numero="999", cnpj="00000000000000", razao_social="OUTRA EMPRESA"
-            ),
+            retorno=self._xml_enviada(numero="999", cnpj="00000000000000", razao_social="OUTRA EMPRESA"),
             webservice="ConsultarNFSePorRPS",
         )
-        mensagem, res = self.nfse.analisa_retorno_consulta(
-            processo, "304", "23130935000198", "KMEE"
-        )
+        mensagem, res = self.nfse.analisa_retorno_consulta(processo, "304", "23130935000198", "KMEE")
         self.assertIn("Número", mensagem)
         self.assertIn("CNPJ do prestador", mensagem)
         self.assertIn("Razão Social de prestador", mensagem)
@@ -158,9 +144,7 @@ class AnalisaRetornoCancelamentoTests(TestCase):
         processo = SimpleNamespace(retorno=xml, webservice="CancelarNfse")
         situacao, mensagem = self.nfse.analisa_retorno_cancelamento(processo)
         self.assertFalse(situacao)
-        self.assertEqual(
-            mensagem, "E002 - Erro ao cancelar - Correção: Verifique dados\n"
-        )
+        self.assertEqual(mensagem, "E002 - Erro ao cancelar - Correção: Verifique dados\n")
 
     def test_cancelamento_com_erro_sem_correcao(self):
         xml = (
@@ -222,9 +206,7 @@ class PreparaDocumentosTests(TestCertificateMixin, TestCase):
         self.assertIn("PROTO123", xml)
 
     def test_prepara_consultar_nfse_rps(self):
-        xml = self.nfse._prepara_consultar_nfse_rps(
-            rps_number=304, rps_serie=111, rps_type=1
-        )
+        xml = self.nfse._prepara_consultar_nfse_rps(rps_number=304, rps_serie=111, rps_type=1)
         self.assertIn("23130935000198", xml)
 
     def test_prepara_cancelar_nfse_envio_homologacao(self):
@@ -249,26 +231,18 @@ class PreparaDocumentosTests(TestCertificateMixin, TestCase):
 
     def test_verifica_resposta_envio_sucesso(self):
         self.assertTrue(
-            self.nfse._verifica_resposta_envio_sucesso(
-                SimpleNamespace(resposta=SimpleNamespace(Protocolo="X"))
-            )
+            self.nfse._verifica_resposta_envio_sucesso(SimpleNamespace(resposta=SimpleNamespace(Protocolo="X")))
         )
         self.assertFalse(
-            self.nfse._verifica_resposta_envio_sucesso(
-                SimpleNamespace(resposta=SimpleNamespace(Protocolo=None))
-            )
+            self.nfse._verifica_resposta_envio_sucesso(SimpleNamespace(resposta=SimpleNamespace(Protocolo=None)))
         )
 
     def test_edoc_situacao_em_processamento(self):
         self.assertTrue(
-            self.nfse._edoc_situacao_em_processamento(
-                SimpleNamespace(resposta=SimpleNamespace(Situacao=2))
-            )
+            self.nfse._edoc_situacao_em_processamento(SimpleNamespace(resposta=SimpleNamespace(Situacao=2)))
         )
         self.assertFalse(
-            self.nfse._edoc_situacao_em_processamento(
-                SimpleNamespace(resposta=SimpleNamespace(Situacao=4))
-            )
+            self.nfse._edoc_situacao_em_processamento(SimpleNamespace(resposta=SimpleNamespace(Situacao=4)))
         )
 
 
@@ -283,9 +257,7 @@ def create_nfse_object():
                     tcRps(
                         InfRps=tcInfRps(
                             id="rps334",
-                            IdentificacaoRps=tcIdentificacaoRps(
-                                Numero=334, Serie=111, Tipo=1
-                            ),
+                            IdentificacaoRps=tcIdentificacaoRps(Numero=334, Serie=111, Tipo=1),
                             DataEmissao="2020-11-20T12:00:21",
                             NaturezaOperacao=1,
                             RegimeEspecialTributacao=1,

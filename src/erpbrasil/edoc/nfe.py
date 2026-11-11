@@ -874,9 +874,7 @@ class NFe(DocumentoEletronico):
             retEnvEvento,
         )
 
-    def cancela_documento(
-        self, chave, protocolo_autorizacao, justificativa, data_hora_evento=False
-    ):
+    def cancela_documento(self, chave, protocolo_autorizacao, justificativa, data_hora_evento=False):
         tipo_evento = "110111"
         sequencia = "1"
         raiz = retEnvEventoCancNFe.infEventoType(
@@ -926,14 +924,7 @@ class NFe(DocumentoEletronico):
         ano = str(datetime.date.today().year)[2:]
         uf = str(self.uf)
         raiz = retInutNFe.infInutType(
-            Id="ID"
-            + uf
-            + ano
-            + cnpj
-            + mod
-            + serie.zfill(3)
-            + str(num_ini).zfill(9)
-            + str(num_fin).zfill(9),
+            Id="ID" + uf + ano + cnpj + mod + serie.zfill(3) + str(num_ini).zfill(9) + str(num_fin).zfill(9),
             tpAmb=self.ambiente,
             xServ="INUTILIZAR",
             cUF=self.uf,
@@ -986,9 +977,7 @@ class NFe(DocumentoEletronico):
             return True
         return False
 
-    def consultar_distribuicao(
-        self, cnpj_cpf, ultimo_nsu=False, nsu_especifico=False, chave=False
-    ):
+    def consultar_distribuicao(self, cnpj_cpf, ultimo_nsu=False, nsu_especifico=False, chave=False):
         """
 
         :param cnpj_cpf: CPF ou CNPJ a ser consultado
