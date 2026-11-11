@@ -144,9 +144,7 @@ class NotaControl:
         try:
             return URL_BASE.format(MUNICIPIOS[self.cidade])
         except KeyError:
-            raise ValueError(
-                f"Município {self.cidade} não configurado para a NotaControl"
-            ) from None
+            raise ValueError(f"Município {self.cidade} não configurado para a NotaControl") from None
 
     # ----------------------------------------------------------- assinatura
 
@@ -154,9 +152,7 @@ class NotaControl:
         return Assinatura(self._transmissao.certificado)
 
     def _assinar(self, element, reference):
-        return self._assinador().assina_xml2(
-            element, reference, **ALGORITMOS[self.algoritmo]
-        )
+        return self._assinador().assina_xml2(element, reference, **ALGORITMOS[self.algoritmo])
 
     def assinar_dps(self, dps_xml):
         """Assina a ``infDPS`` de uma DPS (a Signature fica irmã da infDPS)."""
@@ -178,9 +174,7 @@ class NotaControl:
         canonicalização é feita sobre a ``infDPS``.
         """
         envio = etree.Element(f"{{{NS}}}EnviarLoteDpsSincronoEnvio", nsmap={None: NS})
-        lote = etree.SubElement(
-            envio, f"{{{NS}}}LoteDps", Id=f"Lote{numero_lote}", versao=VERSAO
-        )
+        lote = etree.SubElement(envio, f"{{{NS}}}LoteDps", Id=f"Lote{numero_lote}", versao=VERSAO)
         etree.SubElement(lote, f"{{{NS}}}NumeroLote").text = str(numero_lote)
         prestador = etree.SubElement(lote, f"{{{NS}}}Prestador")
         tag_doc = "CNPJ" if len(self.cnpj_prestador) == 14 else "CPF"
@@ -200,10 +194,7 @@ class NotaControl:
 
     @staticmethod
     def envelope(operacao, dados_xml):
-        cabecalho = (
-            f'<cabecalho versao="{VERSAO}" xmlns="{NS}">'
-            f"<versaoDados>{VERSAO}</versaoDados></cabecalho>"
-        )
+        cabecalho = f'<cabecalho versao="{VERSAO}" xmlns="{NS}"><versaoDados>{VERSAO}</versaoDados></cabecalho>'
         return (
             '<?xml version="1.0" encoding="utf-8"?>'
             '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"'
@@ -247,9 +238,7 @@ class NotaControl:
         resposta = self._http_post(operacao, envelope)
         corpo = resposta.content.decode("utf-8", errors="replace")
         _logger.debug("NotaControl %s HTTP %s", operacao, resposta.status_code)
-        return self.analisar_resposta(
-            operacao, corpo, http_status=resposta.status_code, xml_enviado=dados_xml
-        )
+        return self.analisar_resposta(operacao, corpo, http_status=resposta.status_code, xml_enviado=dados_xml)
 
     # ------------------------------------------------------------- servicos
 
@@ -261,10 +250,7 @@ class NotaControl:
 
     def _prestador_xml(self):
         tag_doc = "CNPJ" if len(self.cnpj_prestador) == 14 else "CPF"
-        return (
-            f"<Prestador><{tag_doc}>{self.cnpj_prestador}</{tag_doc}>"
-            f"<IM>{self.im_prestador}</IM></Prestador>"
-        )
+        return f"<Prestador><{tag_doc}>{self.cnpj_prestador}</{tag_doc}><IM>{self.im_prestador}</IM></Prestador>"
 
     def consultar_nfse_dps(self, numero_dps, serie_dps):
         dados = (
@@ -286,10 +272,7 @@ class NotaControl:
 
     def consultar_dps_disponivel(self):
         """Próximo número de DPS disponível para o prestador (só NotaControl)."""
-        dados = (
-            f'<ConsultarDpsDisponivelEnvio xmlns="{NS}">{self._prestador_xml()}'
-            f"</ConsultarDpsDisponivelEnvio>"
-        )
+        dados = f'<ConsultarDpsDisponivelEnvio xmlns="{NS}">{self._prestador_xml()}</ConsultarDpsDisponivelEnvio>'
         return self._post("ConsultarDpsDisponivel", dados)
 
     def cancelar_nfse(self, ped_reg_evento_xml):
@@ -302,10 +285,7 @@ class NotaControl:
         ped = etree.fromstring(_sem_declaracao(ped_reg_evento_xml).encode("utf-8"))
         inf = ped.find("n:infPedReg", NSMAP)
         assinado = self._assinar(ped, inf.get("Id"))
-        dados = (
-            f'<CancelarNfseEnvio xmlns="{NS}">'
-            f"{_sem_declaracao(assinado)}</CancelarNfseEnvio>"
-        )
+        dados = f'<CancelarNfseEnvio xmlns="{NS}">{_sem_declaracao(assinado)}</CancelarNfseEnvio>'
         return self._post("CancelarNfse", dados)
 
     # -------------------------------------------------------------- resposta
@@ -342,9 +322,7 @@ class NotaControl:
         try:
             doc = etree.fromstring(_sem_declaracao(xml_resposta).encode("utf-8"))
         except etree.XMLSyntaxError:
-            retorno.mensagens.append(
-                MensagemRetorno("HTTP", f"Resposta inválida (HTTP {http_status})")
-            )
+            retorno.mensagens.append(MensagemRetorno("HTTP", f"Resposta inválida (HTTP {http_status})"))
             return retorno
 
         fault = doc.find(".//{http://schemas.xmlsoap.org/soap/envelope/}Fault")
@@ -379,12 +357,10 @@ class NotaControl:
 
         retorno.protocolo = _texto(corpo, "n:Protocolo")
         retorno.numero_lote = _texto(corpo, "n:NumeroLote")
-        retorno.mensagens = cls._mensagens(
-            corpo, "n:ListaMensagemRetorno/n:MensagemRetorno"
-        ) + cls._mensagens(corpo, "n:ListaMensagemRetornoLote/n:MensagemRetorno")
-        retorno.alertas = cls._mensagens(
-            corpo, ".//n:ListaMensagemAlertaRetorno/n:MensagemRetorno"
+        retorno.mensagens = cls._mensagens(corpo, "n:ListaMensagemRetorno/n:MensagemRetorno") + cls._mensagens(
+            corpo, "n:ListaMensagemRetornoLote/n:MensagemRetorno"
         )
+        retorno.alertas = cls._mensagens(corpo, ".//n:ListaMensagemAlertaRetorno/n:MensagemRetorno")
         for nfse in corpo.iterfind(".//n:CompNfse/n:Nfse", NSMAP):
             inf = nfse.find("n:infNFSe", NSMAP)
             retorno.nfse_xml.append(etree.tostring(nfse, encoding=str))
@@ -397,9 +373,7 @@ class NotaControl:
                     "numero_nfse": _texto(link, "n:IdentificacaoNfse/n:nDFSe"),
                     "visualizacao": _texto(link, "n:UrlVisualizacaoNfse"),
                     "autenticidade": _texto(link, "n:UrlVerificaAutenticidade"),
-                    "visualizacao_nacional": _texto(
-                        link, "n:UrlVisualizacaoNfseNacional"
-                    ),
+                    "visualizacao_nacional": _texto(link, "n:UrlVisualizacaoNfseNacional"),
                 }
             )
         if operacao == "RecepcionarLoteDpsSincrono":

@@ -9,6 +9,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.x509.oid import NameOID
+from lxml import etree
+
 from erpbrasil.assinatura.certificado import Certificado
 from erpbrasil.edoc.provedores.cidades import NFSeFactory
 from erpbrasil.edoc.provedores.notacontrol import (
@@ -17,7 +19,6 @@ from erpbrasil.edoc.provedores.notacontrol import (
     NotaControl,
     dps_numero_serie,
 )
-from lxml import etree
 
 DPS_ID = "DPS520870720224450700011600001000000000000001"
 DPS = (
@@ -60,9 +61,7 @@ FAULT = """<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 def certificado_temporario():
     """Certificado autoassinado valido hoje (o fixture do repo esta vencido)."""
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    nome = x509.Name(
-        [x509.NameAttribute(NameOID.COMMON_NAME, "QUICK TESTE:02244507000116")]
-    )
+    nome = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "QUICK TESTE:02244507000116")])
     agora = datetime.datetime.now(datetime.timezone.utc)
     cert = (
         x509.CertificateBuilder()
@@ -115,9 +114,7 @@ class TestNotaControl(TestCase):
         )
 
     def test_factory_goiania(self):
-        provedor = NFSeFactory(
-            self.transmissao, "2", 5208707, "02244507000116", "778151"
-        )
+        provedor = NFSeFactory(self.transmissao, "2", 5208707, "02244507000116", "778151")
         self.assertIsInstance(provedor, NotaControl)
 
     def test_url(self):
@@ -130,16 +127,12 @@ class TestNotaControl(TestCase):
     def test_lote_com_duas_assinaturas(self):
         provedor = self._provedor(algoritmo="sha256")
         dps = provedor.assinar_dps(DPS)
-        lote = etree.fromstring(
-            provedor.assinar_lote(provedor.montar_lote([dps], 7), 7)
-        )
+        lote = etree.fromstring(provedor.assinar_lote(provedor.montar_lote([dps], 7), 7))
 
         lote_dps = lote.find(f"{{{NS}}}LoteDps")
         self.assertEqual(lote_dps.get("Id"), "Lote7")
         self.assertEqual(lote_dps.findtext(f"{{{NS}}}QuantidadeDps"), "1")
-        self.assertEqual(
-            lote_dps.findtext(f"{{{NS}}}Prestador/{{{NS}}}CNPJ"), "02244507000116"
-        )
+        self.assertEqual(lote_dps.findtext(f"{{{NS}}}Prestador/{{{NS}}}CNPJ"), "02244507000116")
         self.assertEqual(lote_dps.findtext(f"{{{NS}}}Prestador/{{{NS}}}IM"), "778151")
 
         # Signature da DPS irma da infDPS; a do lote irma do LoteDps
@@ -166,36 +159,26 @@ class TestNotaControl(TestCase):
 
     def test_recepcionar_autorizada(self):
         session = FakeSession(RESPOSTA_AUTORIZADA)
-        retorno = self._provedor(session=session).recepcionar_lote_dps_sincrono(
-            [DPS], 7
-        )
+        retorno = self._provedor(session=session).recepcionar_lote_dps_sincrono([DPS], 7)
 
         chamada = session.chamadas[0]
-        self.assertEqual(
-            chamada["headers"]["SOAPAction"], f"{NS}/RecepcionarLoteDpsSincrono"
-        )
+        self.assertEqual(chamada["headers"]["SOAPAction"], f"{NS}/RecepcionarLoteDpsSincrono")
         self.assertIn("<LoteDps", chamada["data"])
         self.assertTrue(retorno.sucesso)
         self.assertEqual(retorno.protocolo, "PROT-123")
         self.assertEqual(retorno.numeros_nfse, ["1"])
-        self.assertEqual(
-            retorno.chaves_acesso, ["52087072202244507000116000000000000126090000001"]
-        )
+        self.assertEqual(retorno.chaves_acesso, ["52087072202244507000116000000000000126090000001"])
         self.assertEqual([a.codigo for a in retorno.alertas], ["A001"])
 
     def test_recepcionar_rejeitada(self):
-        retorno = self._provedor(
-            session=FakeSession(RESPOSTA_REJEITADA)
-        ).recepcionar_lote_dps_sincrono([DPS], 1)
+        retorno = self._provedor(session=FakeSession(RESPOSTA_REJEITADA)).recepcionar_lote_dps_sincrono([DPS], 1)
         self.assertFalse(retorno.sucesso)
         self.assertEqual([m.codigo for m in retorno.mensagens], ["E160", "E0120"])
         self.assertIn("[DPS 1/1] E0120 - Serie invalida", retorno.mensagem)
         self.assertIn("(Informe o cTribMun)", retorno.mensagem)
 
     def test_fault_soap(self):
-        retorno = self._provedor(
-            session=FakeSession(FAULT, 500)
-        ).consultar_dps_disponivel()
+        retorno = self._provedor(session=FakeSession(FAULT, 500)).consultar_dps_disponivel()
         self.assertFalse(retorno.sucesso)
         self.assertEqual(retorno.mensagens[0].mensagem, "Error")
 
@@ -209,9 +192,7 @@ class TestNotaControl(TestCase):
             <IdentificacaoNfse><nDFSe>1</nDFSe></IdentificacaoNfse>
             <UrlVisualizacaoNfse>https://exemplo/1</UrlVisualizacaoNfse>
             </Links></ListaLinks></ConsultarUrlNfseResposta>"""
-        retorno = self._provedor(session=FakeSession(resposta)).consultar_url_nfse(
-            1, "1"
-        )
+        retorno = self._provedor(session=FakeSession(resposta)).consultar_url_nfse(1, "1")
         self.assertTrue(retorno.sucesso)
         self.assertEqual(retorno.urls[0]["visualizacao"], "https://exemplo/1")
 
