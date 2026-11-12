@@ -36,9 +36,10 @@ classifiers = [
 requires-python = ">=3.6"
 dependencies = [
     "erpbrasil.base>=2.0.0",
-    "erpbrasil.assinatura>=1.2.0",
+    "erpbrasil.assinatura>=1.9.0",
     "erpbrasil.transmissao>=1.0.0",
     "lxml",
+    "dataclasses; python_version < '3.7'",
 ]
 
 [project.optional-dependencies]
