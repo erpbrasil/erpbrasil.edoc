@@ -6,9 +6,7 @@ import re
 
 from lxml import etree
 
-combined_pattern = re.compile(
-    r"<soap:Body>(.*?)</soap:Body>|<[a-zA-Z0-9:]*Body[^>]*>(.*?)</[a-zA-Z0-9:]*Body>"
-)
+combined_pattern = re.compile(r"<soap:Body>(.*?)</soap:Body>|<[a-zA-Z0-9:]*Body[^>]*>(.*?)</[a-zA-Z0-9:]*Body>")
 
 
 class RetornoSoap:
@@ -29,11 +27,7 @@ def analisar_retorno_raw(operacao, raiz, xml, retorno, classe):
         resultado = xml_etree[0]
 
         nome_classe = classe.__name__.split(".")[-1]
-        xml_classe_tags = list(
-            filter(
-                lambda children: nome_classe in children.tag, xml_etree.findall(".//")
-            )
-        )
+        xml_classe_tags = list(filter(lambda children: nome_classe in children.tag, xml_etree.findall(".//")))
         if xml_classe_tags:
             resultado = xml_classe_tags[0]
 

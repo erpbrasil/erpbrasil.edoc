@@ -24,21 +24,11 @@ endpoint = "nfeservice/wsrps.asmx?WSDL"
 
 if barueri:
     servicos = {
-        "envia_documento": ServicoNFSe(
-            "NFeLoteEnviarArquivo", endpoint, NFeLoteEnviarArquivo, True
-        ),
-        "consulta_recibo": ServicoNFSe(
-            "NFeLoteStatusArquivo", endpoint, NFeLoteStatusArquivo, True
-        ),
-        "consultar_lote_rps": ServicoNFSe(
-            "NFeLoteStatusArquivo", endpoint, NFeLoteStatusArquivo, True
-        ),
-        "baixar_lote_rps": ServicoNFSe(
-            "NFeLoteBaixarArquivo", endpoint, NFeLoteBaixarArquivo, True
-        ),
-        "consulta_nfse_rps": ServicoNFSe(
-            "NFeLoteStatusArquivo", endpoint, NFeLoteStatusArquivo, True
-        ),
+        "envia_documento": ServicoNFSe("NFeLoteEnviarArquivo", endpoint, NFeLoteEnviarArquivo, True),
+        "consulta_recibo": ServicoNFSe("NFeLoteStatusArquivo", endpoint, NFeLoteStatusArquivo, True),
+        "consultar_lote_rps": ServicoNFSe("NFeLoteStatusArquivo", endpoint, NFeLoteStatusArquivo, True),
+        "baixar_lote_rps": ServicoNFSe("NFeLoteBaixarArquivo", endpoint, NFeLoteBaixarArquivo, True),
+        "consulta_nfse_rps": ServicoNFSe("NFeLoteStatusArquivo", endpoint, NFeLoteStatusArquivo, True),
     }
 else:
     servicos = {}
@@ -46,18 +36,14 @@ else:
 
 
 class Barueri(NFSe):
-    def __init__(
-        self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-    ):
+    def __init__(self, transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador):
         if ambiente == "2":
             self._url = "https://testeeiss.barueri.sp.gov.br/"
         else:
             self._url = "https://www.barueri.sp.gov.br/"
         self._servicos = servicos
 
-        super().__init__(
-            transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador
-        )
+        super().__init__(transmissao, ambiente, cidade_ibge, cnpj_prestador, im_prestador)
 
     def get_documento_id(self, edoc):
         # edoc.LoteRps.ListaRps.Rps[0].InfRps.Id
@@ -125,12 +111,7 @@ class Barueri(NFSe):
 
             if lista_msgs.Codigo != "OK200":
                 mensagem += (
-                    lista_msgs.Codigo
-                    + " - "
-                    + lista_msgs.Mensagem
-                    + " - Correção: "
-                    + lista_msgs.Correcao
-                    + "\n"
+                    lista_msgs.Codigo + " - " + lista_msgs.Mensagem + " - Correção: " + lista_msgs.Correcao + "\n"
                 )
             else:
                 status = int(processo.resposta.ListaNfeArquivosRPS.SituacaoArq)
@@ -157,24 +138,18 @@ class Barueri(NFSe):
             self._url = "https://servicos.barueri.sp.gov.br"
 
         if header_string:
-            with self._transmissao.cliente(
-                urljoin(self._url, servico.endpoint)
-            ) as cliente:
+            with self._transmissao.cliente(urljoin(self._url, servico.endpoint)) as cliente:
                 resposta = cliente.service[servico.operacao](
                     header_string,
                     body_string,
                 )
         else:
-            with self._transmissao.cliente(
-                urljoin(self._url, servico.endpoint)
-            ) as cliente:
+            with self._transmissao.cliente(urljoin(self._url, servico.endpoint)) as cliente:
                 resposta = cliente.service[servico.operacao](
                     body_string,
                 )
 
-        return self.analisar_retorno(
-            servico.operacao, body, body_string, resposta, servico.classe_retorno
-        )
+        return self.analisar_retorno(servico.operacao, body, body_string, resposta, servico.classe_retorno)
 
     def analisar_retorno(self, operacao, raiz, xml, retorno, classe):
         resposta = False

@@ -1,10 +1,11 @@
 from types import SimpleNamespace
 from unittest import TestCase, mock
 
+from lxml import etree
+
 from erpbrasil.edoc.nfe import NFe
 from erpbrasil.edoc.resposta import analisar_retorno_raw
 from erpbrasil.nfelib_legacy.v4_00 import retEnviNFe
-from lxml import etree
 
 NS = "http://www.portalfiscal.inf.br/nfe"
 CHAVE = "35260712345678000195550010000000011000000011"
@@ -66,9 +67,7 @@ class LoteProcessadoNoEnvioTests(TestCase):
     """A SEFAZ pode responder 104 (lote processado) a um envio assíncrono (#102)."""
 
     def _nfe(self, ret, envio_sincrono):
-        nfe = NFe(
-            False, "35", versao="4.00", ambiente="2", envio_sincrono=envio_sincrono
-        )
+        nfe = NFe(False, "35", versao="4.00", ambiente="2", envio_sincrono=envio_sincrono)
         nfe.envia_documento = lambda edoc: _processo_envio(ret)
         nfe.consulta_recibo = mock.Mock()
         return nfe
@@ -87,9 +86,7 @@ class LoteProcessadoNoEnvioTests(TestCase):
     def test_103_em_envio_assincrono_continua_consultando_o_recibo(self):
         nfe = self._nfe(RET_103, envio_sincrono=False)
         nfe.monta_processo = mock.Mock()
-        nfe.consulta_recibo.return_value = SimpleNamespace(
-            resposta=SimpleNamespace(cStat="104")
-        )
+        nfe.consulta_recibo.return_value = SimpleNamespace(resposta=SimpleNamespace(cStat="104"))
         with mock.patch("erpbrasil.edoc.nfe.time.sleep") as sleep:
             processos = list(nfe.processar_documento(object()))
         self.assertEqual(len(processos), 2)

@@ -18,21 +18,13 @@ class TestContingenciaSvcRs(TestCase):
         for uf in UFS_SVC_RS:
             for servico in SERVICOS_SVC:
                 with self.subTest(uf=uf, servico=servico):
-                    producao = nfe.localizar_url(
-                        servico, uf, ambiente=1, contingencia=True
-                    )
-                    homologacao = nfe.localizar_url(
-                        servico, uf, ambiente=2, contingencia=True
-                    )
+                    producao = nfe.localizar_url(servico, uf, ambiente=1, contingencia=True)
+                    homologacao = nfe.localizar_url(servico, uf, ambiente=2, contingencia=True)
                     self.assertTrue(producao.startswith("https://nfe.svrs.rs.gov.br/"))
-                    self.assertEqual(
-                        producao.split("/", 3)[3], homologacao.split("/", 3)[3]
-                    )
+                    self.assertEqual(producao.split("/", 3)[3], homologacao.split("/", 3)[3])
 
     def test_autorizacao_em_contingencia_na_producao(self):
         self.assertEqual(
-            nfe.localizar_url(
-                nfe.WS_NFE_AUTORIZACAO, "29", ambiente=1, contingencia=True
-            ),
+            nfe.localizar_url(nfe.WS_NFE_AUTORIZACAO, "29", ambiente=1, contingencia=True),
             "https://nfe.svrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx?wsdl",
         )

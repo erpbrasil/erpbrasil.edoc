@@ -8,10 +8,7 @@ from erpbrasil.edoc.chave import ChaveNFSeDSF
 # Chave de 94 posicoes valida, usada como ponto de partida para os testes:
 # ela precisa ser valida pois o construtor da classe faz o parse completo
 # (inclusive da data) assim que `chave=` e informado.
-CHAVE_VALIDA = (
-    "00000317330NF   00000003866320090905T N0000000000168600"
-    "000000000000000008299799000008764130000"
-)
+CHAVE_VALIDA = "00000317330NF   00000003866320090905T N0000000000168600000000000000000008299799000008764130000"
 
 
 def _item(valor_total):

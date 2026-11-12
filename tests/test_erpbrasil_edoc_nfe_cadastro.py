@@ -37,8 +37,7 @@ class UrlConsultaCadastroTests(TestCase):
             chamadas,
             [
                 (
-                    "https://homnfe.sefaz.am.gov.br/services2/services/"
-                    "CadConsultaCadastro4?wsdl",
+                    "https://homnfe.sefaz.am.gov.br/services2/services/CadConsultaCadastro4?wsdl",
                     "consultaCadastro",
                 )
             ],
