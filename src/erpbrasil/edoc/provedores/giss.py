@@ -212,9 +212,7 @@ class Giss:
             return URL_HOMOLOGACAO
         host = self.host or MUNICIPIOS.get(self.cidade)
         if not host:
-            raise ValueError(
-                f"Município {self.cidade} não configurado para o GissOnline"
-            )
+            raise ValueError(f"Município {self.cidade} não configurado para o GissOnline")
         return URL_PRODUCAO.format(host)
 
     # ----------------------------------------------------------- assinatura
@@ -276,8 +274,7 @@ class Giss:
     def envelope(self, operacao, dados_xml):
         versao = self.versao_cabecalho
         cabecalho = (
-            f'<cabecalho versao="{versao}" xmlns="{NS_CABECALHO}">'
-            f"<versaoDados>{versao}</versaoDados></cabecalho>"
+            f'<cabecalho versao="{versao}" xmlns="{NS_CABECALHO}"><versaoDados>{versao}</versaoDados></cabecalho>'
         )
         return (
             '<?xml version="1.0" encoding="UTF-8"?>'
@@ -297,17 +294,13 @@ class Giss:
         }
         dados = envelope.encode("utf-8")
         if self._session is not None:
-            return self._session.post(
-                self.url, data=dados, headers=headers, timeout=self.timeout
-            )
+            return self._session.post(self.url, data=dados, headers=headers, timeout=self.timeout)
         with ArquivoCertificado(self._transmissao.certificado, "w") as (key, cert):
             session = requests.Session()
             session.cert = (key, cert)
             session.verify = self.verify
             try:
-                return session.post(
-                    self.url, data=dados, headers=headers, timeout=self.timeout
-                )
+                return session.post(self.url, data=dados, headers=headers, timeout=self.timeout)
             finally:
                 session.close()
 
@@ -315,9 +308,7 @@ class Giss:
         resposta = self._http_post(operacao, self.envelope(operacao, dados_xml))
         corpo = resposta.content.decode("utf-8", errors="replace")
         _logger.debug("GissOnline %s HTTP %s", operacao, resposta.status_code)
-        return self.analisar_resposta(
-            operacao, corpo, http_status=resposta.status_code, xml_enviado=dados_xml
-        )
+        return self.analisar_resposta(operacao, corpo, http_status=resposta.status_code, xml_enviado=dados_xml)
 
     # ------------------------------------------------------------- mensagens
 
@@ -325,13 +316,9 @@ class Giss:
         prestador = etree.SubElement(pai, f"{{{ns_pai}}}{tag}")
         cpf_cnpj = etree.SubElement(prestador, f"{{{NS_TIPOS}}}CpfCnpj")
         tag_doc = "Cnpj" if len(self.cnpj_prestador) == 14 else "Cpf"
-        etree.SubElement(
-            cpf_cnpj, f"{{{NS_TIPOS}}}{tag_doc}"
-        ).text = self.cnpj_prestador
+        etree.SubElement(cpf_cnpj, f"{{{NS_TIPOS}}}{tag_doc}").text = self.cnpj_prestador
         if self.im_prestador:
-            etree.SubElement(
-                prestador, f"{{{NS_TIPOS}}}InscricaoMunicipal"
-            ).text = self.im_prestador
+            etree.SubElement(prestador, f"{{{NS_TIPOS}}}InscricaoMunicipal").text = self.im_prestador
         return prestador
 
     @staticmethod
@@ -371,17 +358,11 @@ class Giss:
         etree.SubElement(nfse, f"{{{NS_TIPOS}}}Numero").text = str(int(numero_nfse))
         cpf_cnpj = etree.SubElement(nfse, f"{{{NS_TIPOS}}}CpfCnpj")
         tag_doc = "Cnpj" if len(self.cnpj_prestador) == 14 else "Cpf"
-        etree.SubElement(
-            cpf_cnpj, f"{{{NS_TIPOS}}}{tag_doc}"
-        ).text = self.cnpj_prestador
+        etree.SubElement(cpf_cnpj, f"{{{NS_TIPOS}}}{tag_doc}").text = self.cnpj_prestador
         if self.im_prestador:
-            etree.SubElement(
-                nfse, f"{{{NS_TIPOS}}}InscricaoMunicipal"
-            ).text = self.im_prestador
+            etree.SubElement(nfse, f"{{{NS_TIPOS}}}InscricaoMunicipal").text = self.im_prestador
         etree.SubElement(nfse, f"{{{NS_TIPOS}}}CodigoMunicipio").text = str(self.cidade)
-        etree.SubElement(inf, f"{{{NS_TIPOS}}}CodigoCancelamento").text = str(
-            codigo_cancelamento
-        )
+        etree.SubElement(inf, f"{{{NS_TIPOS}}}CodigoCancelamento").text = str(codigo_cancelamento)
         return etree.tostring(raiz, encoding=str)
 
     # ------------------------------------------------------------- servicos
@@ -484,9 +465,7 @@ class Giss:
         try:
             doc = etree.fromstring(_sem_declaracao(xml_resposta).encode("utf-8"))
         except (etree.XMLSyntaxError, ValueError):
-            retorno.mensagens.append(
-                MensagemRetorno("HTTP", f"Resposta inválida (HTTP {http_status})")
-            )
+            retorno.mensagens.append(MensagemRetorno("HTTP", f"Resposta inválida (HTTP {http_status})"))
             return retorno
 
         fault = next(iter(_todos(doc, "Fault")), None)
@@ -507,13 +486,9 @@ class Giss:
                 corpo = saida[0]
             elif (saida.text or "").strip().startswith("<"):
                 try:
-                    corpo = etree.fromstring(
-                        _sem_declaracao(saida.text).encode("utf-8")
-                    )
+                    corpo = etree.fromstring(_sem_declaracao(saida.text).encode("utf-8"))
                 except etree.XMLSyntaxError:
-                    retorno.mensagens.append(
-                        MensagemRetorno("XML", "outputXML não é um XML válido")
-                    )
+                    retorno.mensagens.append(MensagemRetorno("XML", "outputXML não é um XML válido"))
                     return retorno
 
         retorno.protocolo = _texto(corpo, "Protocolo")
@@ -526,7 +501,5 @@ class Giss:
         cancelamento = _filho(corpo, "RetCancelamento", "NfseCancelamento")
         retorno.data_cancelamento = _texto(cancelamento, "Confirmacao", "DataHora")
         if http_status >= 400 and not retorno.mensagens:
-            retorno.mensagens.append(
-                MensagemRetorno("HTTP", f"Erro de transporte (HTTP {http_status})")
-            )
+            retorno.mensagens.append(MensagemRetorno("HTTP", f"Erro de transporte (HTTP {http_status})"))
         return retorno

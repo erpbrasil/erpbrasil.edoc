@@ -11,6 +11,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.x509.oid import NameOID
+from lxml import etree
+
 from erpbrasil.assinatura.certificado import Certificado
 from erpbrasil.edoc.provedores.giss import (
     LOTE_PROCESSADO,
@@ -22,7 +24,6 @@ from erpbrasil.edoc.provedores.giss import (
     URL_HOMOLOGACAO,
     Giss,
 )
-from lxml import etree
 
 NS_ENVIO = NS_GISS.format("enviar-lote-rps-envio")
 CNPJ = "02244507000116"
@@ -91,8 +92,7 @@ RESPOSTA_LOTE_PROCESSADO = soap(
 NS_RESPOSTA_LOTE = NS_GISS.format("consultar-lote-rps-resposta")
 RESPOSTA_LOTE_EM_FILA = soap(
     "ConsultarLoteRps",
-    f'<ConsultarLoteRpsResposta xmlns="{NS_RESPOSTA_LOTE}">'
-    "<Situacao>2</Situacao></ConsultarLoteRpsResposta>",
+    f'<ConsultarLoteRpsResposta xmlns="{NS_RESPOSTA_LOTE}"><Situacao>2</Situacao></ConsultarLoteRpsResposta>',
 )
 
 RESPOSTA_LOTE_COM_ERRO = soap(
@@ -159,9 +159,7 @@ class FakeSession:
 
     def post(self, url, data, headers, timeout):
         self.chamadas.append({"url": url, "data": data.decode(), "headers": headers})
-        resposta = (
-            self.respostas.pop(0) if len(self.respostas) > 1 else self.respostas[0]
-        )
+        resposta = self.respostas.pop(0) if len(self.respostas) > 1 else self.respostas[0]
         return FakeResponse(resposta, self.status_code)
 
 
@@ -197,9 +195,7 @@ class TestGiss(TestCase):
         with self.assertRaises(ValueError):
             self.giss("", cidade=1).url  # noqa: B018
         fora = Giss(self.transmissao, "1", 1, CNPJ, IM, host="suzano")
-        self.assertEqual(
-            fora.url, "https://ws-suzano.giss.com.br/service-ws/nf/nfse-ws"
-        )
+        self.assertEqual(fora.url, "https://ws-suzano.giss.com.br/service-ws/nf/nfse-ws")
 
     def test_assina_cada_rps_e_depois_o_lote(self):
         assinado = etree.fromstring(self.giss("").assinar_lote(lote((1, 2))).encode())
@@ -227,9 +223,7 @@ class TestGiss(TestCase):
         validas porque os prefixos sao declarados na raiz e porque cada uma
         volta para junto do RPS antes de o lote ser assinado.
         """
-        assinado = etree.fromstring(
-            self.giss("").assinar_lote(lote((1, 2, 3))).encode()
-        )
+        assinado = etree.fromstring(self.giss("").assinar_lote(lote((1, 2, 3))).encode())
         ds = f"{{{NS_DS}}}"
         assinaturas = list(assinado.iter(f"{ds}Signature"))
         self.assertEqual(len(assinaturas), 4)
@@ -242,19 +236,13 @@ class TestGiss(TestCase):
             self.assertEqual(resumo, referencia.findtext(f"{ds}DigestValue"))
             # c14n inclusivo do SignedInfo em contexto: o lxml nao o faz certo
             # para um subelemento, entao os namespaces em escopo entram a mao
-            signed_info = etree.tostring(
-                assinatura.find(f"{ds}SignedInfo"), method="c14n", exclusive=True
-            )
+            signed_info = etree.tostring(assinatura.find(f"{ds}SignedInfo"), method="c14n", exclusive=True)
             em_escopo = "".join(
                 f' xmlns:{prefixo}="{uri}"'
-                for prefixo, uri in sorted(
-                    (p, u) for p, u in assinatura.nsmap.items() if p is not None
-                )
+                for prefixo, uri in sorted((p, u) for p, u in assinatura.nsmap.items() if p is not None)
             )
             abertura = f'<SignedInfo xmlns="{NS_DS}"'.encode()
-            signed_info = signed_info.replace(
-                abertura, abertura + em_escopo.encode(), 1
-            )
+            signed_info = signed_info.replace(abertura, abertura + em_escopo.encode(), 1)
             certificado = x509.load_der_x509_certificate(
                 base64.b64decode(assinatura.findtext(f".//{ds}X509Certificate"))
             )
@@ -267,9 +255,7 @@ class TestGiss(TestCase):
 
     def test_lote_ja_assinado_e_reassinado_sem_duplicar(self):
         giss = self.giss("")
-        duas_vezes = etree.fromstring(
-            giss.assinar_lote(giss.assinar_lote(lote())).encode()
-        )
+        duas_vezes = etree.fromstring(giss.assinar_lote(giss.assinar_lote(lote())).encode())
         self.assertEqual(referencias(duas_vezes), ["#rps1", "#lote7"])
 
     def test_lote_sem_id_nao_e_assinado(self):
@@ -282,9 +268,7 @@ class TestGiss(TestCase):
         giss = self.giss(RESPOSTA_PROTOCOLO)
         retorno = giss.recepcionar_lote_rps(lote())
         chamada = self.session.chamadas[0]
-        self.assertEqual(
-            chamada["headers"]["SOAPAction"], f"{NS_SERVICO}/RecepcionarLoteRps"
-        )
+        self.assertEqual(chamada["headers"]["SOAPAction"], f"{NS_SERVICO}/RecepcionarLoteRps")
         envelope = etree.fromstring(chamada["data"].encode())
         pedido = envelope.find(f".//{{{NS_SERVICO}}}RecepcionarLoteRpsRequest")
         self.assertIsNotNone(pedido)
@@ -293,13 +277,9 @@ class TestGiss(TestCase):
         self.assertEqual(cabecalho.get("versao"), "2.04")
         self.assertEqual(cabecalho[0].text, "2.04")
         outra = Giss(self.transmissao, "1", 3518800, CNPJ, IM, versao_cabecalho="2.00")
-        envelope = etree.fromstring(
-            outra.envelope("RecepcionarLoteRps", lote()).encode()
-        )
+        envelope = etree.fromstring(outra.envelope("RecepcionarLoteRps", lote()).encode())
         self.assertIn('versao="2.00"', envelope.find(".//nfseCabecMsg").text)
-        self.assertEqual(
-            dados_da_chamada(chamada).tag, f"{{{NS_ENVIO}}}EnviarLoteRpsEnvio"
-        )
+        self.assertEqual(dados_da_chamada(chamada).tag, f"{{{NS_ENVIO}}}EnviarLoteRpsEnvio")
         self.assertTrue(retorno.sucesso)
         self.assertEqual(retorno.protocolo, "PROT-123")
         self.assertEqual(retorno.numero_lote, "7")
@@ -311,9 +291,7 @@ class TestGiss(TestCase):
         self.assertEqual(dados.tag, f"{{{ns}}}ConsultarLoteRpsEnvio")
         self.assertEqual(dados.findtext(f"{{{ns}}}Protocolo"), "PROT-123")
         self.assertEqual(
-            dados.findtext(
-                f"{{{ns}}}Prestador/{{{NS_TIPOS}}}CpfCnpj/{{{NS_TIPOS}}}Cnpj"
-            ),
+            dados.findtext(f"{{{ns}}}Prestador/{{{NS_TIPOS}}}CpfCnpj/{{{NS_TIPOS}}}Cnpj"),
             CNPJ,
         )
         # a consulta leva uma assinatura na raiz, sobre o documento todo
@@ -344,18 +322,14 @@ class TestGiss(TestCase):
         retorno = giss.aguardar_lote("PROT-123", espera=0)
         self.assertEqual(len(self.session.chamadas), 2)
         self.assertEqual(retorno.situacao, LOTE_PROCESSADO)
-        ainda = self.giss(RESPOSTA_LOTE_EM_FILA).aguardar_lote(
-            "PROT-123", tentativas=2, espera=0
-        )
+        ainda = self.giss(RESPOSTA_LOTE_EM_FILA).aguardar_lote("PROT-123", tentativas=2, espera=0)
         self.assertTrue(ainda.em_processamento)
         self.assertEqual(len(self.session.chamadas), 2)
 
     def test_consulta_por_rps(self):
         self.giss(RESPOSTA_LOTE_EM_FILA).consultar_nfse_rps(12, "A1")
         chamada = self.session.chamadas[0]
-        self.assertEqual(
-            chamada["headers"]["SOAPAction"], f"{NS_SERVICO}/ConsultarNfsePorRps"
-        )
+        self.assertEqual(chamada["headers"]["SOAPAction"], f"{NS_SERVICO}/ConsultarNfsePorRps")
         dados = dados_da_chamada(chamada)
         ns = NS_GISS.format("consultar-nfse-rps-envio")
         rps_id = dados.find(f"{{{ns}}}IdentificacaoRps")
@@ -370,9 +344,7 @@ class TestGiss(TestCase):
         self.assertEqual(inf.get("Id"), "cancelamento55")
         self.assertEqual(inf.findtext(f"{{{NS_TIPOS}}}CodigoCancelamento"), "2")
         identificacao = inf.find(f"{{{NS_TIPOS}}}IdentificacaoNfse")
-        self.assertEqual(
-            identificacao.findtext(f"{{{NS_TIPOS}}}CodigoMunicipio"), "3518800"
-        )
+        self.assertEqual(identificacao.findtext(f"{{{NS_TIPOS}}}CodigoMunicipio"), "3518800")
         # a assinatura fica dentro do Pedido e referencia o InfPedidoCancelamento
         self.assertEqual(pedido[-1].tag, f"{{{NS_DS}}}Signature")
         self.assertEqual(referencias(dados), ["#cancelamento55"])
