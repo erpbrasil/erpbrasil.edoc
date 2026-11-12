@@ -139,9 +139,18 @@ Outros:
   segurança); testes de Paulistana, ISSNet, chave, CT-e, MDF-e, contingência
   SVC-RS, Barueri e reassinatura.
 
-3.3.0 (não publicada)
-~~~~~~~~~~~~~~~~~~~~~
+3.3.0 (2026-11-12)
+~~~~~~~~~~~~~~~~~~
 
+* Provedor NotaControl: NFS-e no leiaute nacional (DPS) pelo webservice municipal da
+  NotaControl/ISSNet, como em Goiânia, com o lote assinado em SHA1 ou SHA256 (#108).
+* Provedor Giss: NFS-e pelo webservice do GissOnline v2 (ABRASF 2.04 com os grupos da
+  reforma tributária); os bindings estão na ``nfselib.giss`` (#121).
+* O XML gravado (envio, nfeProc, procCTe, procMDFe) sai em UTF-8, com os caracteres
+  acentuados literais no lugar de referências numéricas (#114).
+* Depende da ``erpbrasil.assinatura`` 1.9.0 (algoritmo de assinatura configurável) e, no
+  Python 3.6, do backport ``dataclasses`` (#122).
+* CI fixado no ``ubuntu-24.04`` (#120).
 * Empacotamento: ``pyproject.toml`` com hatchling no lugar de ``setup.py``;
   namespaces ``erpbrasil`` e ``erpbrasil.edoc`` por ``pkgutil.extend_path`` (o
   ``erpbrasil.edoc.pdf`` continua convivendo; ``erpbrasil.edoc.__version__`` passa
