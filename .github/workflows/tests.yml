@@ -10,7 +10,7 @@ jobs:
   tests:
     # Python 3.8 a 3.14 pelo setup-python. Cobre do Odoo 14 (3.8) ao Odoo 20 (3.14).
     name: Python ${{ matrix.python }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -50,7 +50,7 @@ jobs:
     # Python 3.6 e 3.7 (Odoo 12 e 13; o CI da OCA 12.0 roda 3.6). O ubuntu-latest
     # nao oferece esses interpretadores, entao rodam em container oficial.
     name: Python ${{ matrix.python }} (container)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: python:${{ matrix.python }}-bullseye
     strategy:
       fail-fast: false
@@ -69,7 +69,7 @@ jobs:
 
   pre-commit:
     name: Pre-commit Hooks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -81,7 +81,7 @@ jobs:
     # Constroi o pacote, confere o conteudo do wheel e a convivencia do namespace
     # `erpbrasil` com as outras libs publicadas no PyPI.
     name: Build & Inspect Package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
