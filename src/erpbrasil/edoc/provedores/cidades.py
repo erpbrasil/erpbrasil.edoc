@@ -5,6 +5,7 @@ from erpbrasil.edoc.provedores.barueri import Barueri
 from erpbrasil.edoc.provedores.dsf import Dsf
 from erpbrasil.edoc.provedores.ginfes import Ginfes
 from erpbrasil.edoc.provedores.issnet import Issnet
+from erpbrasil.edoc.provedores.notacontrol import NotaControl
 from erpbrasil.edoc.provedores.paulistana import Paulistana
 
 cidades = {
@@ -20,6 +21,7 @@ cidades = {
     3543402: Issnet,  # Ribeirão Preto - SP
     3301702: Issnet,  # Duque de Caxias - RJ
     3505708: Barueri,  # Barueri - SP
+    5208707: NotaControl,  # Goiânia - GO (NFS-e nacional via NotaControl)
 }
 
 
