@@ -44,9 +44,10 @@ NS_SOAP = "http://schemas.xmlsoap.org/soap/envelope/"
 VERSAO = "2.04"
 URL_PRODUCAO = "https://ws-{}.giss.com.br/service-ws/nf/nfse-ws"
 # a homologação é um ambiente único, compartilhado por todos os municípios,
-# com regras e serviços que não são os do município em produção; o host da
-# reforma tributária (rtc) é o que aceita os grupos de IBS/CBS
-URL_HOMOLOGACAO = "https://ws-homologacao-rtc.giss.com.br/service-ws/nf/nfse-ws"
+# com regras e serviços que não são os do município em produção; é o host do
+# Manual Técnico Serviços Prestados V1.8 (seção 4). O ws-homologacao-rtc
+# recusa o tpRetPisCofins 0 que o XSD aceita (E160).
+URL_HOMOLOGACAO = "https://v2-ws-homologacao.giss.com.br/service-ws/nf/nfse-ws"
 
 # código IBGE -> prefixo do host de produção (nem sempre é o nome do município)
 MUNICIPIOS = {
@@ -167,6 +168,29 @@ def _sem_declaracao(xml):
     return xml
 
 
+def _namespaces_na_raiz(raiz):
+    """Copia o documento com cada namespace declarado uma vez, na raiz.
+
+    O ``XmlSerializer`` do xsdata declara o namespace dos tipos de novo em
+    cada filho do ``LoteRps`` (``xmlns:ns1``), e o GissOnline recusa as
+    assinaturas desse XML (E172). Na raiz vão o namespace da mensagem, como
+    padrão, e o dos tipos, com o prefixo ``tipos``.
+    """
+    nsmap = {None: etree.QName(raiz).namespace}
+    if nsmap[None] != NS_TIPOS:
+        nsmap["tipos"] = NS_TIPOS
+    nova = etree.Element(raiz.tag, attrib=raiz.attrib, nsmap=nsmap)
+    pilha = [(raiz, nova)]
+    while pilha:
+        origem, destino = pilha.pop()
+        destino.text = origem.text
+        for filho in origem.iterchildren(tag=etree.Element):
+            copia = etree.SubElement(destino, filho.tag, attrib=filho.attrib)
+            copia.tail = filho.tail
+            pilha.append((filho, copia))
+    return nova
+
+
 class Giss:
     """Cliente do webservice de NFS-e do GissOnline V2.
 
@@ -232,6 +256,7 @@ class Giss:
         root = etree.fromstring(_sem_declaracao(lote_xml).encode("utf-8"))
         for assinatura in _todos(root, "Signature"):
             assinatura.getparent().remove(assinatura)
+        root = _namespaces_na_raiz(root)
         lote = _filho(root, "LoteRps")
         if lote is None or not lote.get("Id"):
             raise ValueError("EnviarLoteRpsEnvio sem LoteRps com Id")

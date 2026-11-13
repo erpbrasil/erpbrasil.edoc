@@ -2,6 +2,7 @@
 import base64
 import datetime
 import hashlib
+import re
 from html import escape
 from types import SimpleNamespace
 from unittest import TestCase
@@ -21,7 +22,6 @@ from erpbrasil.edoc.provedores.giss import (
     NS_GISS,
     NS_SERVICO,
     NS_TIPOS,
-    URL_HOMOLOGACAO,
     Giss,
 )
 
@@ -42,14 +42,17 @@ def rps(numero):
 
 
 def lote(numeros=(1,)):
+    """Como o XmlSerializer do xsdata grava: o namespace dos tipos declarado
+    de novo em cada filho do LoteRps."""
+    t = f'xmlns:t="{NS_TIPOS}"'
     return (
-        f'<EnviarLoteRpsEnvio xmlns="{NS_ENVIO}" xmlns:t="{NS_TIPOS}">'
-        '<LoteRps Id="lote7" versao="2.04"><t:NumeroLote>7</t:NumeroLote>'
-        f"<t:Prestador><t:CpfCnpj><t:Cnpj>{CNPJ}</t:Cnpj></t:CpfCnpj>"
+        f'<e:EnviarLoteRpsEnvio xmlns:e="{NS_ENVIO}">'
+        f'<e:LoteRps Id="lote7" versao="2.04"><t:NumeroLote {t}>7</t:NumeroLote>'
+        f"<t:Prestador {t}><t:CpfCnpj><t:Cnpj>{CNPJ}</t:Cnpj></t:CpfCnpj>"
         f"<t:InscricaoMunicipal>{IM}</t:InscricaoMunicipal></t:Prestador>"
-        f"<t:QuantidadeRps>{len(numeros)}</t:QuantidadeRps>"
-        f"<t:ListaRps>{''.join(rps(n) for n in numeros)}</t:ListaRps>"
-        "</LoteRps></EnviarLoteRpsEnvio>"
+        f"<t:QuantidadeRps {t}>{len(numeros)}</t:QuantidadeRps>"
+        f"<t:ListaRps {t}>{''.join(rps(n) for n in numeros)}</t:ListaRps>"
+        "</e:LoteRps></e:EnviarLoteRpsEnvio>"
     )
 
 
@@ -173,6 +176,11 @@ def referencias(xml):
     return [ref.get("URI") for ref in xml.iter(f"{{{NS_DS}}}Reference")]
 
 
+def declaracoes(xml):
+    """Namespaces declarados no texto, um item por declaração."""
+    return sorted(re.findall(r'xmlns(?::[\w.-]+)?="([^"]*)"', xml))
+
+
 class TestGiss(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -191,7 +199,10 @@ class TestGiss(TestCase):
             self.giss("", cidade=3549805).url,
             "https://ws-sjrp.giss.com.br/service-ws/nf/nfse-ws",
         )
-        self.assertEqual(self.giss("", ambiente="2", cidade=1).url, URL_HOMOLOGACAO)
+        self.assertEqual(
+            self.giss("", ambiente="2", cidade=1).url,
+            "https://v2-ws-homologacao.giss.com.br/service-ws/nf/nfse-ws",
+        )
         with self.assertRaises(ValueError):
             self.giss("", cidade=1).url  # noqa: B018
         fora = Giss(self.transmissao, "1", 1, CNPJ, IM, host="suzano")
@@ -253,6 +264,15 @@ class TestGiss(TestCase):
                 hashes.SHA1(),  # noqa: S303
             )
 
+    def test_namespaces_declarados_uma_vez_na_raiz(self):
+        """Com o namespace dos tipos redeclarado nos filhos, o GissOnline
+        recusa as assinaturas (E172)."""
+        assinado = self.giss("").assinar_lote(lote((1, 2)))
+        raiz = etree.fromstring(assinado.encode())
+        self.assertEqual(raiz.nsmap, {None: NS_ENVIO, "tipos": NS_TIPOS})
+        # fora da raiz, só cada Signature declara o namespace dela
+        self.assertEqual(declaracoes(assinado), sorted([NS_ENVIO, NS_TIPOS] + [NS_DS] * 3))
+
     def test_lote_ja_assinado_e_reassinado_sem_duplicar(self):
         giss = self.giss("")
         duas_vezes = etree.fromstring(giss.assinar_lote(giss.assinar_lote(lote())).encode())
@@ -296,6 +316,7 @@ class TestGiss(TestCase):
         )
         # a consulta leva uma assinatura na raiz, sobre o documento todo
         self.assertEqual(referencias(dados), [""])
+        self.assertEqual(declaracoes(etree.tostring(dados, encoding=str)), sorted([ns, NS_TIPOS, NS_DS]))
         self.assertTrue(retorno.sucesso)
         self.assertEqual(retorno.situacao, LOTE_PROCESSADO)
         self.assertFalse(retorno.em_processamento)
@@ -348,6 +369,7 @@ class TestGiss(TestCase):
         # a assinatura fica dentro do Pedido e referencia o InfPedidoCancelamento
         self.assertEqual(pedido[-1].tag, f"{{{NS_DS}}}Signature")
         self.assertEqual(referencias(dados), ["#cancelamento55"])
+        self.assertEqual(declaracoes(etree.tostring(dados, encoding=str)), sorted([ns, NS_TIPOS, NS_DS]))
         self.assertTrue(retorno.sucesso)
         self.assertEqual(retorno.data_cancelamento, "2026-11-10T11:00:00")
 
