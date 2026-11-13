@@ -164,3 +164,13 @@ Outros:
 * Sai o extra ``nfselib.dsf`` (o pacote nunca foi publicado no PyPI); o extra
   ``nfselib.barueri`` passa a trazer o ``six`` que ela usa sem declarar; o extra
   ``nfelib`` deixa de limitar a versão.
+
+3.3.1 (2026-11-13)
+~~~~~~~~~~~~~~~~~~
+
+* Provedor Giss: homologação no host ``v2-ws-homologacao``, o do Manual Técnico
+  Serviços Prestados V1.8; o ``ws-homologacao-rtc`` recusava o ``tpRetPisCofins`` 0
+  com E160 (#124).
+* Provedor Giss: o lote é assinado com os namespaces declarados uma vez, na raiz; com
+  o namespace dos tipos redeclarado em cada filho, como o xsdata grava, o webservice
+  recusava as assinaturas com E172 (#124).
