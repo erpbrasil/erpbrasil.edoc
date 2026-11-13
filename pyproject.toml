@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "erpbrasil.edoc"
-version = "3.3.0"
+version = "3.3.1"
 description = "Transmissão de documentos fiscais eletrônicos brasileiros (NF-e, NFC-e, CT-e, MDF-e, manifestação do destinatário e NFS-e)"
 readme = "README.rst"
 license = {text = "MIT"}
