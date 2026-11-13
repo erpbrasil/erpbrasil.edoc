@@ -44,9 +44,10 @@ NS_SOAP = "http://schemas.xmlsoap.org/soap/envelope/"
 VERSAO = "2.04"
 URL_PRODUCAO = "https://ws-{}.giss.com.br/service-ws/nf/nfse-ws"
 # a homologação é um ambiente único, compartilhado por todos os municípios,
-# com regras e serviços que não são os do município em produção; o host da
-# reforma tributária (rtc) é o que aceita os grupos de IBS/CBS
-URL_HOMOLOGACAO = "https://ws-homologacao-rtc.giss.com.br/service-ws/nf/nfse-ws"
+# com regras e serviços que não são os do município em produção; é o host do
+# Manual Técnico Serviços Prestados V1.8 (seção 4). O ws-homologacao-rtc
+# recusa o tpRetPisCofins 0 que o XSD aceita (E160).
+URL_HOMOLOGACAO = "https://v2-ws-homologacao.giss.com.br/service-ws/nf/nfse-ws"
 
 # código IBGE -> prefixo do host de produção (nem sempre é o nome do município)
 MUNICIPIOS = {

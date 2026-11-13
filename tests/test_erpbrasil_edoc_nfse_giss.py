@@ -21,7 +21,6 @@ from erpbrasil.edoc.provedores.giss import (
     NS_GISS,
     NS_SERVICO,
     NS_TIPOS,
-    URL_HOMOLOGACAO,
     Giss,
 )
 
@@ -191,7 +190,10 @@ class TestGiss(TestCase):
             self.giss("", cidade=3549805).url,
             "https://ws-sjrp.giss.com.br/service-ws/nf/nfse-ws",
         )
-        self.assertEqual(self.giss("", ambiente="2", cidade=1).url, URL_HOMOLOGACAO)
+        self.assertEqual(
+            self.giss("", ambiente="2", cidade=1).url,
+            "https://v2-ws-homologacao.giss.com.br/service-ws/nf/nfse-ws",
+        )
         with self.assertRaises(ValueError):
             self.giss("", cidade=1).url  # noqa: B018
         fora = Giss(self.transmissao, "1", 1, CNPJ, IM, host="suzano")
