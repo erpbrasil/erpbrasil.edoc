@@ -13,7 +13,9 @@ namespaces próprios (``http://www.giss.com.br/<mensagem>-v2_04.xsd``):
 - só o lote assíncrono é confiável: ``RecepcionarLoteRps`` devolve um
   protocolo e a nota sai em ``ConsultarLoteRps``;
 - cada RPS é assinado (``InfDeclaracaoPrestacaoServico``) e depois o lote
-  (``LoteRps``), nessa ordem, em RSA-SHA1: só o lote devolve E174.
+  (``LoteRps``), nessa ordem, em RSA-SHA1: só o lote devolve E174;
+- a substituição (``SubstituirNfse``) é síncrona: leva o pedido de
+  cancelamento da NFS-e antiga e o RPS da nova, e devolve as duas notas.
 
 Este provedor não gera o RPS: recebe o XML do ``EnviarLoteRpsEnvio`` pronto
 (ex.: serializado com os bindings ``nfselib.giss``) e cuida de assinar,
@@ -23,7 +25,7 @@ empacotar, transmitir e interpretar a resposta.
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 from xml.sax.saxutils import escape
 
 import requests
@@ -123,6 +125,8 @@ class RetornoGiss:
     mensagens: List[MensagemRetorno] = field(default_factory=list)
     alertas: List[MensagemRetorno] = field(default_factory=list)
     data_cancelamento: str = ""
+    nfse_substituida: Optional[NfseRetorno] = None
+    nfse_substituidora: Optional[NfseRetorno] = None
 
     @property
     def sucesso(self):
@@ -366,14 +370,13 @@ class Giss:
         self._prestador(raiz, ns)
         return etree.tostring(raiz, encoding=str)
 
-    def montar_cancelar_nfse(self, numero_nfse, codigo_cancelamento):
+    def _pedido_cancelamento(self, pai, ns_pai, numero_nfse, codigo_cancelamento):
         if str(codigo_cancelamento) not in CODIGOS_CANCELAMENTO:
             raise ValueError(
                 f"Código de cancelamento {codigo_cancelamento} inválido: o "
                 f"contribuinte só pode usar {', '.join(CODIGOS_CANCELAMENTO)}"
             )
-        raiz, ns = self._raiz("cancelar-nfse-envio", "CancelarNfseEnvio")
-        pedido = etree.SubElement(raiz, f"{{{ns}}}Pedido")
+        pedido = etree.SubElement(pai, f"{{{ns_pai}}}Pedido")
         inf = etree.SubElement(
             pedido,
             f"{{{NS_TIPOS}}}InfPedidoCancelamento",
@@ -388,7 +391,46 @@ class Giss:
             etree.SubElement(nfse, f"{{{NS_TIPOS}}}InscricaoMunicipal").text = self.im_prestador
         etree.SubElement(nfse, f"{{{NS_TIPOS}}}CodigoMunicipio").text = str(self.cidade)
         etree.SubElement(inf, f"{{{NS_TIPOS}}}CodigoCancelamento").text = str(codigo_cancelamento)
+        return pedido
+
+    def montar_cancelar_nfse(self, numero_nfse, codigo_cancelamento):
+        raiz, ns = self._raiz("cancelar-nfse-envio", "CancelarNfseEnvio")
+        self._pedido_cancelamento(raiz, ns, numero_nfse, codigo_cancelamento)
         return etree.tostring(raiz, encoding=str)
+
+    def montar_substituir_nfse(self, numero_nfse, rps_xml, codigo_cancelamento):
+        """Pedido de cancelamento da NFS-e antiga mais o RPS da nova.
+
+        ``rps_xml`` é o ``EnviarLoteRpsEnvio`` do RPS novo (o mesmo XML que
+        iria no lote) ou só o ``Rps``: vale a primeira
+        ``InfDeclaracaoPrestacaoServico``, sem assinaturas anteriores.
+        """
+        origem = etree.fromstring(_sem_declaracao(rps_xml).encode("utf-8"))
+        declaracao = next(iter(_todos(origem, "InfDeclaracaoPrestacaoServico")), None)
+        if declaracao is None or not declaracao.get("Id"):
+            raise ValueError("RPS sem InfDeclaracaoPrestacaoServico com Id")
+        raiz, ns = self._raiz("substituir-nfse-envio", "SubstituirNfseEnvio")
+        substituicao = etree.SubElement(raiz, f"{{{ns}}}SubstituicaoNfse", Id=f"substituicao{int(numero_nfse)}")
+        self._pedido_cancelamento(substituicao, ns, numero_nfse, codigo_cancelamento)
+        rps = etree.SubElement(substituicao, f"{{{ns}}}Rps")
+        rps.append(declaracao)
+        for assinatura in _todos(raiz, "Signature"):
+            assinatura.getparent().remove(assinatura)
+        return etree.tostring(_namespaces_na_raiz(raiz), encoding=str)
+
+    def assinar_substituicao(self, substituicao_xml):
+        """Assina o RPS, o pedido de cancelamento e a substituição, nessa ordem."""
+        root = etree.fromstring(_sem_declaracao(substituicao_xml).encode("utf-8"))
+        referencias = [
+            _filho(root, "SubstituicaoNfse", "Rps", "InfDeclaracaoPrestacaoServico").get("Id"),
+            _filho(root, "SubstituicaoNfse", "Pedido", "InfPedidoCancelamento").get("Id"),
+            _filho(root, "SubstituicaoNfse").get("Id"),
+        ]
+        xml = etree.tostring(root, encoding=str)
+        for referencia in referencias:
+            xml = self._assinar(etree.fromstring(xml.encode("utf-8")), referencia)
+            xml = self._recolocar_assinaturas(xml)
+        return xml
 
     # ------------------------------------------------------------- servicos
 
@@ -431,6 +473,15 @@ class Giss:
         referencia = f"cancelamento{int(numero_nfse)}"
         dados = self._assinar(etree.fromstring(pedido.encode("utf-8")), referencia)
         return self._post("CancelarNfse", self._recolocar_assinaturas(dados))
+
+    def substituir_nfse(self, numero_nfse, rps_xml, codigo_cancelamento=CANCELAMENTO_ERRO_EMISSAO):
+        """Cancela a NFS-e ``numero_nfse`` e emite a do RPS novo no lugar dela.
+
+        Síncrono: a resposta traz a nota substituída e a substituta
+        (``nfse_substituida`` e ``nfse_substituidora``).
+        """
+        pedido = self.montar_substituir_nfse(numero_nfse, rps_xml, codigo_cancelamento)
+        return self._post("SubstituirNfse", self.assinar_substituicao(pedido))
 
     # -------------------------------------------------------------- resposta
 
@@ -525,6 +576,12 @@ class Giss:
         retorno.nfses = [cls._nfse(comp) for comp in _todos(corpo, "CompNfse")]
         cancelamento = _filho(corpo, "RetCancelamento", "NfseCancelamento")
         retorno.data_cancelamento = _texto(cancelamento, "Confirmacao", "DataHora")
+        substituicao = next(iter(_todos(corpo, "RetSubstituicao")), None)
+        if substituicao is not None:
+            antiga = _filho(substituicao, "NfseSubstituida", "CompNfse")
+            nova = _filho(substituicao, "NfseSubstituidora", "CompNfse")
+            retorno.nfse_substituida = cls._nfse(antiga) if antiga is not None else None
+            retorno.nfse_substituidora = cls._nfse(nova) if nova is not None else None
         if http_status >= 400 and not retorno.mensagens:
             retorno.mensagens.append(MensagemRetorno("HTTP", f"Erro de transporte (HTTP {http_status})"))
         return retorno

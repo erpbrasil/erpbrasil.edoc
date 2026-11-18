@@ -120,6 +120,36 @@ RESPOSTA_CANCELADA = soap(
     "</t:NfseCancelamento></RetCancelamento></CancelarNfseResposta>",
 )
 
+
+def comp_nfse(numero, rps, extra=""):
+    return (
+        f'<t:CompNfse><t:Nfse versao="2.04"><t:InfNfse Id="nfse{numero}">'
+        f"<t:Numero>{numero}</t:Numero><t:CodigoVerificacao>CV{numero}</t:CodigoVerificacao>"
+        "<t:DataEmissao>2026-11-16T10:00:05</t:DataEmissao>"
+        "<t:DeclaracaoPrestacaoServico><t:InfDeclaracaoPrestacaoServico>"
+        f"<t:Rps><t:IdentificacaoRps><t:Numero>{rps}</t:Numero><t:Serie>1</t:Serie>"
+        "<t:Tipo>1</t:Tipo></t:IdentificacaoRps></t:Rps>"
+        "</t:InfDeclaracaoPrestacaoServico></t:DeclaracaoPrestacaoServico>"
+        f"</t:InfNfse></t:Nfse>{extra}</t:CompNfse>"
+    )
+
+
+RESPOSTA_SUBSTITUIDA = soap(
+    "SubstituirNfse",
+    f'<SubstituirNfseResposta xmlns="{NS_GISS.format("substituir-nfse-resposta")}"'
+    f' xmlns:t="{NS_TIPOS}"><RetSubstituicao><NfseSubstituida>'
+    + comp_nfse(
+        55,
+        1,
+        '<t:NfseCancelamento versao="2.04"><t:Confirmacao>'
+        "<t:DataHora>2026-11-16T10:00:05</t:DataHora></t:Confirmacao>"
+        "</t:NfseCancelamento>",
+    )
+    + "</NfseSubstituida><NfseSubstituidora>"
+    + comp_nfse(56, 2)
+    + "</NfseSubstituidora></RetSubstituicao></SubstituirNfseResposta>",
+)
+
 FAULT = (
     '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">'
     "<soap:Body><soap:Fault><faultcode>soap:Client</faultcode>"
@@ -372,6 +402,30 @@ class TestGiss(TestCase):
         self.assertEqual(declaracoes(etree.tostring(dados, encoding=str)), sorted([ns, NS_TIPOS, NS_DS]))
         self.assertTrue(retorno.sucesso)
         self.assertEqual(retorno.data_cancelamento, "2026-11-10T11:00:00")
+
+    def test_substituicao(self):
+        retorno = self.giss(RESPOSTA_SUBSTITUIDA).substituir_nfse(55, lote((2,)), "1")
+        self.assertEqual(self.session.chamadas[0]["headers"]["SOAPAction"], f"{NS_SERVICO}/SubstituirNfse")
+        dados = dados_da_chamada(self.session.chamadas[0])
+        ns = NS_GISS.format("substituir-nfse-envio")
+        self.assertEqual(dados.tag, f"{{{ns}}}SubstituirNfseEnvio")
+        substituicao = dados.find(f"{{{ns}}}SubstituicaoNfse")
+        self.assertEqual(substituicao.get("Id"), "substituicao55")
+        inf = substituicao.find(f"{{{ns}}}Pedido/{{{NS_TIPOS}}}InfPedidoCancelamento")
+        self.assertEqual(inf.findtext(f"{{{NS_TIPOS}}}IdentificacaoNfse/{{{NS_TIPOS}}}Numero"), "55")
+        declaracao = substituicao.find(f"{{{ns}}}Rps/{{{NS_TIPOS}}}InfDeclaracaoPrestacaoServico")
+        self.assertEqual(declaracao.get("Id"), "rps2")
+        # o pedido, o RPS e a substituição, cada assinatura junto do que assina;
+        # a da substituição cobre as outras duas, por isso é feita por último
+        self.assertEqual(referencias(dados), ["#cancelamento55", "#rps2", "#substituicao55"])
+        for assinado in (declaracao, inf, substituicao):
+            self.assertEqual(assinado.getnext().tag, f"{{{NS_DS}}}Signature")
+        self.assertEqual(declaracoes(etree.tostring(dados, encoding=str)), sorted([ns, NS_TIPOS, NS_DS, NS_DS, NS_DS]))
+        self.assertTrue(retorno.sucesso)
+        self.assertEqual(retorno.nfse_substituida.numero, "55")
+        self.assertTrue(retorno.nfse_substituida.cancelada)
+        self.assertEqual(retorno.nfse_substituidora.numero, "56")
+        self.assertEqual(retorno.nfse_substituidora.numero_rps, "2")
 
     def test_cancelamento_so_com_os_codigos_do_contribuinte(self):
         for codigo in ("3", "5"):
