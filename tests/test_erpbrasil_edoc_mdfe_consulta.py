@@ -1,9 +1,10 @@
-from unittest import TestCase
+from unittest import TestCase, skipUnless
 from unittest.mock import patch
 
 from erpbrasil.edoc import mdfe
 
 
+@skipUnless(hasattr(mdfe, "ConsSitMdfe"), "nfelib não instalada (exige Python >= 3.9)")
 class TestMDFeConsulta(TestCase):
     def test_operacao_da_consulta(self):
         processador = mdfe.MDFe(transmissao=None, uf=26, ambiente="2")
