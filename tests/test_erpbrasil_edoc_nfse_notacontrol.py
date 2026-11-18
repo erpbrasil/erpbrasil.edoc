@@ -57,6 +57,22 @@ FAULT = """<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
 <soap:Body><soap:Fault><faultcode>soap:Client</faultcode>
 <faultstring>Error</faultstring></soap:Fault></soap:Body></soap:Envelope>"""
 
+SOAP = (
+    '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>'
+    '<{op}Response xmlns="' + NS + '"><{resp}>{corpo}</{resp}></{op}Response></s:Body></s:Envelope>'
+)
+CHAVE = "52087071228222338000107000000000000226111794960947"
+NFSE_REAL = (
+    f'<CompNfse><NFSe versao="1.01"><infNFSe Id="NFS{CHAVE}"><nNFSe>2</nNFSe>'
+    "<cStat>100</cStat></infNFSe></NFSe>{eventos}</CompNfse>"
+)
+EVENTO_CANCELAMENTO = (
+    '<ListaEvento><evento versao="1.00"><infEvento Id="EVT1"><pedRegEvento versao="1.00">'
+    f'<infPedReg Id="PRE1"><chNFSe>{CHAVE}</chNFSe><e101101><xDesc>Cancelamento de NFS-e</xDesc>'
+    "<cMotivo>1</cMotivo><xMotivo>Erro na emissao</xMotivo></e101101></infPedReg>"
+    "</pedRegEvento></infEvento></evento></ListaEvento>"
+)
+
 
 def certificado_temporario():
     """Certificado autoassinado valido hoje (o fixture do repo esta vencido)."""
@@ -170,6 +186,14 @@ class TestNotaControl(TestCase):
         self.assertEqual(retorno.chaves_acesso, ["52087072202244507000116000000000000126090000001"])
         self.assertEqual([a.codigo for a in retorno.alertas], ["A001"])
 
+    def test_recepcionar_autorizada_nfse_maiusculo(self):
+        # o ISSNet de Goiania (homologacao, 17/11/2026) devolve <NFSe>, nao <Nfse>
+        resposta = RESPOSTA_AUTORIZADA.replace("<Nfse ", "<NFSe ").replace("</Nfse>", "</NFSe>")
+        retorno = self._provedor(session=FakeSession(resposta)).recepcionar_lote_dps_sincrono([DPS], 7)
+        self.assertTrue(retorno.sucesso)
+        self.assertEqual(retorno.numeros_nfse, ["1"])
+        self.assertEqual(retorno.chaves_acesso, ["52087072202244507000116000000000000126090000001"])
+
     def test_recepcionar_rejeitada(self):
         retorno = self._provedor(session=FakeSession(RESPOSTA_REJEITADA)).recepcionar_lote_dps_sincrono([DPS], 1)
         self.assertFalse(retorno.sucesso)
@@ -195,6 +219,118 @@ class TestNotaControl(TestCase):
         retorno = self._provedor(session=FakeSession(resposta)).consultar_url_nfse(1, "1")
         self.assertTrue(retorno.sucesso)
         self.assertEqual(retorno.urls[0]["visualizacao"], "https://exemplo/1")
+
+    # as respostas reais do ISSNet vem como <XResponse><XResposta>, sem <XResult>
+
+    def test_protocolo_do_envio_sincrono_na_forma_real(self):
+        corpo = (
+            "<NumeroLote>7</NumeroLote><Protocolo>CBE9D634-E5E2-F111-8CA6-005056992BC4</Protocolo>"
+            "<ListaNfse>" + NFSE_REAL.format(eventos="") + "</ListaNfse>"
+        )
+        resposta = SOAP.format(op="RecepcionarLoteDpsSincrono", resp="EnviarLoteDpsSincronoResposta", corpo=corpo)
+        retorno = self._provedor(session=FakeSession(resposta)).recepcionar_lote_dps_sincrono([DPS], 7)
+        self.assertTrue(retorno.sucesso)
+        self.assertEqual(retorno.protocolo, "CBE9D634-E5E2-F111-8CA6-005056992BC4")
+        self.assertEqual(retorno.numero_lote, "7")
+        self.assertEqual(retorno.chaves_acesso, [CHAVE])
+
+    def test_erro_na_forma_real_nao_e_sucesso(self):
+        corpo = (
+            "<ListaMensagemRetorno><MensagemRetorno><Codigo>E212</Codigo>"
+            "<Mensagem>NFS-e não encontrada.</Mensagem></MensagemRetorno></ListaMensagemRetorno>"
+        )
+        resposta = SOAP.format(op="ConsultarNfseDps", resp="ConsultarNfseDpsResposta", corpo=corpo)
+        retorno = self._provedor(session=FakeSession(resposta)).consultar_nfse_dps(1, "8")
+        self.assertFalse(retorno.sucesso)
+        self.assertEqual([m.codigo for m in retorno.mensagens], ["E212"])
+
+    def test_cancelamento_recusado_nao_e_sucesso(self):
+        # sem descer ate a Resposta, o EM097 era ignorado e o cancelamento dava como feito
+        corpo = (
+            "<ListaMensagemRetorno><MensagemRetorno><Codigo>EM097</Codigo>"
+            "<Mensagem>NFS-e já está cancelada.</Mensagem></MensagemRetorno>"
+            "<MensagemRetorno><Codigo /></MensagemRetorno></ListaMensagemRetorno>"
+        )
+        resposta = SOAP.format(op="CancelarNfse", resp="CancelarNfseResposta", corpo=corpo)
+        ped = (
+            f'<pedRegEvento xmlns="{NS}" versao="1.00"><infPedReg Id="PRE1"><tpAmb>2</tpAmb></infPedReg></pedRegEvento>'
+        )
+        retorno = self._provedor(session=FakeSession(resposta)).cancelar_nfse(ped)
+        self.assertFalse(retorno.sucesso)
+        self.assertEqual([m.codigo for m in retorno.mensagens], ["EM097"])
+
+    def test_consulta_devolve_eventos_da_nota_cancelada(self):
+        corpo = "<ListaNfse>" + NFSE_REAL.format(eventos=EVENTO_CANCELAMENTO) + "<Pagina>1</Pagina></ListaNfse>"
+        resposta = SOAP.format(
+            op="ConsultarNfseServicoPrestado", resp="ConsultarNfseServicoPrestadoResposta", corpo=corpo
+        )
+        session = FakeSession(resposta)
+        retorno = self._provedor(session=session).consultar_nfse_servico_prestado(numero=2)
+        self.assertIn("<NumeroNfse>2</NumeroNfse><Pagina>1</Pagina>", session.chamadas[0]["data"])
+        self.assertTrue(retorno.sucesso)
+        self.assertEqual(retorno.numeros_nfse, ["2"])
+        self.assertEqual(len(retorno.eventos), 1)
+        self.assertEqual(retorno.eventos[0]["tipo"], "e101101")
+        self.assertEqual(retorno.eventos[0]["chave"], CHAVE)
+        self.assertEqual(retorno.eventos[0]["motivo"], "1")
+
+    def test_consultar_servico_prestado_por_periodo(self):
+        session = FakeSession(SOAP.format(op="X", resp="XResposta", corpo=""))
+        provedor = self._provedor(session=session)
+        provedor.consultar_nfse_servico_prestado(emissao=("2026-11-01", "2026-11-17"))
+        provedor.consultar_nfse_servico_prestado(competencia=("2026-11-01", "2026-11-17"))
+        self.assertIn("<PeriodoEmissao><DataInicial>2026-11-01</DataInicial>", session.chamadas[0]["data"])
+        self.assertIn("<PeriodoCompetencia>", session.chamadas[1]["data"])
+        with self.assertRaises(ValueError):
+            provedor.consultar_nfse_servico_prestado()
+
+    def test_consultar_dps_disponivel_envia_pagina(self):
+        corpo = (
+            "<ListaDpsDisponivel><Prestador><CNPJ>02244507000116</CNPJ><IM>778151</IM></Prestador>"
+            "<DpsDisponivel><NumDPS>14</NumDPS><SerieDPS>8</SerieDPS></DpsDisponivel>"
+            "<DpsDisponivel><NumDPS>15</NumDPS><SerieDPS>8</SerieDPS></DpsDisponivel>"
+            "<Pagina>1</Pagina></ListaDpsDisponivel>"
+        )
+        session = FakeSession(
+            SOAP.format(op="ConsultarDpsDisponivel", resp="ConsultarDpsDisponivelResposta", corpo=corpo)
+        )
+        retorno = self._provedor(session=session).consultar_dps_disponivel()
+        # sem a Pagina o webservice responde E160
+        self.assertIn("<Pagina>1</Pagina></ConsultarDpsDisponivelEnvio>", session.chamadas[0]["data"])
+        self.assertTrue(retorno.sucesso)
+        self.assertEqual(retorno.dps_disponiveis, [("14", "8"), ("15", "8")])
+
+    def test_consultar_lote_dps_situacao(self):
+        corpo = "<Situacao>4</Situacao><ListaNfse>" + NFSE_REAL.format(eventos="") + "</ListaNfse>"
+        session = FakeSession(SOAP.format(op="ConsultarLoteDps", resp="ConsultarLoteDpsResposta", corpo=corpo))
+        retorno = self._provedor(session=session).consultar_lote_dps("CBE9D634-E5E2-F111-8CA6-005056992BC4")
+        self.assertIn("<Protocolo>CBE9D634-E5E2-F111-8CA6-005056992BC4</Protocolo>", session.chamadas[0]["data"])
+        self.assertEqual(retorno.situacao, "4")
+        self.assertEqual(retorno.numeros_nfse, ["2"])
+
+    def test_consultar_faixa_e_dados_cadastrais(self):
+        session = FakeSession(SOAP.format(op="X", resp="XResposta", corpo=""))
+        provedor = self._provedor(session=session)
+        provedor.consultar_nfse_faixa(1, 5)
+        provedor.consultar_dados_cadastrais()
+        self.assertIn(
+            "<NumeroNfseInicial>1</NumeroNfseInicial><NumeroNfseFinal>5</NumeroNfseFinal>", session.chamadas[0]["data"]
+        )
+        self.assertIn("ConsultarDadosCadastraisEnvio", session.chamadas[1]["data"])
+
+    def test_validar_xml(self):
+        corpo = (
+            "<ListaMensagemRetorno><MensagemRetorno><Codigo>S000</Codigo>"
+            "<Mensagem>XML válido. Validação realizada com sucesso.</Mensagem></MensagemRetorno></ListaMensagemRetorno>"
+        )
+        resposta = SOAP.format(op="ValidarXml", resp="ValidarXmlResposta", corpo=corpo)
+        self.assertTrue(self._provedor(session=FakeSession(resposta)).validar_xml("<GerarNfseEnvio/>").sucesso)
+        corpo = (
+            "<ListaMensagemRetorno><MensagemRetorno><Codigo>E160</Codigo>"
+            "<Mensagem>Arquivo em desacordo</Mensagem></MensagemRetorno></ListaMensagemRetorno>"
+        )
+        resposta = SOAP.format(op="ValidarXml", resp="ValidarXmlResposta", corpo=corpo)
+        self.assertFalse(self._provedor(session=FakeSession(resposta)).validar_xml("<GerarNfseEnvio/>").sucesso)
 
     def test_numero_serie(self):
         self.assertEqual(dps_numero_serie(DPS), ("1", "1"))
