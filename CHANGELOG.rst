@@ -174,3 +174,19 @@ Outros:
 * Provedor Giss: o lote é assinado com os namespaces declarados uma vez, na raiz; com
   o namespace dos tipos redeclarado em cada filho, como o xsdata grava, o webservice
   recusava as assinaturas com E172 (#124).
+
+3.3.2 (2026-11-17)
+~~~~~~~~~~~~~~~~~~
+
+* Provedor Giss: ``substituir_nfse`` (SubstituirNfse), a substituição de uma NFS-e em
+  uma chamada só: o novo RPS segue com o pedido de cancelamento da antiga (#126).
+* Provedor NotaControl: o parser lê a resposta no formato real do ISSNet de Goiânia
+  (``XResponse``/``XResposta``, ``NFSe``). A NFS-e autorizada deixa de aparecer como
+  rejeitada, o protocolo do lote passa a ser lido e as mensagens de erro das consultas
+  e do cancelamento deixam de ser ignoradas (um cancelamento recusado com EM097 não
+  conta mais como cancelado). O retorno traz a situação, as DPS disponíveis e os
+  eventos (``e101101``, ``e105102``, ``e105104``) (#127).
+* Provedor NotaControl: operações novas ``consultar_lote_dps``,
+  ``consultar_nfse_faixa``, ``consultar_nfse_servico_prestado``,
+  ``consultar_dados_cadastrais`` e ``validar_xml``; ``consultar_dps_disponivel`` passa a
+  enviar a ``Pagina`` (sem ela o webservice responde E160) (#127).
