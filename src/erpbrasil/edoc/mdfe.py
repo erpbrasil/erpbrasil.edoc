@@ -170,7 +170,7 @@ class MDFe(DocumentoEletronico):
         return self._post(
             raiz=raiz,
             url=self._get_ws_endpoint(WS_MDFE_CONSULTA),
-            operacao="mdfeConsulta",
+            operacao="mdfeConsultaMDF",
             classe=RetConsSitMdfe,
         )
 
