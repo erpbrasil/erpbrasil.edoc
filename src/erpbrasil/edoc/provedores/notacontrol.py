@@ -80,6 +80,9 @@ class RetornoNotaControl:
     mensagens: List[MensagemRetorno] = field(default_factory=list)
     alertas: List[MensagemRetorno] = field(default_factory=list)
     urls: List[dict] = field(default_factory=list)
+    situacao: str = ""
+    dps_disponiveis: List[tuple] = field(default_factory=list)
+    eventos: List[dict] = field(default_factory=list)
 
     @property
     def mensagem(self):
@@ -270,10 +273,73 @@ class NotaControl:
         )
         return self._post("ConsultarUrlNfse", dados)
 
-    def consultar_dps_disponivel(self):
-        """Próximo número de DPS disponível para o prestador (só NotaControl)."""
-        dados = f'<ConsultarDpsDisponivelEnvio xmlns="{NS}">{self._prestador_xml()}</ConsultarDpsDisponivelEnvio>'
+    def consultar_dps_disponivel(self, pagina=1):
+        """Próximos números de DPS disponíveis para o prestador (só NotaControl).
+
+        A ``Pagina`` é obrigatória: sem ela o webservice responde E160. A
+        lista volta em ``retorno.dps_disponiveis`` como ``(numero, serie)``.
+        """
+        dados = (
+            f'<ConsultarDpsDisponivelEnvio xmlns="{NS}">{self._prestador_xml()}'
+            f"<Pagina>{int(pagina)}</Pagina></ConsultarDpsDisponivelEnvio>"
+        )
         return self._post("ConsultarDpsDisponivel", dados)
+
+    def consultar_lote_dps(self, protocolo):
+        """NFS-e geradas por um lote, pelo protocolo devolvido no envio.
+
+        O protocolo é o GUID do ``RecepcionarLoteDpsSincrono``; outro formato
+        volta E160. ``retorno.situacao``: 1 não recebido, 2 não processado,
+        3 com erro, 4 processado com sucesso.
+        """
+        dados = (
+            f'<ConsultarLoteDpsEnvio xmlns="{NS}">{self._prestador_xml()}'
+            f"<Protocolo>{protocolo}</Protocolo></ConsultarLoteDpsEnvio>"
+        )
+        return self._post("ConsultarLoteDps", dados)
+
+    def consultar_nfse_faixa(self, numero_inicial, numero_final, pagina=1):
+        dados = (
+            f'<ConsultarNfseFaixaEnvio xmlns="{NS}">{self._prestador_xml()}'
+            f"<Faixa><NumeroNfseInicial>{int(numero_inicial)}</NumeroNfseInicial>"
+            f"<NumeroNfseFinal>{int(numero_final)}</NumeroNfseFinal></Faixa>"
+            f"<Pagina>{int(pagina)}</Pagina></ConsultarNfseFaixaEnvio>"
+        )
+        return self._post("ConsultarNfsePorFaixa", dados)
+
+    def consultar_nfse_servico_prestado(self, numero=None, emissao=None, competencia=None, pagina=1):
+        """NFS-e emitidas pelo prestador, por número, período de emissão ou de
+        competência (``(data_inicial, data_final)`` em AAAA-MM-DD).
+
+        A data final não pode ser posterior a hoje (E133).
+        """
+        if numero is not None:
+            filtro = f"<NumeroNfse>{int(numero)}</NumeroNfse>"
+        else:
+            tag, periodo = ("PeriodoEmissao", emissao) if emissao else ("PeriodoCompetencia", competencia)
+            if not periodo:
+                raise ValueError("Informe numero, emissao ou competencia")
+            filtro = f"<{tag}><DataInicial>{periodo[0]}</DataInicial><DataFinal>{periodo[1]}</DataFinal></{tag}>"
+        dados = (
+            f'<ConsultarNfseServicoPrestadoEnvio xmlns="{NS}">{self._prestador_xml()}'
+            f"{filtro}<Pagina>{int(pagina)}</Pagina></ConsultarNfseServicoPrestadoEnvio>"
+        )
+        return self._post("ConsultarNfseServicoPrestado", dados)
+
+    def consultar_dados_cadastrais(self):
+        """Cadastro do prestador no município (status, atividades e alíquotas)."""
+        dados = f'<ConsultarDadosCadastraisEnvio xmlns="{NS}">{self._prestador_xml()}</ConsultarDadosCadastraisEnvio>'
+        return self._post("ConsultarDadosCadastrais", dados)
+
+    def validar_xml(self, xml):
+        """Valida um XML (ex.: ``GerarNfseEnvio``) contra o schema, sem gerar nota.
+
+        O webservice responde com a mensagem S000 quando o XML é válido; por
+        isso ``sucesso`` é verdadeiro só com S000 e sem outra mensagem.
+        """
+        retorno = self._post("ValidarXml", xml)
+        retorno.sucesso = bool(retorno.mensagens) and all(m.codigo == "S000" for m in retorno.mensagens)
+        return retorno
 
     def cancelar_nfse(self, ped_reg_evento_xml):
         """Transmite o pedido de registro de evento (``pedRegEvento``).
@@ -346,6 +412,14 @@ class NotaControl:
                     corpo = result[0]
                 elif (result.text or "").strip().startswith("<"):
                     corpo = etree.fromstring(result.text.strip().encode("utf-8"))
+            elif (
+                result is not None
+                and isinstance(result.tag, str)
+                and etree.QName(result).localname.endswith("Resposta")
+            ):
+                # forma real do ISSNet: <XResponse><XResposta>...; sem descer
+                # um nivel, Protocolo e mensagens de erro nao sao encontrados
+                corpo = result
 
         # respostas sem namespace (ex.: ConsultarUrlNfseResposta) sao normalizadas
         if not corpo.tag.startswith("{"):
@@ -357,16 +431,45 @@ class NotaControl:
 
         retorno.protocolo = _texto(corpo, "n:Protocolo")
         retorno.numero_lote = _texto(corpo, "n:NumeroLote")
+        retorno.situacao = _texto(corpo, "n:Situacao")
+        retorno.dps_disponiveis = [
+            (_texto(d, "n:NumDPS"), _texto(d, "n:SerieDPS")) for d in corpo.iterfind(".//n:DpsDisponivel", NSMAP)
+        ]
         retorno.mensagens = cls._mensagens(corpo, "n:ListaMensagemRetorno/n:MensagemRetorno") + cls._mensagens(
             corpo, "n:ListaMensagemRetornoLote/n:MensagemRetorno"
         )
         retorno.alertas = cls._mensagens(corpo, ".//n:ListaMensagemAlertaRetorno/n:MensagemRetorno")
-        for nfse in corpo.iterfind(".//n:CompNfse/n:Nfse", NSMAP):
+        # o manual escreve "Nfse", mas o ISSNet de Goiania devolve "NFSe": aceita as duas grafias
+        for nfse in [
+            el
+            for comp in corpo.iterfind(".//n:CompNfse", NSMAP)
+            for el in comp
+            if isinstance(el.tag, str) and etree.QName(el).localname.lower() == "nfse"
+        ]:
             inf = nfse.find("n:infNFSe", NSMAP)
             retorno.nfse_xml.append(etree.tostring(nfse, encoding=str))
             if inf is not None:
                 retorno.chaves_acesso.append((inf.get("Id") or "")[3:])
                 retorno.numeros_nfse.append(_texto(inf, "n:nNFSe"))
+        # eventos registrados na NFS-e (cancelamento e101101, substituicao
+        # e105102, analise fiscal deferida e105104...): as consultas devolvem a
+        # nota cancelada com cStat 100, so a ListaEvento mostra o cancelamento
+        for evento in corpo.iterfind(".//n:ListaEvento/n:evento", NSMAP):
+            ped = evento.find(".//n:infPedReg", NSMAP)
+            if ped is None:
+                continue
+            for el in ped:
+                nome = etree.QName(el).localname if isinstance(el.tag, str) else ""
+                if len(nome) == 7 and nome.startswith("e1") and nome[1:].isdigit():
+                    retorno.eventos.append(
+                        {
+                            "tipo": nome,
+                            "chave": _texto(ped, "n:chNFSe"),
+                            "motivo": _texto(el, "n:cMotivo"),
+                            "justificativa": _texto(el, "n:xMotivo"),
+                            "substituta": _texto(el, "n:chSubstituta"),
+                        }
+                    )
         for link in corpo.iterfind(".//n:ListaLinks/n:Links", NSMAP):
             retorno.urls.append(
                 {
