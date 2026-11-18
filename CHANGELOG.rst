@@ -190,3 +190,10 @@ Outros:
   ``consultar_nfse_faixa``, ``consultar_nfse_servico_prestado``,
   ``consultar_dados_cadastrais`` e ``validar_xml``; ``consultar_dps_disponivel`` passa a
   enviar a ``Pagina`` (sem ela o webservice responde E160) (#127).
+
+3.3.3 (2026-11-18)
+~~~~~~~~~~~~~~~~~~
+
+* MDF-e: ``consulta_documento`` chama a operação ``mdfeConsultaMDF``, o nome que o
+  webservice publica; com ``mdfeConsulta`` a consulta da situação de um MDF-e falhava
+  sempre com ``AttributeError`` (#129).
